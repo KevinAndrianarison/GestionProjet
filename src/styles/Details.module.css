@@ -1,0 +1,98 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding-bottom: 20px;
+}
+
+@media screen and (max-width: 768px) {
+  .modalContent {
+    width: 300px;
+    font-size: 12px;
+  }
+  .fullScreen {
+    display: none;
+    border: 5px black solid;
+  }
+  .smallScreen {
+    display: flex !important;
+    justify-content: end;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .modalContent {
+    width: 80%;
+    font-size: 12px;
+  }
+}
+
+.smallScreen {
+  display: none;
+}
+
+
+.left {
+  width: 80%;
+}
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  float: right;
+}
+
+.openModalButton {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.openModalButton:hover {
+  background-color: #0056b3;
+}
+
+.titre {
+  font-weight: bold;
+  color: var(--color-secondary);
+}
+
+.titreProjet {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.form {
+  margin-top: 20px;
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-right: 10px;
+}
+
+.coms{
+  max-height: 200px;
+  overflow-y: scroll;
+}

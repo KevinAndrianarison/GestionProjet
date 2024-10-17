@@ -1,0 +1,30 @@
+.titreInfos {
+  font-weight: bold;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.747);
+}
+.informationsForm {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+input {
+  padding-right: 2.5rem;
+}
+
+span.absolute {
+  right: 10px;
+}
+
+.btnEnregistrer {
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  background-color: var(--color-third);
+  height: 38px;
+  border-radius: 5px;
+  color: black;
+  width: 100%;
+}
+
+

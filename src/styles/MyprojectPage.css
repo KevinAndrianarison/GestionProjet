@@ -1,0 +1,135 @@
+.titreMyproject {
+  font-weight: bold;
+  font-size: 26px;
+  color: rgba(0, 0, 0, 0.747);
+}
+
+.contentMyproject {
+  height: 55vh;
+  border: 2px solid rgba(128, 128, 128, 0.185);
+  border-radius: 10px;
+}
+
+.headMyProject {
+  display: flex;
+  height: 10%;
+  align-items: center;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.185);
+  font-weight: bold;
+  justify-content: space-between;
+}
+
+.BodyMyProject {
+  display: flex;
+  height: 20%;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.185);
+}
+
+.BodyProject {
+  display: flex;
+  height: 8%;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.185);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.BodyProject:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer; 
+  transform:  scaleY(1.02);
+}
+
+.here  {
+  z-index: 10;
+  background-color: red;
+}
+
+
+
+li {
+  list-style: none;
+}
+
+.Date,
+.Statuts,
+.Priorite {
+  width: 65%;
+  max-width: 65%;
+  overflow-y: hidden;
+  height: 20px;
+  overflow-x: hidden;
+}
+
+.Dates,
+.Priorites {
+  width: 30%;
+}
+
+.fait {
+  width: 10%;
+}
+
+.Pris {
+  width: 30%;
+}
+
+.Titres {
+  width: 30%;
+}
+
+.more {
+  width: 5%;
+}
+
+.LISTE {
+  height: 30%;
+  overflow-y: scroll;
+}
+
+.LISTES {
+  height: 85%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+@media screen and (max-width: 768px) {
+  .Pris {
+    display: none;
+  }
+
+  .more {
+    width: 10%;
+  }
+
+  .Statuts,
+  .Priorites {
+    display: none;
+  }
+
+  .fait {
+    width: 30%;
+  }
+}
+
+.iconeDone {
+  color: rgba(17, 209, 17, 0.979);
+  cursor: pointer;
+}
+
+.red-icon,
+.retirerIcone {
+  color: rgba(255, 0, 0, 0.637);
+}
+
+.retirerIcone {
+  cursor: pointer;
+}
+
+.mycreate {
+  font-weight: bold;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.185);
+}
+
+

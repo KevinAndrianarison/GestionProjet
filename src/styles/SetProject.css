@@ -1,0 +1,58 @@
+.showModals {
+  position: fixed;
+  top: 0;
+  z-index: 30;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 38, 38, 0.53);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ListMembres {
+  background: var(--color-background-main);
+  width: 600px;
+  height: 100%;
+  border: 2px rgba(128, 128, 128, 0.233) solid;
+}
+
+.contentCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.formModalCreatePosts {
+  width: 600px;
+  background: var(--color-background-main);
+  padding: 35px;
+  z-index: 12;
+  border: 2px rgba(128, 128, 128, 0.233) solid;
+}
+
+.titreListemembres {
+  font-size: 24px;
+}
+
+.onemembres {
+  width: 50%;
+}
+@media screen and (max-width: 650px) {
+  .formModalCreatePosts,
+  .ListMembres {
+    width: 350px;
+  }
+  .titreListemembres {
+    font-size: 16px;
+  }
+  .onemembres {
+    width: 90%;
+  }
+}
+
+.heightListMembres {
+  height: 80%;
+  overflow-y: scroll;
+}

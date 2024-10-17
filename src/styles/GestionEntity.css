@@ -1,0 +1,76 @@
+.faTrash {
+  color: rgba(255, 0, 0, 0.671);
+  cursor: pointer;
+}
+
+.left {
+  width: 35vw;
+}
+
+.right {
+  width: 50vw;
+  height: 450px;
+}
+
+.flexsuper {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  height: 450px;
+  max-height: 450px;
+}
+@media screen and (max-width: 1200px) {
+  .flexsuper {
+    justify-content: center;
+  }
+  .left,
+  .right {
+    width: 80vw;
+  }
+}
+@media screen and (max-width: 768px) {
+  .AdresseEmail {
+    display: none;
+  }
+  .nomSociete,
+  .nomAdmin {
+    font-size: 12px;
+  }
+}
+
+.listeSociete {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.nomSociete,
+.nomAdmin {
+  width: 20%;
+}
+
+.AdresseEmail {
+  width: 40%;
+}
+
+.trash {
+  width: 5%;
+}
+
+.contentListSociete {
+  overflow-y: scroll;
+  height: 75%;
+}
+
+.empty{
+  background-image: url("../images/icon-404.gif");
+  background-size: cover;
+  background-repeat: no-repeat;
+  
+}
+
+.emptyContent{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

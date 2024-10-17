@@ -1,0 +1,226 @@
+.showModal {
+  position: fixed;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: rgba(43, 38, 38, 0.53);
+  backdrop-filter: blur(2px);
+}
+
+.showModalTask {
+  position: fixed;
+  top: 0;
+  z-index: 20;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: rgba(43, 38, 38, 0.53);
+  backdrop-filter: blur(2px);
+}
+
+.formModal {
+  width: 370px;
+  margin: 50px auto;
+  background: rgb(255, 255, 255);
+  padding: 35px;
+  margin-top: 15%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  z-index: 12;
+}
+
+.formModalCreatePost {
+  width: 600px;
+  margin: 50px auto;
+  background: var(--color-background-main);
+  padding: 35px;
+  margin-top: 10%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  z-index: 12;
+}
+
+.modal {
+  font-size: 18px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.valider {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.SUPPR:hover {
+  cursor: pointer;
+}
+
+.SUPPR {
+  background-color: var(--color-text-danger);
+  padding: 7px 15px 7px 15px;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 2px;
+  transition: all 0.7s ease-in-out;
+}
+
+.OUI:hover {
+  cursor: pointer;
+}
+
+.OUI {
+  background-color: var(--color-secondary);
+  padding: 7px 15px 7px 15px;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 2px;
+  transition: all 0.7s ease-in-out;
+}
+
+.NON {
+  background-color: var(--color-third);
+  padding: 7px 15px 7px 15px;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 2px;
+  transition: all 0.7s ease-in-out;
+}
+
+.NON:hover {
+  cursor: pointer;
+}
+
+@media screen and (max-width: 500px) {
+  .formModal {
+    width: 300px;
+  }
+
+  .label {
+    font-size: 12px;
+  }
+  .addInputField {
+    font-size: 12px;
+    background-color: blue;
+  }
+  .input {
+    font-size: 12px;
+  }
+  .faTrashIcon {
+    width: 10px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .formModalCreatePost {
+    width: 350px;
+  }
+  .faSquarePlus {
+    display: none;
+  }
+}
+
+.headCreateTask {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.418);
+}
+
+.icone,
+.close {
+  width: 10%;
+}
+.titreTask {
+  width: 80%;
+}
+
+.add {
+  color: rgba(0, 0, 0, 0.747);
+  width: 50px;
+  height: 40px;
+}
+
+.section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.sections {
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.label {
+  width: 40vw;
+  display: flex;
+  align-items: center;
+}
+
+.Inputs {
+  width: 60vw;
+  display: flex;
+  flex-direction: row;
+}
+
+.isDropdownOpen {
+  background-color: red;
+}
+
+.modalInput {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 18;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 500px;
+}
+
+.tab {
+  border-bottom: 3px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.tab.active {
+  border-bottom: 3px solid var(--color-third);
+}
+
+.tab:hover {
+  border-bottom: 3px solid var(--color-third);
+}
+
+.taskContentList {
+  max-height: 350px;
+}
+
+@media only screen and (min-width: 768px) {
+  .tox
+    .tox-statusbar__text-container.tox-statusbar__text-container-3-cols
+    > .tox-statusbar__help-text {
+    display: none;
+  }
+}
+.tox .tox-statusbar__wordcount {
+  display: none;
+}
+
+.tox .tox-statusbar__path-item, .tox:not([dir=rtl]) .tox-statusbar__path>* {
+  visibility: hidden;
+}

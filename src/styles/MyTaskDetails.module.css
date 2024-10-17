@@ -1,0 +1,35 @@
+.titre {
+  font-size: 24px;
+  font-weight: bold;
+}
+.headList {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  border: 1px rgba(128, 128, 128, 0.333) solid;
+}
+
+.body {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  border: 1px rgba(128, 128, 128, 0.333) solid;
+}
+.taskDone {
+  margin-top: 20px;
+}
+.content {
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.form {
+  margin-top: 20px;
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-right: 10px;
+}

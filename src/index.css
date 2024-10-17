@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #74b9ff;
+  --color-secondary: #0984e3;
+  --color-third: rgba(253, 203, 110, 1);
+  --color-background-main: #f7f7f7;
+  --color-background-secondary: #2d3436;
+  --color-text-main: rgba(45, 52, 54, 1);
+  --color-text-secondary: #f7f7f7;
+  --color-text-danger: rgba(214, 48, 49, 1);
+}
+p {
+  font-family: "montserrat", sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0984e3;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #74b9ff;
+}
