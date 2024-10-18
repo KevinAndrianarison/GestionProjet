@@ -9,12 +9,7 @@ import { TaskContext } from "../contexte/useTask";
 import axios from "axios";
 
 export default function DeleteTask() {
-  const {
-    idProject,
-    getProjectWhenChef,
-    getAllproject,
-    getProjectWhenMembres,
-  } = useContext(ProjectContext);
+  const { idProject } = useContext(ProjectContext);
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { setShowDeletetask, setShowSpinner } = useContext(ShowContext);
@@ -36,9 +31,6 @@ export default function DeleteTask() {
       })
       .then((response) => {
         getAllTask(idProject);
-        getProjectWhenChef();
-        getAllproject();
-        getProjectWhenMembres();
         setMessageSucces(response.data.message);
         setShowSpinner(false);
         setShowDeletetask(false);
@@ -54,8 +46,8 @@ export default function DeleteTask() {
 
   return (
     <>
-      <div className="showModal">
-        <div className="formModal">
+      <div className="showModal" onClick={() => setShowDeletetask(false)}>
+        <div className="formModal" onClick={(e) => e.stopPropagation()}>
           <h6 className="modal">
             Voulez-vous vraiment supprimer cette tâche ?
           </h6>

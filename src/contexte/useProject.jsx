@@ -21,7 +21,7 @@ export const ProjectContext = createContext({
 });
 export function ProjectContextProvider({ children }) {
   const [ListeProject, setListeProject] = useState([]);
-  const [idProject, setIdProject] = useState([]);
+  const [idProject, setIdProject] = useState("");
   const [ListeProjectWhenChef, setListeProjectWhenChef] = useState([]);
   const [ListeProjectWhenMembres, setListeProjectWhenMembres] = useState([]);
   const [oneProject, setOneProject] = useState({});
@@ -35,7 +35,7 @@ export function ProjectContextProvider({ children }) {
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
-  const { setShowSetProject, setShowDetails } = useContext(ShowContext);
+  const { setShowSpinner, setShowDetails } = useContext(ShowContext);
 
   function getAllproject() {
     setListeProjectWhenMembres([]);
@@ -54,11 +54,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
+        setShowSpinner(false)
         setListeProject(response.data.data.reverse());
-        
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false)
       });
   }
   function getProjectWhenChef() {
@@ -76,10 +77,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
+        setShowSpinner(false)
         setListeProjectWhenChef(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false)
       });
   }
 
@@ -98,10 +101,13 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
+        setShowSpinner(false)
         setListeProjectWhenMembres(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false)
+
       });
   }
 
@@ -127,6 +133,7 @@ export function ProjectContextProvider({ children }) {
         setIdProjet(response.data.data.id);
         setShowDetails(true);
         setListMembres(response.data.data.membres);
+
         setListChefs(response.data.data.chefs);
       })
       .catch((err) => {

@@ -13,8 +13,7 @@ export default function RetirerChefs() {
   const { url } = useContext(UrlContext);
   const { iduser, Nomuser } = useContext(UserContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { idProjet, getOneProjet, getAllproject, getProjectWhenMembres } =
-    useContext(ProjectContext);
+  const { idProjet, getOneProjet } = useContext(ProjectContext);
 
   function closeRetirerChefs() {
     setShowRetierChefs(false);
@@ -42,11 +41,10 @@ export default function RetirerChefs() {
         setTimeout(() => {
           setMessageSucces("");
         }, 5000);
-        getProjectWhenMembres();
-        getAllproject();
       })
       .catch((err) => {
         setMessageError(err.response.data.error);
+        setShowRetierChefs(false);
         setShowSpinner(false);
         setTimeout(() => {
           setMessageError("");
@@ -56,8 +54,8 @@ export default function RetirerChefs() {
 
   return (
     <>
-      <div className="showModal">
-        <div className="formModal">
+      <div className="showModal" onClick={() => setShowRetierChefs(false)}>
+        <div className="formModal" onClick={(e) => e.stopPropagation()}>
           <h6 className="modal">
             Voulez-vous vraiment retirer "<b>{Nomuser}</b>" de ce projet ?
           </h6>

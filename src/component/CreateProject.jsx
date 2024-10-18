@@ -124,8 +124,11 @@ export default function CreateProject() {
 
   return (
     <>
-      <div className="showModal">
-        <div className="formModalCreatePost">
+      <div className="showModal" onClick={closeCreateProject}>
+        <div
+          className="formModalCreatePost"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="headCreateTask pb-4">
             <div className="icone">
               <FontAwesomeIcon
@@ -179,31 +182,8 @@ export default function CreateProject() {
                 min_height: 200,
                 menubar: false,
                 branding: false,
-                plugins: [
-                  "advlist",
-                  "autolink",
-                  "lists",
-                  "link",
-                  "image",
-                  "charmap",
-                  "preview",
-                  "anchor",
-                  "searchreplace",
-                  "visualblocks",
-                  "code",
-                  "fullscreen",
-                  "insertdatetime",
-                  "media",
-                  "table",
-                  "code",
-                  "help",
-                  "wordcount",
-                ],
-                toolbar:
-                  "undo redo | blocks | " +
-                  "bold italic forecolor | alignleft aligncenter " +
-                  "alignright alignjustify | bullist numlist outdent indent | " +
-                  "removeformat | help",
+                plugins: "textcolor",
+                toolbar: "bold italic forecolor",
                 content_style:
                   "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
               }}

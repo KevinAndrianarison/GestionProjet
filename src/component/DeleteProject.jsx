@@ -59,8 +59,8 @@ export default function DeleteProject() {
 
   return (
     <>
-      <div className="showModal">
-        <div className="formModal">
+      <div className="showModal" onClick={() => setShowDeleteTask(false)}>
+        <div className="formModal" onClick={(e) => e.stopPropagation()}>
           <h6 className="modal">Voulez-vous vraiment supprimer ce projet ?</h6>
           <div className="valider">
             <button

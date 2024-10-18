@@ -9,6 +9,7 @@ import {
   faEllipsis,
   faPaperclip,
   faPaperPlane,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Details.module.css";
 import { ShowContext } from "../contexte/useShow";
@@ -20,10 +21,19 @@ import { Editor } from "@tinymce/tinymce-react";
 import { MessageContext } from "../contexte/useMessage";
 import axios from "axios";
 import { UrlContext } from "../contexte/useUrl";
+import { UserContext } from "../contexte/useUser";
 
 export default function DetailsProject() {
-  const { setShowDetails, setShowDeleteTask, setShowSpinner } =
-    useContext(ShowContext);
+  const {
+    setShowDetails,
+    setShowDeleteTask,
+    setShowSpinner,
+    setShowRetirer,
+    setShowRetierChefs,
+    setShowSetProject,
+    setShowTask,
+    setShowDeletetask,
+  } = useContext(ShowContext);
   const {
     categorie,
     setNomProjet,
@@ -45,9 +55,17 @@ export default function DetailsProject() {
     useContext(TaskContext);
 
   const [showListemembre, setShowListemembre] = useState(false);
+  const [coms, setComs] = useState("");
+  const [file, setFile] = useState(null);
+  const [newFieldType, setNewFieldType] = useState("text");
+  const [showAddFieldModal, setShowAddFieldModal] = useState(false);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [inputFields, setInputFields] = useState([]);
   const editorRef = useRef("");
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { url } = useContext(UrlContext);
+  const { setIduser, setNomuser } = useContext(UserContext);
+  const fileInputRef = useRef(null);
 
   function onClose() {
     setShowDetails(false);
@@ -55,6 +73,28 @@ export default function DetailsProject() {
 
   function deleteProject() {
     setShowDeleteTask(true);
+  }
+
+  function setProject() {
+    setShowSetProject(true);
+  }
+
+  function handleAddField() {
+    setInputFields([
+      ...inputFields,
+      { type: newFieldType, label: newFieldLabel },
+    ]);
+    setShowAddFieldModal(false);
+    setNewFieldLabel("");
+  }
+
+  const handleFileInputClick = () => {
+    fileInputRef.current.click();
+  };
+
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    setFile(file);
   }
 
   const [comments, setComments] = useState([
@@ -67,6 +107,53 @@ export default function DetailsProject() {
   const handleDelete = (id) => {
     setComments(comments.filter((comment) => comment.id !== id));
   };
+
+  function retirerMembres(id, nom) {
+    setIduser(id);
+    setNomuser(nom);
+    setShowRetirer(true);
+  }
+
+  function retirerChefs(id, nom) {
+    setIduser(id);
+    setNomuser(nom);
+    setShowRetierChefs(true);
+  }
+
+  function removeInputField(index) {
+    const values = [...inputFields];
+    values.splice(index, 1);
+    setInputFields(values);
+  }
+
+  function addInputField() {
+    setShowAddFieldModal(true);
+  }
+
+  function setTask(id) {
+    setIdTask(id);
+    getOneTask(id);
+  }
+
+  function addtask() {
+    getAllTask();
+    setShowTask(true);
+  }
+
+  function deleteTask(id) {
+    setIdTask(id);
+    setShowDeletetask(true);
+  }
+
+  function envoyerComs() {
+    const formData = new FormData();
+    formData.append("file", file || "");
+    formData.append("coms", coms || "");
+
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+  }
 
   function modifierProjet() {
     let formData = {
@@ -136,13 +223,13 @@ export default function DetailsProject() {
           </h1>
           <div className="detailsContent flex">
             <div className={styles.left}>
-              <div className="mt-2 flex flex-wrap items-end">
+              <div className="mt-2 flex flex-wrap  items-end">
                 <strong className="mr-2 underline">Membres : </strong>
                 {ListChefs.length !== 0 && (
-                  <ul className="flex">
+                  <ul className="flex flex-wrap">
                     {ListChefs.map((list) => (
                       <li key={list.id}>
-                        @ {list.nom} <b>(Chef de projet)</b>
+                        @ {list.nom} <b>(Chef de projet),&nbsp;</b>
                       </li>
                     ))}
                   </ul>
@@ -151,7 +238,7 @@ export default function DetailsProject() {
                   <ul className="flex">
                     {ListMembres.map((list) => (
                       <li key={list.id}>
-                        , @ {list.nom} <b>(membre)</b>
+                        @ {list.nom} <b>(membre),&nbsp;</b>
                       </li>
                     ))}
                   </ul>
@@ -170,18 +257,48 @@ export default function DetailsProject() {
                   {ListChefs.length !== 0 && (
                     <ul>
                       {ListChefs.map((list) => (
-                        <li key={list.id}>
-                          - {list.nom} <b>(Chef de projet)</b>
-                        </li>
+                        <div
+                          key={list.id}
+                          className="flex justify-between items-center"
+                        >
+                          <li>
+                            - {list.nom} <b>(Chef de projet)</b>{" "}
+                          </li>
+                          {categorie === "Mes projets" && (
+                            <Tippy content="Retirer">
+                              <FontAwesomeIcon
+                                onClick={() => retirerChefs(list.id, list.nom)}
+                                icon={faXmark}
+                                className=" cursor-pointer text-gray-400 focus:outline-none"
+                              />
+                            </Tippy>
+                          )}
+                        </div>
                       ))}
                     </ul>
                   )}
                   {ListMembres.length !== 0 && (
                     <ul>
                       {ListMembres.map((list) => (
-                        <li key={list.id}>
-                          - {list.nom} <b>(membre)</b>
-                        </li>
+                        <div
+                          key={list.id}
+                          className="flex justify-between items-center"
+                        >
+                          <li>
+                            - {list.nom} <b>(membre)</b>
+                          </li>
+                          {categorie === "Mes projets" && (
+                            <Tippy content="Retirer">
+                              <FontAwesomeIcon
+                                onClick={() =>
+                                  retirerMembres(list.id, list.nom)
+                                }
+                                icon={faXmark}
+                                className=" cursor-pointer text-gray-400 focus:outline-none"
+                              />
+                            </Tippy>
+                          )}
+                        </div>
                       ))}
                     </ul>
                   )}
@@ -203,50 +320,6 @@ export default function DetailsProject() {
                   />
                 </p>
               )}
-              <h1 className="mt-2 font-bold">Descriptions : </h1>
-              <div className="editor">
-                <Editor
-                  apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
-                  onInit={(_evt, editor) => {
-                    editorRef.current = editor;
-                  }}
-                  initialValue={description}
-                  disabled={categorie !== "Mes projets"}
-                  init={{
-                    height: 200,
-                    min_height: 200,
-                    menubar: false,
-                    branding: false,
-                    plugins: [
-                      "advlist",
-                      "autolink",
-                      "lists",
-                      "link",
-                      "image",
-                      "charmap",
-                      "preview",
-                      "anchor",
-                      "searchreplace",
-                      "visualblocks",
-                      "code",
-                      "fullscreen",
-                      "insertdatetime",
-                      "media",
-                      "table",
-                      "code",
-                      "help",
-                      "wordcount",
-                    ],
-                    toolbar:
-                      "undo redo | blocks | " +
-                      "bold italic forecolor | alignleft aligncenter " +
-                      "alignright alignjustify | bullist numlist outdent indent | " +
-                      "removeformat | help",
-                    content_style:
-                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                  }}
-                />
-              </div>
 
               {ListTask.length !== 0 && (
                 <>
@@ -262,139 +335,306 @@ export default function DetailsProject() {
                       </h1>
                       <h1 className="text-black  input w-[40%]">
                         {" "}
-                        {list.assignable.nom}
+                        {list.utilisateur.nom}
                       </h1>
-                      <h1 className="text-center w-[8%]">
-                        <Tippy content="Modifier">
+                      {categorie === "Mes projets" && (
+                        <h1 className="text-center w-[8%]">
+                          <Tippy content="Modifier">
+                            <FontAwesomeIcon
+                              icon={faSliders}
+                              onClick={() => setTask(list.id)}
+                              className=" cursor-pointer focus:outline-none"
+                            />
+                          </Tippy>
+                        </h1>
+                      )}
+                      {categorie === "Mes projets" && (
+                        <h1 className="text-center w-[8%]">
                           <FontAwesomeIcon
-                            icon={faSliders}
-                            className=" cursor-pointer focus:outline-none"
+                            icon={faTrash}
+                            onClick={() => deleteTask(list.id)}
+                            className="text-red-500 cursor-pointer"
                           />
-                        </Tippy>
-                      </h1>
-                      <h1 className="text-center w-[8%]">
-                        <FontAwesomeIcon
-                          icon={faTrash}
-                          className="text-red-500 cursor-pointer"
-                        />
-                      </h1>
+                        </h1>
+                      )}
                     </div>
                   ))}
                 </>
               )}
-              {categorie === "Mes projets" && (
-                <button
-                  onClick={modifierProjet}
-                  className="w-full  text-white py-2 bg-blue-500"
-                >
-                  <FontAwesomeIcon icon={faEdit} className=" mr-2" />
-                  Modifier le projet
-                </button>
-              )}
+            </div>
+            {categorie === "Mes projets" && (
+              <div className="buttonList w-[25%]">
+                <div className={styles.fullScreen}>
+                  <button
+                    className="w-full  text-white py-2 bg-blue-500"
+                    onClick={() => setProject()}
+                  >
+                    <FontAwesomeIcon icon={faEdit} className=" mr-2 px-1" />
+                    Ajouter des membres
+                  </button>
+                  <button
+                    onClick={addtask}
+                    className="w-full  text-white py-2 bg-blue-500"
+                  >
+                    <FontAwesomeIcon icon={faPlus} className=" mr-2 px-1" />{" "}
+                    Ajouter une tâche
+                  </button>
+                  <button
+                    onClick={deleteProject}
+                    className="w-full  text-white py-2 bg-red-500"
+                  >
+                    <FontAwesomeIcon icon={faTrash} className=" mr-2 px-1" />
+                    Supprimer ce projet
+                  </button>
+                </div>
+                <div className={styles.smallScreen}>
+                  <Tippy content=" Ajouter des membres">
+                    <FontAwesomeIcon
+                      onClick={() => setProject()}
+                      icon={faEdit}
+                      className=" mr-2"
+                    />
+                  </Tippy>
+                  <Tippy
+                    content="Ajouter une
+                tâche"
+                  >
+                    <FontAwesomeIcon
+                      onClick={addtask}
+                      icon={faPlus}
+                      className=" mr-2"
+                    />
+                  </Tippy>
+                  <Tippy content="Supprimer ce projet">
+                    <FontAwesomeIcon
+                      icon={faTrash}
+                      onClick={deleteProject}
+                      className=" text-red-500 mr-2"
+                    />
+                  </Tippy>
+                </div>
+              </div>
+            )}
+          </div>
+          <div>
+            <h1 className="mt-2 font-bold">Descriptions : </h1>
+            <div className="editor">
+              <Editor
+                apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
+                onInit={(_evt, editor) => {
+                  editorRef.current = editor;
+                }}
+                initialValue={description}
+                disabled={categorie !== "Mes projets"}
+                init={{
+                  height: 200,
+                  min_height: 200,
+                  menubar: false,
+                  branding: false,
+                  plugins: "textcolor",
+                  toolbar: "bold italic forecolor",
+                  content_style:
+                    "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                }}
+              />
+            </div>
+            {categorie === "Mes projets" && (
+              <button
+                onClick={modifierProjet}
+                className="w-full  text-white py-2 bg-blue-500"
+              >
+                <FontAwesomeIcon icon={faEdit} className=" mr-2" />
+                Modifier le projet
+              </button>
+            )}
 
-              <div>
-                <div className={styles.form}>
-                  <h1 className="font-bold">Commenter ici :</h1>
-                  <div className={styles.formInputs}>
-                    <div className="sm:col-span-3 mt-2 mr-5 w-full">
-                      <div className="mt-1 ">
-                        <textarea
-                          className="min-h-[80px] pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                          placeholder="Écrivez ici..."
+            {categorie === "Mes projets" && (
+              <div className="section mt-5">
+                <div className="label font-bold">Ajouter des champs :</div>
+                <div className=" w-full  sections mt-2">
+                  {inputFields.map((input, index) => (
+                    <div key={index} className="w-full relative mt-2">
+                      {input.label && (
+                        <label className="input text-black font-bold input-label">
+                          {input.label} :
+                        </label>
+                      )}
+                      {!input.label && (
+                        <label className="input text-black font-bold input-label">
+                          &nbsp;
+                        </label>
+                      )}
+
+                      <input
+                        type={input.type}
+                        className="input pl-3 w-full pr-10 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                        placeholder={input.label}
+                      />
+                      <FontAwesomeIcon
+                        icon={faTrash}
+                        onClick={() => removeInputField(index)}
+                        className="faTrashIcon absolute right-3 top-1/2 mt-3 transform -translate-y-1/2 text-red-500 cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between w-full flex-wrap">
+                  <button
+                    className="addInputField mt-3 px-4 py-2 bg-yellow-500 text-white rounded-md transition duration-200"
+                    onClick={addInputField}
+                  >
+                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                    Ajouter un champ
+                  </button>
+                  {inputFields.length !== 0 && (
+                    <button
+                      className="addInputField mt-3 px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200"
+                      onClick={addInputField}
+                    >
+                      Enregistrer les nouveaux données
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {showAddFieldModal && (
+              <div
+                className="modalInput"
+                onClick={() => setShowAddFieldModal(false)}
+              >
+                <div
+                  className="modal-content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2 className="modal-title text-left font-bold">
+                    Ajouter un champ :
+                  </h2>
+                  <div className="modal-body">
+                    <div className=" text-left flex items-end flex-wrap   mt-5 inputGroup">
+                      <label className="input text-black mr-5">
+                        Type d'input :
+                      </label>
+                      <select
+                        value={newFieldType}
+                        onChange={(e) => setNewFieldType(e.target.value)}
+                        className="input pl-3 w-52 pr-3 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                      >
+                        <option value="text">📝 Texte</option>
+                        <option value="number">🔢 Nombre</option>
+                        <option value="date">📅 Date</option>
+                        <option value="email">@ Email</option>
+                        <option value="url">🔗 URL</option>
+                        <option value="tel">📞 Téléphone</option>
+                        <option value="password">🔒 Mot de passe</option>
+                        <option value="search">🔍 Recherche</option>
+                        <option value="color">🎨 Couleur</option>
+                        <option value="file">📁 Fichier</option>
+                        <option value="textarea">📝 Zone de texte</option>
+                      </select>
+                    </div>
+                    <div className="text-left flex items-end flex-wrap inputGroup mt-3">
+                      <label className="input text-black  mr-5">Label :</label>
+                      <input
+                        type="text"
+                        value={newFieldLabel}
+                        onChange={(e) => setNewFieldLabel(e.target.value)}
+                        className="input pl-3 w-72 pr-3 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                        placeholder="Nom du champ"
+                      />
+                    </div>
+                  </div>
+                  <div className="modal-footer mt-5">
+                    <button
+                      onClick={handleAddField}
+                      className="mr-2 bg-blue-500 text-white px-4 py-2 rounded-sm"
+                    >
+                      Ajouter
+                    </button>
+                    <button
+                      onClick={() => setShowAddFieldModal(false)}
+                      className=" bg-yellow-500 text-white px-4 py-2 rounded-sm"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={styles.form}>
+              <h1 className="font-bold">Commenter ici :</h1>
+              <div className={styles.formInputs}>
+                <div className="sm:col-span-3 mt-2 mr-5 w-full">
+                  <div className="mt-1 ">
+                    <textarea
+                      className="min-h-[80px] pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                      placeholder="Écrivez ici..."
+                      value={coms}
+                      onChange={(e) => setComs(e.target.value)}
+                    />
+                    <div className={styles.iconContainer}>
+                      <Tippy content="Joindre un fichier">
+                        <FontAwesomeIcon
+                          icon={faPaperclip}
+                          onClick={handleFileInputClick}
+                          className="relative bottom-6 text-gray-500 cursor-pointer focus:outline-none"
                         />
-                        <div className={styles.iconContainer}>
-                          <Tippy content="Télécharger un fichier">
-                            <FontAwesomeIcon
-                              icon={faPaperclip}
-                              className="relative bottom-6 text-gray-500 cursor-pointer focus:outline-none"
-                            />
-                          </Tippy>
-                          <Tippy content="Envoyer le message">
-                            <FontAwesomeIcon
-                              icon={faPaperPlane}
-                              className="relative bottom-6 text-gray-500 cursor-pointer focus:outline-none"
-                            />
-                          </Tippy>
-                        </div>
-                      </div>
+                      </Tippy>
+                      <Tippy content="Envoyer le message">
+                        <FontAwesomeIcon
+                          icon={faPaperPlane}
+                          onClick={envoyerComs}
+                          className="relative bottom-6 text-gray-500 cursor-pointer focus:outline-none"
+                        />
+                      </Tippy>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: "none" }}
+                        onChange={handleFileUpload}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="w-full p-2 mt-2 bg-white  rounded-sm border">
-                <h1 className="text-xl font-bold mb-4">Commentaires</h1>
-                <ul className={styles.coms}>
-                  {comments.map((comment) => (
-                    <li
-                      key={comment.id}
-                      className="flex justify-between items-center border-b py-3 pr-2"
-                    >
-                      <div>
-                        <p className="text-gray-700">{comment.text}</p>
-                        <span className="text-sm text-gray-500">
-                          - {comment.author}
-                        </span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Tippy content="Modifier">
-                          <button
-                            onClick={() => handleEdit(comment.id)}
-                            className="text-blue-500"
-                          >
-                            <FontAwesomeIcon icon={faEdit} />
-                          </button>
-                        </Tippy>
-                        <Tippy content="Supprimer">
-                          <button
-                            onClick={() => handleDelete(comment.id)}
-                            className="text-red-500"
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                        </Tippy>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
-            <div className="buttonList w-[25%]">
-              <div className={styles.fullScreen}>
-                <button className="w-full  text-white py-2 bg-blue-500">
-                  {" "}
-                  <FontAwesomeIcon icon={faEdit} className=" mr-2" />
-                  Ajouter des membres
-                </button>
-                <button className="w-full  text-white py-2 bg-blue-500">
-                  <FontAwesomeIcon icon={faPlus} className=" mr-2" /> Ajouter
-                  une tâche
-                </button>
-                <button
-                  onClick={deleteProject}
-                  className="w-full  text-white py-2 bg-red-500"
-                >
-                  <FontAwesomeIcon icon={faTrash} className=" mr-2" />
-                  Supprimer ce projet
-                </button>
-              </div>
-              <div className={styles.smallScreen}>
-                <Tippy content=" Ajouter des membres">
-                  <FontAwesomeIcon icon={faEdit} className=" mr-2" />
-                </Tippy>
-                <Tippy
-                  content="Ajouter une
-                tâche"
-                >
-                  <FontAwesomeIcon icon={faPlus} className=" mr-2" />
-                </Tippy>
-                <Tippy content="Supprimer ce projet">
-                  <FontAwesomeIcon
-                    icon={faTrash}
-                    onClick={deleteProject}
-                    className=" text-red-500 mr-2"
-                  />
-                </Tippy>
-              </div>
+
+            <div className="w-full p-2 mt-2 bg-white  rounded-sm border">
+              <h1 className="text-xl font-bold mb-4">Commentaires</h1>
+              <ul className={styles.coms}>
+                {comments.map((comment) => (
+                  <li
+                    key={comment.id}
+                    className="flex justify-between items-center border-b py-3 pr-2"
+                  >
+                    <div>
+                      <p className="text-gray-700">{comment.text}</p>
+                      <span className="text-sm text-gray-500">
+                        - {comment.author}
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Tippy content="Modifier">
+                        <button
+                          onClick={() => handleEdit(comment.id)}
+                          className="text-blue-500"
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                      </Tippy>
+                      <Tippy content="Supprimer">
+                        <button
+                          onClick={() => handleDelete(comment.id)}
+                          className="text-red-500"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      </Tippy>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

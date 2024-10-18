@@ -33,20 +33,19 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 2px solid rgba(128, 128, 128, 0.185);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 .BodyProject:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  cursor: pointer; 
-  transform:  scaleY(1.02);
+  cursor: pointer;
+  transform: scaleY(1.02);
 }
 
-.here  {
+.here {
   z-index: 10;
   background-color: red;
 }
-
-
 
 li {
   list-style: none;
@@ -131,5 +130,3 @@ li {
   font-weight: bold;
   border-bottom: 2px solid rgba(128, 128, 128, 0.185);
 }
-
-

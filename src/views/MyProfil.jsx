@@ -121,11 +121,15 @@ export default function MyProfil() {
         nom: nomSociete,
       };
       axios
-        .put(`${url}/api/entreprises/${user.gest_com_entreprise_id}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        .put(
+          `${url}/api/entreprises/${user.gest_com_entreprise_id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((response) => {
           localStorage.setItem(
             "entity",
@@ -165,7 +169,6 @@ export default function MyProfil() {
           },
         })
         .then((response) => {
-          
           localStorage.setItem(
             "user",
             JSON.stringify(response.data.administrateur)
@@ -192,7 +195,7 @@ export default function MyProfil() {
 
   return (
     <>
-      <div className="setInfosPerso mt-10">
+      <div className="setInfosPerso pb-5 mt-10">
         <h1 className="titreInfos">
           <FontAwesomeIcon icon={faGears} className="mr-2 w-6 h-6" />
           Ajouter ou modifier vos informations personnelles
@@ -291,98 +294,100 @@ export default function MyProfil() {
             </div>
           </div>
         </div>
-        <h1 className="titreInfos mt-10">
-          <FontAwesomeIcon icon={faGears} className="mr-2 w-6 h-6" />
-          Modifier votre mot de passe
-        </h1>
+        <div className="mt-10 pb-1">
+          <h1 className="titreInfos">
+            <FontAwesomeIcon icon={faGears} className="mr-2 w-6 h-6" />
+            Modifier votre mot de passe
+          </h1>
 
-        <div className="informationsForm mt-5">
-          <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block text-sm font-bold leading-6 text-gray-900">
-              Mot de passe actuel
-            </label>
-            <div className="mt-2 relative">
-              <input
-                type="text"
-                value={passwordNow}
-                onChange={(e) => setPasswordNow(e.target.value)}
-                className="pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-              />
-            </div>
-          </div>
-          <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block text-sm font-bold leading-6 text-gray-900">
-              Nouveau mot de passe
-            </label>
-            <div className="mt-2 relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (e.target.value !== passwordVerify) {
-                    if (passwordVerify === "") {
-                      setShowMessageMdpError(false);
-                    } else {
-                      setShowMessageMdpError(true);
-                    }
-                  } else {
-                    setShowMessageMdpError(false);
-                  }
-                }}
-                className="pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-              />
-              <span
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-black"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-              </span>
-            </div>
-          </div>
-          <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block text-sm font-bold leading-6 text-gray-900">
-              Confirmer le mot de passe
-            </label>
-            <div className="mt-2 relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                value={passwordVerify}
-                onChange={(e) => {
-                  setPasswordVerify(e.target.value);
-                  if (e.target.value !== password) {
-                    setShowMessageMdpError(true);
-                  } else {
-                    setShowMessageMdpError(false);
-                  }
-                }}
-                className="pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-              />
-              <span
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-black"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <FontAwesomeIcon
-                  icon={showConfirmPassword ? faEyeSlash : faEye}
+          <div className="informationsForm mt-5">
+            <div className="sm:col-span-3 w-60 mr-5">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
+                Mot de passe actuel
+              </label>
+              <div className="mt-2 relative">
+                <input
+                  type="text"
+                  value={passwordNow}
+                  onChange={(e) => setPasswordNow(e.target.value)}
+                  className="pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                 />
-              </span>
+              </div>
             </div>
-            {showMessageMdpError && (
-              <p className="errEmail">Vérifier votre mot de passe</p>
-            )}
-          </div>
-          <div className="sm:col-span-3 w-44 mr-5">
-            <label className=" text-sm font-medium leading-6 text-gray-900">
-              &nbsp;
-            </label>
-            <div className="mt-2 ">
-              <button
-                onClick={putMdp}
-                disabled={showMessageMdpError}
-                className="btnInviter"
-              >
-                Modifier
-              </button>
+            <div className="sm:col-span-3 w-60 mr-5">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
+                Nouveau mot de passe
+              </label>
+              <div className="mt-2 relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (e.target.value !== passwordVerify) {
+                      if (passwordVerify === "") {
+                        setShowMessageMdpError(false);
+                      } else {
+                        setShowMessageMdpError(true);
+                      }
+                    } else {
+                      setShowMessageMdpError(false);
+                    }
+                  }}
+                  className="pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                />
+                <span
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-black"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                </span>
+              </div>
+            </div>
+            <div className="sm:col-span-3 w-60 mr-5">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
+                Confirmer le mot de passe
+              </label>
+              <div className="mt-2 relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordVerify}
+                  onChange={(e) => {
+                    setPasswordVerify(e.target.value);
+                    if (e.target.value !== password) {
+                      setShowMessageMdpError(true);
+                    } else {
+                      setShowMessageMdpError(false);
+                    }
+                  }}
+                  className="pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                />
+                <span
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-black"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <FontAwesomeIcon
+                    icon={showConfirmPassword ? faEyeSlash : faEye}
+                  />
+                </span>
+              </div>
+              {showMessageMdpError && (
+                <p className="errEmail">Vérifier votre mot de passe</p>
+              )}
+            </div>
+            <div className="sm:col-span-3 w-44 mr-5">
+              <label className=" text-sm font-medium leading-6 text-gray-900">
+                &nbsp;
+              </label>
+              <div className="mt-2 ">
+                <button
+                  onClick={putMdp}
+                  disabled={showMessageMdpError}
+                  className="btnInviter"
+                >
+                  Modifier
+                </button>
+              </div>
             </div>
           </div>
         </div>

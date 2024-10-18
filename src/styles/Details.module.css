@@ -18,11 +18,13 @@
   width: 50%;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   padding-bottom: 20px;
+  max-height: 90vh;
+  overflow-y: scroll;
 }
 
 @media screen and (max-width: 768px) {
   .modalContent {
-    width: 300px;
+    width: 95%;
     font-size: 12px;
   }
   .fullScreen {
@@ -37,7 +39,7 @@
 
 @media screen and (max-width: 1024px) {
   .modalContent {
-    width: 80%;
+    width: 95%;
     font-size: 12px;
   }
 }

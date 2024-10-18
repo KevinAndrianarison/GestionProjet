@@ -12,7 +12,6 @@ export const TaskContext = createContext({
   dateFin: "",
   description: "",
   responsable: {},
-
 });
 export function TaskContextProvider({ children }) {
   const [ListTask, setListTask] = useState([]);
@@ -23,13 +22,30 @@ export function TaskContextProvider({ children }) {
   const [description, setDescription] = useState("");
   const [responsable, setResponsable] = useState({});
 
-
-  const { idProject } = useContext(ProjectContext);
+  const { idProject, setIdProject } = useContext(ProjectContext);
 
   const { url } = useContext(UrlContext);
   const { setShowSetTask } = useContext(ShowContext);
 
-  function getAllTask(id) {
+  function getAllTask() {
+    setListTask([]);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/${idProject}/taches`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListTask(response.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
+  function getAllTaskFirst(id) {
     setListTask([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -41,7 +57,6 @@ export function TaskContextProvider({ children }) {
       })
       .then((response) => {
         setListTask(response.data);
-        
       })
       .catch((err) => {
         console.error(err);
@@ -63,8 +78,7 @@ export function TaskContextProvider({ children }) {
         setDateDebut(response.data.date_debut);
         setDateFin(response.data.date_fin);
         setDescription(response.data.description);
-        setResponsable(response.data.assignable)
-        
+        setResponsable(response.data.utilisateur);
         setShowSetTask(true);
       })
       .catch((err) => {
@@ -91,6 +105,7 @@ export function TaskContextProvider({ children }) {
         setDateDebut,
         setDateFin,
         setDescription,
+        getAllTaskFirst
       }}
     >
       {children}

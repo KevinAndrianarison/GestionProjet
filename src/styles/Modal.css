@@ -4,10 +4,13 @@
   z-index: 40;
   width: 100%;
   height: 100%;
-  display: block;
   background: rgba(43, 38, 38, 0.53);
   backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 
 .showModalTask {
   position: fixed;
@@ -15,17 +18,17 @@
   z-index: 20;
   width: 100%;
   height: 100%;
-  display: block;
   background: rgba(43, 38, 38, 0.53);
   backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .formModal {
   width: 370px;
-  margin: 50px auto;
   background: rgb(255, 255, 255);
   padding: 35px;
-  margin-top: 15%;
   border-radius: 10px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   z-index: 12;
@@ -33,13 +36,14 @@
 
 .formModalCreatePost {
   width: 600px;
-  margin: 50px auto;
   background: var(--color-background-main);
   padding: 35px;
-  margin-top: 10%;
   border-radius: 10px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   z-index: 12;
+  max-height: 90vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .modal {
@@ -153,7 +157,7 @@
 .sections {
   display: flex;
   flex-wrap: wrap;
-  max-height: 200px;
+  max-height: 100px;
   overflow-y: scroll;
 }
 
@@ -221,6 +225,7 @@
   display: none;
 }
 
-.tox .tox-statusbar__path-item, .tox:not([dir=rtl]) .tox-statusbar__path>* {
+.tox .tox-statusbar__path-item,
+.tox:not([dir="rtl"]) .tox-statusbar__path > * {
   visibility: hidden;
 }

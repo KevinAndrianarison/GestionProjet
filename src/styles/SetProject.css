@@ -7,8 +7,8 @@
   background: rgba(43, 38, 38, 0.53);
   backdrop-filter: blur(2px);
   display: flex;
-  flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 .ListMembres {
   background: var(--color-background-main);
@@ -30,6 +30,10 @@
   padding: 35px;
   z-index: 12;
   border: 2px rgba(128, 128, 128, 0.233) solid;
+  max-height: 90vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
 }
 
 .titreListemembres {

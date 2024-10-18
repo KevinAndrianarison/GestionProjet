@@ -2,7 +2,7 @@ import "./App.css";
 import { LoginPage } from "./LoginPage";
 import Overlay from "./component/Overlay";
 import { ShowContext } from "./contexte/useShow";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import MainPage from "./views/MainPage";
 import AlertComponent from "./component/AlertComponent";
 import ConfirmCode from "./component/ConfirmCode";
@@ -48,6 +48,7 @@ function App() {
   } = useContext(ShowContext);
   const { getAllUser } = useContext(UserContext);
   const navigate = useNavigate();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
     const tokenString = localStorage.getItem("token");

@@ -9,7 +9,7 @@ import { ProjectContext } from "../contexte/useProject";
 export default function AllprojectPage() {
   const [activeDropdown, setActiveDropdown] = useState("");
 
-  const { showAdmin, showUser } = useContext(ShowContext);
+  const { showAdmin, showUser, setShowSpinner } = useContext(ShowContext);
   const {
     getAllproject,
     setIdProject,
@@ -19,32 +19,25 @@ export default function AllprojectPage() {
     getProjectWhenMembres,
     ListeProjectWhenMembres,
     setListChefAndMembres,
-    setOneProject,
     categorie,
     setCategorie,
     getOneProjet,
   } = useContext(ProjectContext);
 
-  const { getAllTask } = useContext(TaskContext);
-
-  const toggleDropdown = (index) => {
-    setActiveDropdown(activeDropdown === index ? null : index);
-  };
-
-  function showTaskModal(list, id) {
-    setIdProject(id);
-    getAllTask(id);
-    setListChefAndMembres(list);
-  }
+  const { getAllTaskFirst } = useContext(TaskContext);
 
   useEffect(() => {
     if (categorie === "Tous les projets") {
+      setShowSpinner(true);
       getAllproject();
     }
     if (categorie === "Mes projets") {
+      setShowSpinner(true);
+
       getProjectWhenChef();
     }
     if (categorie === "Les projets dont je fait partie") {
+      setShowSpinner(true);
       getProjectWhenMembres();
     }
   }, [categorie]);
@@ -52,10 +45,12 @@ export default function AllprojectPage() {
   useEffect(() => {
     if (showAdmin) {
       setCategorie("Tous les projets");
+      setShowSpinner(true);
       getAllproject();
     }
     if (showUser) {
       setCategorie("Mes projets");
+      setShowSpinner(true);
       getProjectWhenChef();
     }
   }, []);
@@ -66,7 +61,7 @@ export default function AllprojectPage() {
 
   return (
     <>
-      <div className="myprojectPage" onClick={closeDropdown}>
+      <div className="myprojectPage pb-5" onClick={closeDropdown}>
         <div>
           <h1 className="titreMyproject mr-5">
             <FontAwesomeIcon icon={faAnglesRight} className="w-8 h-5" />
@@ -95,7 +90,7 @@ export default function AllprojectPage() {
             </select>
           </div>
         </div>
-        <div className="contentMyproject mt-4">
+        <div className="contentMyproject   mt-2">
           <div className="headMyProject">
             <li className="pl-5 Titres">Titre</li>
             <li className="Priorite mr-3">Description</li>
@@ -107,7 +102,9 @@ export default function AllprojectPage() {
                   key={list.id}
                   className="BodyProject "
                   onClick={() => {
-                    showTaskModal([...list.chefs, ...list.membres], list.id);
+                    setListChefAndMembres([...list.chefs, ...list.membres]);
+                    setIdProject(list.id);
+                    getAllTaskFirst(list.id);
                     getOneProjet(list.id);
                   }}
                 >
@@ -129,7 +126,9 @@ export default function AllprojectPage() {
                   key={list.id}
                   className="BodyProject"
                   onClick={() => {
-                    showTaskModal([...list.chefs, ...list.membres], list.id);
+                    setListChefAndMembres([...list.chefs, ...list.membres]);
+                    setIdProject(list.id);
+                    getAllTaskFirst(list.id);
                     getOneProjet(list.id);
                   }}
                 >
@@ -150,7 +149,9 @@ export default function AllprojectPage() {
                   key={list.id}
                   className="BodyProject"
                   onClick={() => {
-                    showTaskModal([...list.chefs, ...list.membres], list.id);
+                    setListChefAndMembres([...list.chefs, ...list.membres]);
+                    setIdProject(list.id);
+                    getAllTaskFirst(list.id);
                     getOneProjet(list.id);
                   }}
                 >

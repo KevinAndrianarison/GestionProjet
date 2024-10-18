@@ -13,8 +13,7 @@ export default function RetierMembres() {
   const { url } = useContext(UrlContext);
   const { iduser, Nomuser } = useContext(UserContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { idProjet, getOneProjet, getAllproject, getProjectWhenMembres } =
-    useContext(ProjectContext);
+  const { idProjet, getOneProjet } = useContext(ProjectContext);
 
   function closeRetireruser() {
     setShowRetirer(false);
@@ -46,8 +45,6 @@ export default function RetierMembres() {
         setTimeout(() => {
           setMessageSucces("");
         }, 5000);
-        getProjectWhenMembres();
-        getAllproject();
       })
       .catch((err) => {
         console.error(err);
@@ -57,8 +54,8 @@ export default function RetierMembres() {
 
   return (
     <>
-      <div className="showModal">
-        <div className="formModal">
+      <div className="showModal" onClick={() => setShowRetirer(false)}>
+        <div className="formModal" onClick={(e) => e.stopPropagation()}>
           <h6 className="modal">
             Voulez-vous vraiment retirer "<b>{Nomuser}</b>" de ce projet ?
           </h6>

@@ -98,7 +98,7 @@ export default function GestionUserPage() {
   }
 
   return (
-    <div className="formulaireAddUsers" onClick={closeDropdown}>
+    <div className="formulaireAddUsers pb-5" onClick={closeDropdown}>
       <h1 className="titreFormddUser">Inviter une personne :</h1>
       <div className="formContent flex mt-5">
         <div className="sm:col-span-3 w-60 mr-5">
@@ -234,45 +234,48 @@ export default function GestionUserPage() {
               <li className="deleteList"></li>
             </div>
             <div className="bodyValue">
-              {ListeUser.map((list, index) => (
-                <div key={list.id} className="BodyList">
-                  <li className="nomList">{list.nom}</li>
-                  <li className="adresseList">{list.email}</li>
-                  <li className="posteList">{list.poste}</li>
-                  <li className="deleteList  more relative">
-                    <Tippy content="Options">
-                      <FontAwesomeIcon
-                        icon={faEllipsis}
-                        className="w-5 h-5  cursor-pointer focus:outline-none"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleDropdown(index);
-                        }}
-                      />
-                    </Tippy>
-                    {activeDropdown === index && (
-                      <ul className="border dropdown-menu absolute z-10 right-0 py-1 w-32 bg-white shadow-lg rounded-md">
-                        {/* <li className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200">
+              {ListeUser.map(
+                (list, index) =>
+                  list.role === "employe" && (
+                    <div key={list.id} className="BodyList">
+                      <li className="nomList">{list.nom}</li>
+                      <li className="adresseList">{list.email}</li>
+                      <li className="posteList">{list.poste}</li>
+                      <li className="deleteList  more relative">
+                        <Tippy content="Options">
+                          <FontAwesomeIcon
+                            icon={faEllipsis}
+                            className="w-5 h-5  cursor-pointer focus:outline-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleDropdown(index);
+                            }}
+                          />
+                        </Tippy>
+                        {activeDropdown === index && (
+                          <ul className="border dropdown-menu absolute z-10 right-0 py-1 w-32 bg-white shadow-lg rounded-md">
+                            {/* <li className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200">
                           <FontAwesomeIcon icon={faBan} className=" text-yellow-500 mr-2" />
                           Bloquer
                         </li> */}
-                        <li
-                          onClick={() => {
-                            deleteuser(list.id);
-                          }}
-                          className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
-                        >
-                          <FontAwesomeIcon
-                            icon={faTrash}
-                            className="red-icon mr-2"
-                          />
-                          Supprimer
-                        </li>
-                      </ul>
-                    )}
-                  </li>
-                </div>
-              ))}
+                            <li
+                              onClick={() => {
+                                deleteuser(list.id);
+                              }}
+                              className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                            >
+                              <FontAwesomeIcon
+                                icon={faTrash}
+                                className="red-icon mr-2"
+                              />
+                              Supprimer
+                            </li>
+                          </ul>
+                        )}
+                      </li>
+                    </div>
+                  )
+              )}
             </div>
           </div>
         )}
