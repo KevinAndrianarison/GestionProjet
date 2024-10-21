@@ -10,6 +10,8 @@ import {
   faPaperclip,
   faPaperPlane,
   faXmark,
+  faFile,
+  faCloudArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Details.module.css";
 import { ShowContext } from "../contexte/useShow";
@@ -22,6 +24,7 @@ import { MessageContext } from "../contexte/useMessage";
 import axios from "axios";
 import { UrlContext } from "../contexte/useUrl";
 import { UserContext } from "../contexte/useUser";
+import { ComsContext } from "../contexte/useComs";
 
 export default function DetailsProject() {
   const {
@@ -56,6 +59,7 @@ export default function DetailsProject() {
 
   const [showListemembre, setShowListemembre] = useState(false);
   const [coms, setComs] = useState("");
+  const [nomFileUploaded, setNomFileUploaded] = useState("");
   const [file, setFile] = useState(null);
   const [newFieldType, setNewFieldType] = useState("text");
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
@@ -65,7 +69,11 @@ export default function DetailsProject() {
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { url } = useContext(UrlContext);
   const { setIduser, setNomuser } = useContext(UserContext);
+  const { getAllComs, listeCommentaire } = useContext(ComsContext);
   const fileInputRef = useRef(null);
+
+  const userString = localStorage.getItem("user");
+  let user = JSON.parse(userString);
 
   function onClose() {
     setShowDetails(false);
@@ -94,19 +102,36 @@ export default function DetailsProject() {
 
   function handleFileUpload(event) {
     const file = event.target.files[0];
+    setNomFileUploaded(file.name);
     setFile(file);
   }
 
-  const [comments, setComments] = useState([
-    { id: 1, text: "This is the first comment", author: "John Doe" },
-    { id: 2, text: "This is another comment", author: "Jane Smith" },
-    { id: 3, text: "Yet another comment", author: "Alice Johnson" },
-  ]);
+  function removeFile() {
+    setFile("");
+    setNomFileUploaded("");
+  }
+
   const handleEdit = (id) => {};
 
-  const handleDelete = (id) => {
-    setComments(comments.filter((comment) => comment.id !== id));
-  };
+  function handleDelete(id) {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .delete(`${url}/api/commentaires/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        getAllComs(idProjet);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
 
   function retirerMembres(id, nom) {
     setIduser(id);
@@ -146,13 +171,37 @@ export default function DetailsProject() {
   }
 
   function envoyerComs() {
+    const userString = localStorage.getItem("user");
+    let user = JSON.parse(userString);
     const formData = new FormData();
     formData.append("file", file || "");
-    formData.append("coms", coms || "");
+    formData.append("contenu", coms || "");
+    formData.append("gest_proj_projet_id", idProjet || "");
+    formData.append("gest_com_utilisateur_id", user.id || "");
 
-    formData.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .post(`${url}/api/commentaires`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setNomFileUploaded("");
+        setComs("");
+        getAllComs(idProjet);
+        setMessageSucces(response.data.message);
+        setShowSpinner(false);
+        setTimeout(() => {
+          setMessageSucces("");
+        }, 5000);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
   }
 
   function modifierProjet() {
@@ -574,6 +623,26 @@ export default function DetailsProject() {
                       onChange={(e) => setComs(e.target.value)}
                     />
                     <div className={styles.iconContainer}>
+                      <div className="relative bottom-7 bg-white flex items-center">
+                        {nomFileUploaded && (
+                          <>
+                            {" "}
+                            <FontAwesomeIcon
+                              icon={faFile}
+                              className="bg-yellow-500 text-white rounded p-1 mr-2"
+                            />
+                            <p className={styles.fileuploadLabel}>
+                              {nomFileUploaded}
+                              <FontAwesomeIcon
+                                onClick={removeFile}
+                                icon={faXmark}
+                                className="ml-1 cursor-pointer"
+                              />
+                            </p>
+                          </>
+                        )}
+                      </div>
+
                       <Tippy content="Joindre un fichier">
                         <FontAwesomeIcon
                           icon={faPaperclip}
@@ -585,7 +654,7 @@ export default function DetailsProject() {
                         <FontAwesomeIcon
                           icon={faPaperPlane}
                           onClick={envoyerComs}
-                          className="relative bottom-6 text-gray-500 cursor-pointer focus:outline-none"
+                          className="relative bottom-6 text-gray-500 mr-2 cursor-pointer focus:outline-none"
                         />
                       </Tippy>
                       <input
@@ -599,43 +668,57 @@ export default function DetailsProject() {
                 </div>
               </div>
             </div>
-
-            <div className="w-full p-2 mt-2 bg-white  rounded-sm border">
-              <h1 className="text-xl font-bold mb-4">Commentaires</h1>
-              <ul className={styles.coms}>
-                {comments.map((comment) => (
-                  <li
-                    key={comment.id}
-                    className="flex justify-between items-center border-b py-3 pr-2"
-                  >
-                    <div>
-                      <p className="text-gray-700">{comment.text}</p>
-                      <span className="text-sm text-gray-500">
-                        - {comment.author}
-                      </span>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Tippy content="Modifier">
-                        <button
-                          onClick={() => handleEdit(comment.id)}
-                          className="text-blue-500"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                      </Tippy>
-                      <Tippy content="Supprimer">
-                        <button
-                          onClick={() => handleDelete(comment.id)}
-                          className="text-red-500"
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
-                      </Tippy>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {listeCommentaire.length !== 0 && (
+              <div className="w-full pt-2 px-2 mt-2 bg-white  rounded-sm border">
+                <h1 className="text-xl font-bold mb-2">Commentaires</h1>
+                <ul className={styles.coms}>
+                  {listeCommentaire.map((comment) => (
+                    <li
+                      key={comment.id}
+                      className="flex justify-between flex-wrap items-center border-b py-3 pr-2"
+                    >
+                      <div>
+                        <p className="text-gray-700 whitespace-pre-line">
+                          {comment.contenu}
+                        </p>
+                        <span className="text-sm text-gray-500 flex flex-wrap">
+                          <p className="mr-2">- {comment.utilisateur.nom}</p>
+                          {comment.file && (
+                            <a
+                              className={styles.lien}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              href={`${url}/storage/${comment.file}`}
+                            >
+                              {" "}
+                              <p className={styles.fileuploadLabel}>
+                                {comment.file.split("/").pop()}
+                              </p>
+                              <FontAwesomeIcon
+                                icon={faCloudArrowDown}
+                                className=" p-1 "
+                              />
+                            </a>
+                          )}
+                        </span>
+                      </div>
+                      {comment.utilisateur.id === user.id && (
+                        <div className="flex space-x-2">
+                          <Tippy content="Supprimer">
+                            <button
+                              onClick={() => handleDelete(comment.id)}
+                              className="text-red-500"
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                          </Tippy>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ShowContext } from "../contexte/useShow";
 import { useContext, useEffect, useState } from "react";
 import { TaskContext } from "../contexte/useTask";
+import { ComsContext } from "../contexte/useComs";
 import { faAnglesRight, faSort } from "@fortawesome/free-solid-svg-icons";
 import { ProjectContext } from "../contexte/useProject";
 
@@ -25,6 +26,7 @@ export default function AllprojectPage() {
   } = useContext(ProjectContext);
 
   const { getAllTaskFirst } = useContext(TaskContext);
+  const { getAllComs } = useContext(ComsContext);
 
   useEffect(() => {
     if (categorie === "Tous les projets") {
@@ -104,8 +106,9 @@ export default function AllprojectPage() {
                   onClick={() => {
                     setListChefAndMembres([...list.chefs, ...list.membres]);
                     setIdProject(list.id);
-                    getAllTaskFirst(list.id);
                     getOneProjet(list.id);
+                    getAllTaskFirst(list.id);
+                    getAllComs(list.id);
                   }}
                 >
                   <li className="pl-5 Titres">{list.titre}</li>
@@ -128,8 +131,9 @@ export default function AllprojectPage() {
                   onClick={() => {
                     setListChefAndMembres([...list.chefs, ...list.membres]);
                     setIdProject(list.id);
-                    getAllTaskFirst(list.id);
                     getOneProjet(list.id);
+                    getAllTaskFirst(list.id);
+                    getAllComs(list.id);
                   }}
                 >
                   <li className="pl-5 Titres">{list.titre}</li>
@@ -151,8 +155,9 @@ export default function AllprojectPage() {
                   onClick={() => {
                     setListChefAndMembres([...list.chefs, ...list.membres]);
                     setIdProject(list.id);
-                    getAllTaskFirst(list.id);
                     getOneProjet(list.id);
+                    getAllTaskFirst(list.id);
+                    getAllComs(list.id);
                   }}
                 >
                   <li className="pl-5 Titres">{list.titre}</li>

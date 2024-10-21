@@ -54,12 +54,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setShowSpinner(false)
+        setShowSpinner(false);
         setListeProject(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false)
+        setShowSpinner(false);
       });
   }
   function getProjectWhenChef() {
@@ -77,12 +77,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setShowSpinner(false)
+        setShowSpinner(false);
         setListeProjectWhenChef(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false)
+        setShowSpinner(false);
       });
   }
 
@@ -101,30 +101,24 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setShowSpinner(false)
+        setShowSpinner(false);
         setListeProjectWhenMembres(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false)
-
+        setShowSpinner(false);
       });
   }
 
-  function getOneProjet(idProject) {
+  function getOneProjet(id) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
     axios
-      .get(
-        `${url}/api/entreprises/projets/${user.id}/projets-chefs/${idProject}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      .get(`${url}/api/entreprise/projets/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((response) => {
         setNomProjet(response.data.data.titre);
         setDateDebut(response.data.data.date_debut);

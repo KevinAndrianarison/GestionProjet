@@ -35,6 +35,11 @@
     display: flex !important;
     justify-content: end;
   }
+  .fileuploadLabel {
+    font-size: 8px !important;
+    display: flex;
+    align-items: center;
+  }
 }
 
 @media screen and (max-width: 1024px) {
@@ -47,7 +52,6 @@
 .smallScreen {
   display: none;
 }
-
 
 .left {
   width: 80%;
@@ -94,7 +98,21 @@
   margin-right: 10px;
 }
 
-.coms{
+.coms {
   max-height: 200px;
   overflow-y: scroll;
+}
+
+.fileuploadLabel {
+  font-size: 12px;
+}
+
+.lien{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  color: var(--color-secondary);
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
 }
