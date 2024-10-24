@@ -11,7 +11,6 @@
   justify-content: center;
 }
 
-
 .showModalTask {
   position: fixed;
   top: 0;
@@ -35,7 +34,7 @@
 }
 
 .formModalCreatePost {
-  width: 600px;
+  width: 60%;
   background: var(--color-background-main);
   padding: 35px;
   border-radius: 10px;
@@ -100,39 +99,13 @@
   cursor: pointer;
 }
 
-@media screen and (max-width: 500px) {
-  .formModal {
-    width: 300px;
-  }
-
-  .label {
-    font-size: 12px;
-  }
-  .addInputField {
-    font-size: 12px;
-    background-color: blue;
-  }
-  .input {
-    font-size: 12px;
-  }
-  .faTrashIcon {
-    width: 10px;
-  }
+.TitreCreateTask {
+  font-weight: bold;
+  font-size: 26px;
 }
-
-@media screen and (max-width: 650px) {
-  .formModalCreatePost {
-    width: 350px;
-  }
-  .faSquarePlus {
-    display: none;
-  }
-}
-
-.headCreateTask {
-  display: flex;
-  align-items: center;
-  border-bottom: 2px solid rgba(128, 128, 128, 0.418);
+.profil {
+  width: 5%;
+  height: 50px;
 }
 
 .icone,
@@ -157,8 +130,8 @@
 .sections {
   display: flex;
   flex-wrap: wrap;
-  max-height: 100px;
-  overflow-y: scroll;
+  max-height: 250px;
+  overflow-y: auto;
 }
 
 .label {
@@ -214,13 +187,6 @@
   max-height: 350px;
 }
 
-@media only screen and (min-width: 768px) {
-  .tox
-    .tox-statusbar__text-container.tox-statusbar__text-container-3-cols
-    > .tox-statusbar__help-text {
-    display: none;
-  }
-}
 .tox .tox-statusbar__wordcount {
   display: none;
 }
@@ -228,4 +194,58 @@
 .tox .tox-statusbar__path-item,
 .tox:not([dir="rtl"]) .tox-statusbar__path > * {
   visibility: hidden;
+}
+
+.tailleInputcreateTask{
+  width: 50%;
+}
+
+@media screen and (max-width: 768px) {
+  .profil {
+    width: 20%;
+  }
+  .TitreCreateTask {
+    font-size: 21px;
+  }
+  .tox
+    .tox-statusbar__text-container.tox-statusbar__text-container-3-cols
+    > .tox-statusbar__help-text {
+    display: none;
+  }
+  .tailleInputcreateTask{
+    width: 95%;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .formModalCreatePost {
+    width: 350px;
+  }
+  .faSquarePlus {
+    display: none;
+  }
+  .profil {
+    width: 20%;
+    height: 55px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .formModal {
+    width: 300px;
+  }
+
+  .label {
+    font-size: 12px;
+  }
+  .addInputField {
+    font-size: 12px;
+    background-color: blue;
+  }
+  .input {
+    font-size: 12px;
+  }
+  .faTrashIcon {
+    width: 10px;
+  }
 }

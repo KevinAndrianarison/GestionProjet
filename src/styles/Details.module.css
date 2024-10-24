@@ -15,38 +15,44 @@
   background-color: white;
   border-radius: 8px;
   padding: 20px;
-  width: 50%;
+  width: 95%;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   padding-bottom: 20px;
-  max-height: 90vh;
+  max-height: 95vh;
   overflow-y: scroll;
 }
-
-@media screen and (max-width: 768px) {
-  .modalContent {
-    width: 95%;
-    font-size: 12px;
-  }
-  .fullScreen {
-    display: none;
-    border: 5px black solid;
-  }
-  .smallScreen {
-    display: flex !important;
-    justify-content: end;
-  }
-  .fileuploadLabel {
-    font-size: 8px !important;
-    display: flex;
-    align-items: center;
-  }
+.comsContent {
+  width: 55%;
+  margin: 0 auto;
+  border: 1px solid rgba(128, 128, 128, 0.307);
+  padding: 10px;
+  border-radius: 5px;
+  display: none;
+}
+.form {
+  margin-top: 20px;
+  width: 55%;
+  margin: 0 auto;
+  display: none;
 }
 
-@media screen and (max-width: 1024px) {
-  .modalContent {
-    width: 95%;
-    font-size: 12px;
-  }
+.profil {
+  background-image: url("../images/User-PNG-Photos.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 5%;
+  height: 50px;
+}
+
+.contents {
+  width: 90%;
+  margin-left: 10px;
+  padding: 10px;
+  background-color: rgba(128, 128, 128, 0.137);
+  border-radius: 5px;
+}
+.fileuploadLabel {
+  font-size: 12px;
 }
 
 .smallScreen {
@@ -85,10 +91,8 @@
 .titreProjet {
   font-size: 26px;
   font-weight: bold;
-}
-
-.form {
-  margin-top: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .iconContainer {
@@ -99,15 +103,12 @@
 }
 
 .coms {
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
-.fileuploadLabel {
-  font-size: 12px;
-}
-
-.lien{
+.lien {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -115,4 +116,76 @@
   font-weight: bold;
   text-decoration: underline;
   cursor: pointer;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+.options {
+  width: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.designation {
+  width: 30vh;
+  margin-left: 10px;
+}
+
+.status {
+  width: 20vh;
+  margin-left: 10px;
+}
+
+.limite {
+  width: 30vh;
+  margin-left: 10px;
+}
+
+.par {
+  width: 30vh;
+  margin-left: 10px;
+}
+
+.responsable {
+  width: 30vh;
+  margin-left: 10px;
+}
+
+@media screen and (max-width: 1024px) {
+  .modalContent {
+    font-size: 12px;
+  }
+  .form,
+  .comsContent {
+    width: 60%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .modalContent {
+    font-size: 12px;
+  }
+  .fullScreen {
+    display: none;
+    border: 5px black solid;
+  }
+  .smallScreen {
+    display: flex;
+    justify-content: end;
+  }
+  .fileuploadLabel {
+    font-size: 8px;
+    display: flex;
+    align-items: center;
+  }
+  .contents {
+    width: 70%;
+  }
+  .profil {
+    width: 20%;
+  }
+  .form,
+  .comsContent {
+    width: 95%;
+  }
 }

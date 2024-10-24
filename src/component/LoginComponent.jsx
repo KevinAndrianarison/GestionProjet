@@ -99,6 +99,11 @@ export default function LoginComponent() {
             <input
               type={showPassword ? "text" : "password"}
               value={password}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  loginFunction();
+                }
+              }}
               onChange={(e) => {
                 setPassword(e.target.value);
               }}

@@ -10,9 +10,11 @@ import {
   faPaperclip,
   faPaperPlane,
   faXmark,
-  faFile,
   faCloudArrowDown,
+  faCaretDown,
+  faGear,
 } from "@fortawesome/free-solid-svg-icons";
+import { faFile } from "@fortawesome/free-regular-svg-icons";
 import styles from "../styles/Details.module.css";
 import { ShowContext } from "../contexte/useShow";
 import { useContext } from "react";
@@ -25,6 +27,10 @@ import axios from "axios";
 import { UrlContext } from "../contexte/useUrl";
 import { UserContext } from "../contexte/useUser";
 import { ComsContext } from "../contexte/useComs";
+import TableauKanban from "./TableauKanban";
+import SousProjet from "./SousProjet";
+import Calendrier from "./Calendrier";
+import Gantt from "./Gantt";
 
 export default function DetailsProject() {
   const {
@@ -54,13 +60,13 @@ export default function DetailsProject() {
     getOneProjet,
   } = useContext(ProjectContext);
 
-  const { ListTask, getAllTask, setIdTask, getOneTask } =
-    useContext(TaskContext);
+  const { ListTask, setIdTask, getOneTask } = useContext(TaskContext);
 
   const [showListemembre, setShowListemembre] = useState(false);
   const [coms, setComs] = useState("");
   const [nomFileUploaded, setNomFileUploaded] = useState("");
   const [file, setFile] = useState(null);
+  const [verifyIfChef, setVerifyIfChef] = useState(false);
   const [newFieldType, setNewFieldType] = useState("text");
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
   const [newFieldLabel, setNewFieldLabel] = useState("");
@@ -71,12 +77,76 @@ export default function DetailsProject() {
   const { setIduser, setNomuser } = useContext(UserContext);
   const { getAllComs, listeCommentaire } = useContext(ComsContext);
   const fileInputRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenParams, setIsOpenParams] = useState(false);
+  const [isTask, setIsTask] = useState(true);
+  const [isKanban, setIsKanban] = useState(false);
+  const [isSousProjet, setIsSousProjet] = useState(false);
+  const [isCalendrier, setIsCalendrier] = useState(false);
+  const [isGantt, setIsGantt] = useState(false);
 
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
 
+  function showTask() {
+    setIsGantt(false);
+    setIsCalendrier(false);
+    setIsSousProjet(false);
+    setIsKanban(false);
+    setIsTask(true);
+  }
+
+  function showKanban() {
+    setIsTask(false);
+    setIsGantt(false);
+    setIsCalendrier(false);
+    setIsSousProjet(false);
+    setIsKanban(true);
+  }
+
+  function showSousProjet() {
+    setIsKanban(false);
+    setIsTask(false);
+    setIsGantt(false);
+    setIsCalendrier(false);
+    setIsSousProjet(true);
+  }
+
+  function showCalendrier() {
+    setIsSousProjet(false);
+    setIsKanban(false);
+    setIsTask(false);
+    setIsGantt(false);
+    setIsCalendrier(true);
+  }
+  function showGantt() {
+    setIsCalendrier(false);
+    setIsSousProjet(false);
+    setIsKanban(false);
+    setIsTask(false);
+    setIsGantt(true);
+  }
+
+  useEffect(() => {
+    ListChefs.forEach((list) => {
+      if (user.id === list.id) {
+        setVerifyIfChef(true);
+      }
+    });
+  }, []);
+
   function onClose() {
     setShowDetails(false);
+  }
+
+  function handleToggle() {
+    setIsOpen(!isOpen);
+    setIsOpenParams(false);
+  }
+
+  function handleToggleParams() {
+    setIsOpenParams(!isOpenParams);
+    setIsOpen(false);
   }
 
   function deleteProject() {
@@ -92,7 +162,6 @@ export default function DetailsProject() {
       ...inputFields,
       { type: newFieldType, label: newFieldLabel },
     ]);
-    setShowAddFieldModal(false);
     setNewFieldLabel("");
   }
 
@@ -110,8 +179,6 @@ export default function DetailsProject() {
     setFile("");
     setNomFileUploaded("");
   }
-
-  const handleEdit = (id) => {};
 
   function handleDelete(id) {
     setShowSpinner(true);
@@ -152,6 +219,7 @@ export default function DetailsProject() {
   }
 
   function addInputField() {
+    setIsOpen(false);
     setShowAddFieldModal(true);
   }
 
@@ -161,7 +229,7 @@ export default function DetailsProject() {
   }
 
   function addtask() {
-    getAllTask();
+    setIsOpen(false);
     setShowTask(true);
   }
 
@@ -256,24 +324,32 @@ export default function DetailsProject() {
           className={styles.modalContent}
           onClick={(e) => {
             e.stopPropagation();
+            setIsOpen(false);
+            setIsOpenParams(false);
           }}
         >
           <button className={styles.closeButton} onClick={onClose}>
-            <FontAwesomeIcon icon={faTimes} />
+            <FontAwesomeIcon
+              icon={faTimes}
+              className="text-red-600 font-bold border-4 border-red-500 rounded-full px-1 py-0.5"
+            />
           </button>
+
           <h1 className={styles.titreProjet}>
+            <FontAwesomeIcon icon={faFile} className="mr-2" />
             <input
               type="text"
-              className="input pl-3 pr-3 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              className="input hidden pl-3 pr-3 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
               value={nomProjet}
               onChange={(e) => setNomProjet(e.target.value)}
-              disabled={categorie !== "Mes projets"}
+              disabled={categorie !== "Mes projets" && !verifyIfChef}
             />
+            <p className=" text-black">{nomProjet}</p>
           </h1>
-          <div className="detailsContent flex">
+          <div className="detailsContent mt-2 flex">
             <div className={styles.left}>
-              <div className="mt-2 flex flex-wrap  items-end">
-                <strong className="mr-2 underline">Membres : </strong>
+              <div className="mt-2 flex flex-wrap  items-end text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
+                <strong className="mr-2 ">Membres : </strong>
                 {ListChefs.length !== 0 && (
                   <ul className="flex flex-wrap">
                     {ListChefs.map((list) => (
@@ -284,7 +360,7 @@ export default function DetailsProject() {
                   </ul>
                 )}
                 {ListMembres.length !== 0 && (
-                  <ul className="flex">
+                  <ul className="flex flex-wrap">
                     {ListMembres.map((list) => (
                       <li key={list.id}>
                         @ {list.nom} <b>(membre),&nbsp;</b>
@@ -296,7 +372,7 @@ export default function DetailsProject() {
                   <FontAwesomeIcon
                     icon={faEllipsis}
                     onClick={() => setShowListemembre(!showListemembre)}
-                    className="w-5 h-5 cursor-pointer text-gray-400 focus:outline-none"
+                    className=" cursor-pointer text-gray-400 focus:outline-none"
                   />
                 </Tippy>
               </div>
@@ -313,7 +389,7 @@ export default function DetailsProject() {
                           <li>
                             - {list.nom} <b>(Chef de projet)</b>{" "}
                           </li>
-                          {categorie === "Mes projets" && (
+                          {(categorie === "Mes projets" || verifyIfChef) && (
                             <Tippy content="Retirer">
                               <FontAwesomeIcon
                                 onClick={() => retirerChefs(list.id, list.nom)}
@@ -336,7 +412,7 @@ export default function DetailsProject() {
                           <li>
                             - {list.nom} <b>(membre)</b>
                           </li>
-                          {categorie === "Mes projets" && (
+                          {(categorie === "Mes projets" || verifyIfChef) && (
                             <Tippy content="Retirer">
                               <FontAwesomeIcon
                                 onClick={() =>
@@ -354,15 +430,15 @@ export default function DetailsProject() {
                 </div>
               )}
 
-              <div className="mt-2 flex items-end flex-wrap">
+              <div className="mt-2 hidden flex items-end flex-wrap">
                 <strong className="mr-2">Début :</strong> <div>{dateDebut}</div>
               </div>
               {dateFin && (
-                <p className="mt-2 flex items-end flex-wrap">
+                <p className="mt-2 hidden flex items-end flex-wrap">
                   <strong className="mr-2">Date limite :</strong>
                   <input
                     type="date"
-                    disabled={categorie !== "Mes projets"}
+                    disabled={categorie !== "Mes projets" && !verifyIfChef}
                     className="input pl-3 pr-3 block rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                     value={dateFin}
                     onChange={(e) => setDateFin(e.target.value)}
@@ -373,83 +449,68 @@ export default function DetailsProject() {
               {ListTask.length !== 0 && (
                 <>
                   {" "}
-                  <h1 className="mt-2 font-bold">Tâches : </h1>
-                  {ListTask.map((list) => (
+                  <div className="flex flex-wrap mt-4">
+                    <h1 className="mt-2 font-bold mr-4">Tâches du groupe : </h1>
                     <div
-                      key={list.id}
-                      className=" py-2 flex border justify-between w-full titreTask"
+                      className="relative"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                     >
-                      <h1 className="text-black  input ml-4 w-[40%]">
-                        {list.titre}
-                      </h1>
-                      <h1 className="text-black  input w-[40%]">
-                        {" "}
-                        {list.utilisateur.nom}
-                      </h1>
-                      {categorie === "Mes projets" && (
-                        <h1 className="text-center w-[8%]">
-                          <Tippy content="Modifier">
-                            <FontAwesomeIcon
-                              icon={faSliders}
-                              onClick={() => setTask(list.id)}
-                              className=" cursor-pointer focus:outline-none"
-                            />
-                          </Tippy>
-                        </h1>
-                      )}
-                      {categorie === "Mes projets" && (
-                        <h1 className="text-center w-[8%]">
-                          <FontAwesomeIcon
-                            icon={faTrash}
-                            onClick={() => deleteTask(list.id)}
-                            className="text-red-500 cursor-pointer"
-                          />
-                        </h1>
+                      <button
+                        className="input w-48 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-800 border-0 py-1"
+                        onClick={handleToggle}
+                      >
+                        AJOUTER
+                        <FontAwesomeIcon
+                          icon={faCaretDown}
+                          className=" w-5 h-5 cursor-pointer focus:outline-none"
+                        />
+                      </button>
+                      {isOpen && (
+                        <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
+                          <li
+                            onClick={addInputField}
+                            className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                          >
+                            <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                            Ajouter un champ
+                          </li>
+                          <li
+                            onClick={addtask}
+                            className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                          >
+                            <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                            Ajouter une tâche
+                          </li>
+                        </ul>
                       )}
                     </div>
-                  ))}
+                  </div>
                 </>
               )}
             </div>
-            {categorie === "Mes projets" && (
-              <div className="buttonList w-[25%]">
+            {(categorie === "Mes projets" || verifyIfChef) && (
+              <div className="buttonList w-[15%]">
                 <div className={styles.fullScreen}>
                   <button
-                    className="w-full  text-white py-2 bg-blue-500"
+                    className="w-full font-bold rounded text-white py-2 bg-blue-700"
                     onClick={() => setProject()}
                   >
-                    <FontAwesomeIcon icon={faEdit} className=" mr-2 px-1" />
-                    Ajouter des membres
-                  </button>
-                  <button
-                    onClick={addtask}
-                    className="w-full  text-white py-2 bg-blue-500"
-                  >
-                    <FontAwesomeIcon icon={faPlus} className=" mr-2 px-1" />{" "}
-                    Ajouter une tâche
+                    INVITER MEMBRE
                   </button>
                   <button
                     onClick={deleteProject}
-                    className="w-full  text-white py-2 bg-red-500"
+                    className="w-full rounded text-white py-2 bg-red-500"
                   >
                     <FontAwesomeIcon icon={faTrash} className=" mr-2 px-1" />
                     Supprimer ce projet
                   </button>
                 </div>
                 <div className={styles.smallScreen}>
-                  <Tippy content=" Ajouter des membres">
+                  <Tippy content=" Inviter des membres">
                     <FontAwesomeIcon
                       onClick={() => setProject()}
-                      icon={faEdit}
-                      className=" mr-2"
-                    />
-                  </Tippy>
-                  <Tippy
-                    content="Ajouter une
-                tâche"
-                  >
-                    <FontAwesomeIcon
-                      onClick={addtask}
                       icon={faPlus}
                       className=" mr-2"
                     />
@@ -465,16 +526,156 @@ export default function DetailsProject() {
               </div>
             )}
           </div>
+
+          <div className="flex flex-wrap bg-blue-100 mt-2 py-2 text-gray-500 rounded px-5  text-xs sm:text-xs md:text-sm lg:text-sm xl:text-sm">
+            <li
+              className={
+                isTask
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showTask}
+            >
+              Tâches
+            </li>
+            <li
+              className={
+                isSousProjet
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showSousProjet}
+            >
+              Sous-projets
+            </li>
+            <li
+              className={
+                isKanban
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showKanban}
+            >
+              Tableaux Kanban
+            </li>
+            <li
+              className={
+                isCalendrier
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showCalendrier}
+            >
+              Calendrier
+            </li>
+            <li
+              className={
+                isGantt
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showGantt}
+            >
+              GANTT
+            </li>
+          </div>
+          {isTask && (
+            <div className="overflow-x-auto shadow-lg">
+              <div className="mt-1 flex  items-center min-w-max  border py-2 px-2">
+                <li className={styles.options}>
+                  <input type="checkbox" className="w-5 mr-2" />
+                  <div
+                    className="relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Tippy content="Paramètres visibles">
+                      <FontAwesomeIcon
+                        icon={faGear}
+                        onClick={handleToggleParams}
+                        className=" text-gray-500 cursor-pointer focus:outline-none w-5"
+                      />
+                    </Tippy>
+                    {isOpenParams && (
+                      <ul className="absolute w-60 z-10 bg-white border rounded-md mt-1">
+                        <li className="cursor-pointer flex p-2 bg-gray-400 border-2 border-gray-400 text-left pl-5">
+                          Paramètres visibles
+                        </li>
+                        <li className="cursor-pointer flex p-2 bg-gray-100  text-left pl-5">
+                          <input type="checkbox" className="mr-4" />
+                          <p>First</p>
+                        </li>
+                        <li className="cursor-pointer flex p-2 bg-gray-100  text-left pl-5">
+                          <input type="checkbox" className="mr-4" />
+                          <p>Second</p>
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </li>
+                <li className={styles.designation}>Désignation</li>
+                <li className={styles.status}>Status</li>
+                <li className={styles.limite}>Date limite</li>
+                <li className={styles.par}>Créé par</li>
+                <li className={styles.responsable}>Responsable</li>
+                <li className="ml-4 w-5"></li>
+                <li className="ml-4 w-5 "></li>
+              </div>
+              {ListTask.map((list) => (
+                <div
+                  key={list.id}
+                  className=" min-h-[25vh] max-h-[350px] border min-w-max overflow-y-auto "
+                >
+                  <div className=" py-2 flex  min-w-max border px-2">
+                    <li className={styles.options}>
+                      <input type="checkbox" className="w-5 mr-2" />
+                      <p className="w-5"></p>
+                    </li>
+                    <h1 className={styles.designation}>{list.titre}</h1>
+                    <h1 className={styles.status}> {list.utilisateur.nom}</h1>
+                    <h1 className={styles.limite}> {list.utilisateur.nom}</h1>
+                    <h1 className={styles.par}> {list.utilisateur.nom}</h1>
+                    <h1 className={styles.responsable}>
+                      {" "}
+                      {list.utilisateur.nom}
+                    </h1>
+                    {(categorie === "Mes projets" || verifyIfChef) && (
+                      <Tippy content="Modifier">
+                        <FontAwesomeIcon
+                          icon={faSliders}
+                          onClick={() => setTask(list.id)}
+                          className=" cursor-pointer focus:outline-none w-5 ml-4 "
+                        />
+                      </Tippy>
+                    )}
+                    {(categorie === "Mes projets" || verifyIfChef) && (
+                      <FontAwesomeIcon
+                        icon={faTrash}
+                        onClick={() => deleteTask(list.id)}
+                        className="text-red-500 cursor-pointer w-5  ml-4 "
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {isKanban && <TableauKanban />}
+          {isSousProjet && <SousProjet />}
+          {isCalendrier && <Calendrier />}
+          {isGantt && <Gantt />}
+
           <div>
-            <h1 className="mt-2 font-bold">Descriptions : </h1>
-            <div className="editor">
+            <h1 className="mt-2 hidden font-bold ">Descriptions : </h1>
+            <div className="hidden editor">
               <Editor
                 apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
                 onInit={(_evt, editor) => {
                   editorRef.current = editor;
                 }}
                 initialValue={description}
-                disabled={categorie !== "Mes projets"}
+                disabled={categorie !== "Mes projets" && !verifyIfChef}
                 init={{
                   height: 200,
                   min_height: 200,
@@ -487,70 +688,23 @@ export default function DetailsProject() {
                 }}
               />
             </div>
-            {categorie === "Mes projets" && (
+            {(categorie === "Mes projets" || verifyIfChef) && (
               <button
                 onClick={modifierProjet}
-                className="w-full  text-white py-2 bg-blue-500"
+                className="w-full  text-white py-2 bg-blue-500 hidden"
               >
                 <FontAwesomeIcon icon={faEdit} className=" mr-2" />
                 Modifier le projet
               </button>
             )}
 
-            {categorie === "Mes projets" && (
-              <div className="section mt-5">
-                <div className="label font-bold">Ajouter des champs :</div>
-                <div className=" w-full  sections mt-2">
-                  {inputFields.map((input, index) => (
-                    <div key={index} className="w-full relative mt-2">
-                      {input.label && (
-                        <label className="input text-black font-bold input-label">
-                          {input.label} :
-                        </label>
-                      )}
-                      {!input.label && (
-                        <label className="input text-black font-bold input-label">
-                          &nbsp;
-                        </label>
-                      )}
-
-                      <input
-                        type={input.type}
-                        className="input pl-3 w-full pr-10 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                        placeholder={input.label}
-                      />
-                      <FontAwesomeIcon
-                        icon={faTrash}
-                        onClick={() => removeInputField(index)}
-                        className="faTrashIcon absolute right-3 top-1/2 mt-3 transform -translate-y-1/2 text-red-500 cursor-pointer"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between w-full flex-wrap">
-                  <button
-                    className="addInputField mt-3 px-4 py-2 bg-yellow-500 text-white rounded-md transition duration-200"
-                    onClick={addInputField}
-                  >
-                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                    Ajouter un champ
-                  </button>
-                  {inputFields.length !== 0 && (
-                    <button
-                      className="addInputField mt-3 px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200"
-                      onClick={addInputField}
-                    >
-                      Enregistrer les nouveaux données
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
             {showAddFieldModal && (
               <div
                 className="modalInput"
-                onClick={() => setShowAddFieldModal(false)}
+                onClick={() => {
+                  setShowAddFieldModal(false);
+                  setInputFields([]);
+                }}
               >
                 <div
                   className="modal-content"
@@ -601,18 +755,67 @@ export default function DetailsProject() {
                       Ajouter
                     </button>
                     <button
-                      onClick={() => setShowAddFieldModal(false)}
+                      onClick={() => {
+                        setShowAddFieldModal(false);
+                        setInputFields([]);
+                      }}
                       className=" bg-yellow-500 text-white px-4 py-2 rounded-sm"
                     >
                       Annuler
                     </button>
                   </div>
+                  {(categorie === "Mes projets" || verifyIfChef) && (
+                    <div className="section mt-5">
+                      {inputFields.length !== 0 && (
+                        <div className="label font-bold">
+                          Liste des champs :
+                        </div>
+                      )}
+                      <div className=" w-full  sections mt-2">
+                        {inputFields.map((input, index) => (
+                          <div key={index} className="w-full relative mt-2">
+                            {input.label && (
+                              <label className="input text-black font-bold input-label">
+                                {input.label} :
+                              </label>
+                            )}
+                            {!input.label && (
+                              <label className="input text-black font-bold input-label">
+                                &nbsp;
+                              </label>
+                            )}
+
+                            <input
+                              type={input.type}
+                              className="input pl-3 w-full pr-10 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                              placeholder={input.label}
+                            />
+                            <FontAwesomeIcon
+                              icon={faTrash}
+                              onClick={() => removeInputField(index)}
+                              className="faTrashIcon absolute right-3 top-1/2 mt-3 transform -translate-y-1/2 text-red-500 cursor-pointer"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between w-full flex-wrap">
+                        {inputFields.length !== 0 && (
+                          <button
+                            className="addInputField mt-3 px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200"
+                            onClick={addInputField}
+                          >
+                            Enregistrer les nouveaux données
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             <div className={styles.form}>
-              <h1 className="font-bold">Commenter ici :</h1>
+              <h1 className="font-bold mt-2">Commenter ici :</h1>
               <div className={styles.formInputs}>
                 <div className="sm:col-span-3 mt-2 mr-5 w-full">
                   <div className="mt-1 ">
@@ -669,7 +872,7 @@ export default function DetailsProject() {
               </div>
             </div>
             {listeCommentaire.length !== 0 && (
-              <div className="w-full pt-2 px-2 mt-2 bg-white  rounded-sm border">
+              <div className={styles.comsContent}>
                 <h1 className="text-xl font-bold mb-2">Commentaires</h1>
                 <ul className={styles.coms}>
                   {listeCommentaire.map((comment) => (
@@ -677,43 +880,54 @@ export default function DetailsProject() {
                       key={comment.id}
                       className="flex justify-between flex-wrap items-center border-b py-3 pr-2"
                     >
-                      <div>
-                        <p className="text-gray-700 whitespace-pre-line">
-                          {comment.contenu}
-                        </p>
-                        <span className="text-sm text-gray-500 flex flex-wrap">
-                          <p className="mr-2">- {comment.utilisateur.nom}</p>
-                          {comment.file && (
-                            <a
-                              className={styles.lien}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              href={`${url}/storage/${comment.file}`}
-                            >
-                              {" "}
-                              <p className={styles.fileuploadLabel}>
-                                {comment.file.split("/").pop()}
-                              </p>
-                              <FontAwesomeIcon
-                                icon={faCloudArrowDown}
-                                className=" p-1 "
-                              />
-                            </a>
-                          )}
-                        </span>
-                      </div>
-                      {comment.utilisateur.id === user.id && (
-                        <div className="flex space-x-2">
-                          <Tippy content="Supprimer">
-                            <button
-                              onClick={() => handleDelete(comment.id)}
-                              className="text-red-500"
-                            >
-                              <FontAwesomeIcon icon={faTrash} />
-                            </button>
-                          </Tippy>
+                      <div className="flex w-full flex-wrap">
+                        {comment.utilisateur.photo_profil === null && (
+                          <div className={styles.profil}></div>
+                        )}
+                        {comment.utilisateur.photo_profil !== null && (
+                          <div
+                            className="profil bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${url}/storage/${comment.utilisateur.photo_profil})`,
+                            }}
+                          ></div>
+                        )}
+
+                        <div className={styles.contents}>
+                          <p className="text-gray-700 ">{comment.contenu}</p>
+                          <span className="text-sm text-gray-500 flex flex-wrap">
+                            {comment.file && (
+                              <a
+                                className={styles.lien}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href={`${url}/storage/${comment.file}`}
+                              >
+                                {" "}
+                                <p className={styles.fileuploadLabel}>
+                                  {comment.file.split("/").pop()}
+                                </p>
+                                <FontAwesomeIcon
+                                  icon={faCloudArrowDown}
+                                  className=" p-1 "
+                                />
+                              </a>
+                            )}
+                          </span>
                         </div>
-                      )}
+                        {comment.utilisateur.id === user.id && (
+                          <div className="flex space-x-2 justify-center pl-5 w-[3%]">
+                            <Tippy content="Supprimer">
+                              <button
+                                onClick={() => handleDelete(comment.id)}
+                                className="text-red-500"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </Tippy>
+                          </div>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

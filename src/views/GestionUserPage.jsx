@@ -177,7 +177,16 @@ export default function GestionUserPage() {
               (list, index) =>
                 list.role === "employe" && (
                   <div key={list.id} className="OneMembre mt-2 mr-10">
-                    <div className="photouser"></div>
+                    {!list.photo_profil && <div className="photouser mt-2"></div>}
+                    {list.photo_profil && (
+                      <div
+                        className="photousers bg-cover bg-center mt-2"
+                        style={{
+                          backgroundImage: `url(${url}/storage/${list.photo_profil})`,
+                        }}
+                      ></div>
+                    )}
+
                     <div className="infosuser">
                       <div>
                         <h1>{list.nom}</h1>

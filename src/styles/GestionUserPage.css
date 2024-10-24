@@ -95,6 +95,12 @@
   background-image: url("../images/student-avatar-user-profile-icon-vector-47025187.jpg");
 }
 
+.photousers {
+  width: 100px;
+  height: 85px;
+  border-radius: 50%;
+}
+
 .infosuser {
   padding: 10px;
   width: 70%;

@@ -21,6 +21,7 @@ export default function MyProfil() {
   const [telephone, setTelephone] = useState("");
   const [poste, setPoste] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [file, setFile] = useState("");
 
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
@@ -155,17 +156,19 @@ export default function MyProfil() {
       if (role === "employe") {
         APIname = "api/employes/profile";
       }
+      const formData = new FormData();
+      formData.append("nom", nomComplet || "");
+      formData.append("email", email || "");
+      formData.append("telephone", String(telephone) || "");
+      formData.append("poste", poste || "");
+      formData.append("photo_profil", file || "");
 
-      let formData = {
-        nom: nomComplet,
-        email: email,
-        telephone: String(telephone),
-        poste: poste,
-      };
       axios
-        .put(`${url}/${APIname}`, formData, {
+        .post(`${url}/${APIname}`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
+            "X-HTTP-Method-Override": "PUT",
+            "Content-Type": "multipart/form-data",
           },
         })
         .then((response) => {
@@ -174,6 +177,7 @@ export default function MyProfil() {
             JSON.stringify(response.data.administrateur)
           );
           setMessageSucces("Modification réussi !");
+          setFile("");
           setShowSpinner(false);
           setTimeout(() => {
             setMessageSucces("");
@@ -191,6 +195,13 @@ export default function MyProfil() {
       putInfos();
     }
     setIsEditing(!isEditing);
+  }
+
+  function handleFileChange(event) {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
   }
 
   return (
@@ -280,6 +291,27 @@ export default function MyProfil() {
               />
             </div>
           </div>
+
+          <div className="flex items-start flex-col">
+            <label className=" text-sm font-bold  text-gray-900">
+              Photo de profil
+            </label>
+            <label
+              htmlFor="file-upload"
+              className="input mt-2 cursor-pointer text-black px-4 py-2 rounded-md border-dashed border-2 font-semibold border-gray-300 transition duration-300 mr-5"
+            >
+              📁 Choisir un fichier
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              accept=".jpg,.jpeg,.png"
+              disabled={!isEditing}
+              onChange={handleFileChange}
+            />
+          </div>
+
           <div className="sm:col-span-3 w-44 mr-5">
             <label className=" text-sm font-medium leading-6 text-gray-900">
               &nbsp;
