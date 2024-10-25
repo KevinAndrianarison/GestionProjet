@@ -109,7 +109,7 @@ export default function Task() {
           }}
         >
           <div className="close flex justify-between w-full ">
-            <h1 className="TitreCreateTask">
+            <h1 className="TitreCreateTask input text-black">
               {" "}
               <FontAwesomeIcon icon={faCircleCheck} className="mr-4" />
               Nouvelle tâches
@@ -128,7 +128,7 @@ export default function Task() {
             onChange={(e) => {
               setTitreTask(e.target.value);
             }}
-            className="input pl-3 pr-3 block tailleInputcreateTask  mt-5 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+            className="input pl-3 pr-3 block tailleInputcreateTask  mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
           />
 
           <textarea
@@ -173,7 +173,7 @@ export default function Task() {
           <div className="flex items-start flex-col">
             <label
               htmlFor="file-upload"
-              className="input mt-2 cursor-pointer text-black px-4 py-2 rounded-md border-dashed border-2 font-semibold border-gray-300 transition duration-300 mr-5"
+              className="input mt-2 cursor-pointer text-gray-400 px-4 py-2 rounded-md border-dashed border-2  border-gray-300 transition duration-300 mr-5"
             >
               📎 Importer un fichier
             </label>
@@ -185,7 +185,7 @@ export default function Task() {
             />
           </div>
           <div className="mt-4">
-            <h1 className="input text-black font-bold">
+            <h1 className="input text-black ">
               <FontAwesomeIcon icon={faSquareCheck} className="mr-2" /> Nom de
               la liste de contrôle
             </h1>
@@ -196,30 +196,30 @@ export default function Task() {
               <input
                 type="text"
                 placeholder="Ajouter un élément "
-                className="w-60 px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                className="addElement px-3 -md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
               />
               <div className="flex mt-1 w-60">
-                <button className="border bg-blue-400 font-bold px-5 py-1 rounded-lg mr-2">
+                <button className="border bg-blue-400  px-5 py-1 rounded-lg mr-2">
                   Ajouter
                 </button>
-                <button className=" px-5 py-1 hover:bg-gray-300 font-bold rounded-lg">
+                <button className=" px-5 py-1 hover:bg-gray-300 rounded-lg">
                   Annuler
                 </button>
               </div>
-              <button className=" px-5 py-2 bg-gray-200 mt-2 hover:bg-gray-300 font-bold rounded-lg">
+              <button className=" px-5 py-2 bg-gray-200 mt-2 hover:bg-gray-300 rounded-lg">
                 Ajouter un élément
               </button>
             </div>
-            <button className=" py-2  mt-2  font-bold rounded-lg">
+            <button className=" py-2  mt-2  input text-black  rounded-lg">
               {" "}
-              <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter un
+              <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une
               liste de contrôle
             </button>
           </div>
           <div className="section mt-2 flex items-center">
             <div className="relative w-full">
               <div className="label">Responsable(s) :</div>
-              <div className="flex mt-2 items-center relative">
+              <div className="flex mt-2 items-center ">
                 <input
                   type="text"
                   placeholder="Rechercher..."
@@ -229,7 +229,7 @@ export default function Task() {
                 />
                 <FontAwesomeIcon
                   icon={faXmark}
-                  className="absolute right-3 text-gray-400 cursor-pointer transition duration-200 hover:text-[rgba(0, 184, 148,1.0)] hover:scale-125"
+                  className="relative right-5 text-gray-400 cursor-pointer transition duration-200 hover:text-[rgba(0, 184, 148,1.0)] hover:scale-125"
                   onClick={() => handleRemoveMember()}
                 />
               </div>
@@ -255,18 +255,18 @@ export default function Task() {
               )}
             </div>
           </div>
-          <div className="mt-5 w-full flex justify-between">
+          <div className="mt-5 w-full flex flex-wrap justify-between">
             <button
               disabled={!titreTask || !dateFin || !selectedMember}
               onClick={createTask}
-              className="px-3 py-2 border w-[40%] bg-gray-400 rounded text-blue-800 font-bold"
+              className="input px-3 py-2 border bg-gray-400 rounded text-blue-800 font-bold"
             >
               Enregistrer la tâche
             </button>
             <button
               disabled={!titreTask || !dateFin || !selectedMember}
               onClick={createTask}
-              className="px-3 py-2 border w-[40%] bg-gray-400 rounded text-blue-800 font-bold"
+              className="input px-3 py-2 border  bg-gray-400 rounded text-blue-800 font-bold"
             >
               Enregistrer et créer une nouvelle tâche
             </button>

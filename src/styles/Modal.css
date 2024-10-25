@@ -170,6 +170,14 @@
   width: 500px;
 }
 
+.headCreateTask {
+  display: flex;
+}
+
+.editors {
+  width: 50%;
+}
+
 .tab {
   border-bottom: 3px solid transparent;
   transition: border-color 0.3s ease;
@@ -196,14 +204,27 @@
   visibility: hidden;
 }
 
-.tailleInputcreateTask{
+.tailleInputcreateTask {
+  width: 50%;
+}
+.addElement{
   width: 50%;
 }
 
 @media screen and (max-width: 768px) {
+  .formModalCreatePost {
+    width: 350px;
+  }
+  .addElement{
+    width: 100%;
+  }
   .profil {
     width: 20%;
   }
+  .editors {
+    width: 100%;
+  }
+
   .TitreCreateTask {
     font-size: 21px;
   }
@@ -212,14 +233,14 @@
     > .tox-statusbar__help-text {
     display: none;
   }
-  .tailleInputcreateTask{
+  .tailleInputcreateTask {
     width: 95%;
   }
 }
 
 @media screen and (max-width: 650px) {
   .formModalCreatePost {
-    width: 350px;
+    width: 300px;
   }
   .faSquarePlus {
     display: none;

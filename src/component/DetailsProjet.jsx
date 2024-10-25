@@ -64,6 +64,8 @@ export default function DetailsProject() {
 
   const [showListemembre, setShowListemembre] = useState(false);
   const [coms, setComs] = useState("");
+  const [oldValueTitre, setOldValueTitre] = useState("");
+  const [oldDescription, setOldDescription] = useState("");
   const [nomFileUploaded, setNomFileUploaded] = useState("");
   const [file, setFile] = useState(null);
   const [verifyIfChef, setVerifyIfChef] = useState(false);
@@ -84,6 +86,10 @@ export default function DetailsProject() {
   const [isSousProjet, setIsSousProjet] = useState(false);
   const [isCalendrier, setIsCalendrier] = useState(false);
   const [isGantt, setIsGantt] = useState(false);
+  const [isdivTitre, setIsdivTitre] = useState(true);
+  const [isInputTitre, setIsInputTitre] = useState(false);
+  const [isdivDescription, setIsdivDescription] = useState(true);
+  const [isTinyDescription, setIsTinyDescription] = useState(false);
 
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
@@ -128,6 +134,11 @@ export default function DetailsProject() {
   }
 
   useEffect(() => {
+    if (!description) {
+      setIsdivDescription(false);
+    }
+    setOldValueTitre(nomProjet);
+    setOldDescription(description);
     ListChefs.forEach((list) => {
       if (user.id === list.id) {
         setVerifyIfChef(true);
@@ -273,45 +284,53 @@ export default function DetailsProject() {
   }
 
   function modifierProjet() {
-    let formData = {
-      titre: nomProjet,
-      date_debut: dateDebut,
-      date_fin: dateFin,
-      description: editorRef.current.getContent(),
-    };
+    if (nomProjet !== oldValueTitre || description !== oldDescription) {
+      let formData = {
+        titre: nomProjet,
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        description: editorRef.current.getContent(),
+      };
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      const userString = localStorage.getItem("user");
+      let user = JSON.parse(userString);
+      axios
+        .put(
+          `${url}/api/entreprises/projets/${user.id}/${idProjet}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        .then((response) => {
+          getOneProjet(idProjet);
+          if (response.data.projet.description) {
+            setIsdivDescription(true);
+          }
+          if (categorie === "Tous les projets") {
+            getAllproject();
+          }
+          if (categorie === "Mes projets") {
+            getProjectWhenChef();
+          }
+          if (categorie === "Les projets dont je fait partie") {
+            getProjectWhenMembres();
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
 
-    setShowSpinner(true);
-    const tokenString = localStorage.getItem("token");
-    let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
-    axios
-      .put(`${url}/api/entreprises/projets/${user.id}/${idProjet}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        getOneProjet(idProjet);
-        if (categorie === "Tous les projets") {
-          getAllproject();
-        }
-        if (categorie === "Mes projets") {
-          getProjectWhenChef();
-        }
-        if (categorie === "Les projets dont je fait partie") {
-          getProjectWhenMembres();
-        }
-        setMessageSucces(response.data.message);
-        setShowSpinner(false);
-        setTimeout(() => {
-          setMessageSucces("");
-        }, 5000);
-      })
-      .catch((err) => {
-        console.error(err);
-        setShowSpinner(false);
-      });
+      if (nomProjet !== oldValueTitre) {
+        setOldValueTitre(nomProjet);
+      }
+      if (editorRef.current.getContent() !== oldDescription) {
+        setOldDescription(editorRef.current.getContent());
+      }
+    }
   }
 
   return (
@@ -326,9 +345,23 @@ export default function DetailsProject() {
             e.stopPropagation();
             setIsOpen(false);
             setIsOpenParams(false);
+            modifierProjet();
+            setIsTinyDescription(false);
+            if (!description) {
+              setIsdivDescription(false);
+            }
+            if (description) {
+              setIsdivDescription(true);
+            }
           }}
         >
-          <button className={styles.closeButton} onClick={onClose}>
+          <button
+            className={styles.closeButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+          >
             <FontAwesomeIcon
               icon={faTimes}
               className="text-red-600 font-bold border-4 border-red-500 rounded-full px-1 py-0.5"
@@ -336,19 +369,41 @@ export default function DetailsProject() {
           </button>
 
           <h1 className={styles.titreProjet}>
-            <FontAwesomeIcon icon={faFile} className="mr-2" />
-            <input
-              type="text"
-              className="input hidden pl-3 pr-3 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-              value={nomProjet}
-              onChange={(e) => setNomProjet(e.target.value)}
-              disabled={categorie !== "Mes projets" && !verifyIfChef}
-            />
-            <p className=" text-black">{nomProjet}</p>
+            {isInputTitre && (
+              <>
+                <FontAwesomeIcon icon={faFile} className="mr-2" />
+                <input
+                  type="text"
+                  className="input text-black  pl-2 pr-3 block rounded-md border-0  text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                  value={nomProjet}
+                  onChange={(e) => setNomProjet(e.target.value)}
+                  disabled={categorie !== "Mes projets" && !verifyIfChef}
+                />
+              </>
+            )}
+            {isdivTitre && (
+              <p
+                className={styles.titreProjetP}
+                onClick={(e) => {
+                  setIsdivTitre(false);
+                  setIsInputTitre(true);
+                  e.stopPropagation();
+                }}
+              >
+                <FontAwesomeIcon icon={faFile} className="mr-2" /> {nomProjet}
+              </p>
+            )}
           </h1>
-          <div className="detailsContent mt-2 flex">
+          <div
+            className="detailsContent flex"
+            onClick={() => {
+              modifierProjet();
+              setIsInputTitre(false);
+              setIsdivTitre(true);
+            }}
+          >
             <div className={styles.left}>
-              <div className="mt-2 flex flex-wrap  items-end text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
+              <div className=" flex flex-wrap  items-end text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
                 <strong className="mr-2 ">Membres : </strong>
                 {ListChefs.length !== 0 && (
                   <ul className="flex flex-wrap">
@@ -445,56 +500,24 @@ export default function DetailsProject() {
                   />
                 </p>
               )}
-
-              {ListTask.length !== 0 && (
-                <>
-                  {" "}
-                  <div className="flex flex-wrap mt-4">
-                    <h1 className="mt-2 font-bold mr-4">Tâches du groupe : </h1>
-                    <div
-                      className="relative"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      <button
-                        className="input w-48 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-800 border-0 py-1"
-                        onClick={handleToggle}
-                      >
-                        AJOUTER
-                        <FontAwesomeIcon
-                          icon={faCaretDown}
-                          className=" w-5 h-5 cursor-pointer focus:outline-none"
-                        />
-                      </button>
-                      {isOpen && (
-                        <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
-                          <li
-                            onClick={addInputField}
-                            className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
-                          >
-                            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                            Ajouter un champ
-                          </li>
-                          <li
-                            onClick={addtask}
-                            className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
-                          >
-                            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                            Ajouter une tâche
-                          </li>
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                </>
+              {!description && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsTinyDescription(true);
+                  }}
+                  className="px-3 py-1 border mt-2 text-white rounded bg-gray-400"
+                >
+                  Ajouter une description
+                </button>
               )}
             </div>
+
             {(categorie === "Mes projets" || verifyIfChef) && (
               <div className="buttonList w-[15%]">
                 <div className={styles.fullScreen}>
                   <button
-                    className="w-full font-bold rounded text-white py-2 bg-blue-700"
+                    className="w-full font-bold rounded text-white py-2 bg-blue-500"
                     onClick={() => setProject()}
                   >
                     INVITER MEMBRE
@@ -526,7 +549,92 @@ export default function DetailsProject() {
               </div>
             )}
           </div>
+          {isdivDescription && (
+            <div
+              className="bg-gray-100 editors p-1 rounded"
+              dangerouslySetInnerHTML={{ __html: description }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsdivDescription(false);
+                setIsTinyDescription(true);
+              }}
+            ></div>
+          )}
+          {isTinyDescription && (
+            <>
+              <h1 className="mt-2  font-bold ">Descriptions : </h1>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className="mt-2 editors"
+              >
+                <Editor
+                  apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
+                  onInit={(_evt, editor) => {
+                    editorRef.current = editor;
+                  }}
+                  initialValue={description}
+                  disabled={categorie !== "Mes projets" && !verifyIfChef}
+                  init={{
+                    height: 200,
+                    min_height: 200,
+                    menubar: false,
+                    branding: false,
+                    plugins: "textcolor",
+                    toolbar: "bold italic forecolor",
+                    content_style:
+                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                  }}
+                />
+              </div>
+            </>
+          )}
 
+          {ListTask.length !== 0 && (
+            <>
+              {isTask && (
+                <div className="flex flex-wrap mt-4">
+                  <h1 className="mt-2 font-bold mr-4">Tâches du groupe : </h1>
+                  <div
+                    className="relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <button
+                      className="input w-48 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
+                      onClick={handleToggle}
+                    >
+                      AJOUTER
+                      <FontAwesomeIcon
+                        icon={faCaretDown}
+                        className=" w-5 h-5 cursor-pointer focus:outline-none"
+                      />
+                    </button>
+                    {isOpen && (
+                      <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
+                        <li
+                          onClick={addInputField}
+                          className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                        >
+                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                          Ajouter un champ
+                        </li>
+                        <li
+                          onClick={addtask}
+                          className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                        >
+                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                          Ajouter une tâche
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           <div className="flex flex-wrap bg-blue-100 mt-2 py-2 text-gray-500 rounded px-5  text-xs sm:text-xs md:text-sm lg:text-sm xl:text-sm">
             <li
               className={
@@ -625,7 +733,7 @@ export default function DetailsProject() {
               {ListTask.map((list) => (
                 <div
                   key={list.id}
-                  className=" min-h-[25vh] max-h-[350px] border min-w-max overflow-y-auto "
+                  className="min-h-[55vh] max-h-[55vh] border min-w-max overflow-y-auto "
                 >
                   <div className=" py-2 flex  min-w-max border px-2">
                     <li className={styles.options}>
@@ -667,27 +775,6 @@ export default function DetailsProject() {
           {isGantt && <Gantt />}
 
           <div>
-            <h1 className="mt-2 hidden font-bold ">Descriptions : </h1>
-            <div className="hidden editor">
-              <Editor
-                apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
-                onInit={(_evt, editor) => {
-                  editorRef.current = editor;
-                }}
-                initialValue={description}
-                disabled={categorie !== "Mes projets" && !verifyIfChef}
-                init={{
-                  height: 200,
-                  min_height: 200,
-                  menubar: false,
-                  branding: false,
-                  plugins: "textcolor",
-                  toolbar: "bold italic forecolor",
-                  content_style:
-                    "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                }}
-              />
-            </div>
             {(categorie === "Mes projets" || verifyIfChef) && (
               <button
                 onClick={modifierProjet}
