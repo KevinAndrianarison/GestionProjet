@@ -106,7 +106,9 @@ export default function MainPage() {
                     Ajouter un nouveau employé
                   </NavLink>
                 </li>
+                
               )}
+              <li>A</li>
             </ul>
           </div>
         )}

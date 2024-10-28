@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import styles from "../styles/Kanban.module.css";
 import { v4 as uuidv4 } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { TaskContext } from "../contexte/useTask";
+
 import {
   faEllipsisVertical,
   faPlus,
@@ -13,6 +15,7 @@ import {
 import { faMessage } from "@fortawesome/free-regular-svg-icons";
 
 export default function TableauKanban() {
+  const { ListTask } = useContext(TaskContext);
   const [columns, setColumns] = useState({
     todo: { name: "A faire", tasks: [] },
     inProgress: { name: "En cours", tasks: [] },
@@ -118,16 +121,19 @@ export default function TableauKanban() {
   }
 
   return (
-    <div className="flex bg-gray-100 p-5 min-h-[60vh]" onClick={closeDropdown}>
-      <div className="flex mt-5 mr-5 overflow-auto">
+    <div
+      className=" flex flex-wrap bg-gray-100 min-h-[65vh] py-4"
+      onClick={closeDropdown}
+    >
+      <div className="  flex justify-center flex-wrap overflow-auto">
         {Object.entries(columns).map(([columnId, column]) => (
           <div
             key={columnId}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDrop(e, columnId)}
-            className="flex flex-col mr-10 w-80"
+            className="ml-2"
           >
-            <h2 className="px-3 py-1 text-blue-700 font-bold flex items-center justify-between">
+            <h2 className="px-3 py-1   flex items-center justify-between">
               {column.name}
               <div className="relative">
                 <FontAwesomeIcon
@@ -154,19 +160,19 @@ export default function TableauKanban() {
                 )}
               </div>
             </h2>
-            <div className="overflow-y-auto">
-              {column.tasks.map((task) => (
+            <div className=" overflow-y-auto">
+              {ListTask.map((task) => (
                 <div
                   key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id, columnId)}
-                  className="bg-white border shadow-lg p-3 rounded shadow-sm cursor-move relative"
+                  className="w-[250px] bg-white border shadow-lg p-3 rounded shadow-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleDropdown(task.id);
                   }}
                 >
-                  <p className="flex justify-end cursor-pointer">
+                  <p className="flex  justify-end cursor-pointer">
                     <FontAwesomeIcon
                       icon={faEllipsis}
                       className="relative bottom-2"
@@ -175,7 +181,7 @@ export default function TableauKanban() {
 
                   {activeDropdown === task.id && (
                     <ul className="border dropdown-menu absolute z-50 right-1 w-32 bg-white shadow-lg rounded-md">
-                      <li className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200">
+                      <li className="dropdown-item flex items-center px-3 py-1 cursor-pointer hover:bg-gray-200">
                         <FontAwesomeIcon
                           icon={faTrash}
                           className="red-icon mr-2"
@@ -188,12 +194,12 @@ export default function TableauKanban() {
                   <p className="text-xs bg-yellow-500 w-14 py-1 text-center rounded-xl">
                     Status
                   </p>
-                  <p>{task.title}</p>
-                  <div className="flex justify-between">
-                    <div className="flex items-end">
+                  <p className="mt-2">{task.titre}</p>
+                  <div className="flex flex-wrap-reverse justify-between">
+                    <div className="flex mt-1 items-end">
                       <p className="relative flex items-center justify-center text-xs bg-green-400 w-28 h-6 text-center rounded-xl">
                         <FontAwesomeIcon icon={faClock} className="mr-2" />{" "}
-                        20/10/2021
+                        {task.date_fin}
                       </p>
                     </div>
                     <div className="flex items-end text-gray-500">
@@ -219,7 +225,7 @@ export default function TableauKanban() {
                   value={taskInput}
                   onChange={(e) => setTaskInput(e.target.value)}
                 />
-                <div className="flex items-center mt-2">
+                <div className="  flex items-center mt-2">
                   <button
                     onClick={() => addTask(columnId)}
                     className="px-3 py-1 bg-blue-500 rounded mr-2 border"
@@ -236,7 +242,7 @@ export default function TableauKanban() {
             ) : (
               <button
                 onClick={() => handleShowForm(columnId)}
-                className="mt-2 text-gray-500 pr-3 py-1 text-left"
+                className=" hidden mt-2 text-gray-500 pr-3 py-1 text-left"
               >
                 <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une
                 carte
@@ -245,7 +251,7 @@ export default function TableauKanban() {
           </div>
         ))}
       </div>
-      <div className="mt-5 w-80">
+      <div className=" mt-5 ml-4">
         {showColumnForm ? (
           <div>
             <input
@@ -271,7 +277,7 @@ export default function TableauKanban() {
           </div>
         ) : (
           <button onClick={handleShowColumnForm} className="mt-2 text-gray-500">
-            <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une liste
+            <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter un statut
           </button>
         )}
       </div>

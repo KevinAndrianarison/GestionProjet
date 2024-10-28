@@ -28,6 +28,8 @@ import { UrlContext } from "../contexte/useUrl";
 import { UserContext } from "../contexte/useUser";
 import { ComsContext } from "../contexte/useComs";
 import TableauKanban from "./TableauKanban";
+import GestionPlanning from "./GestionPlanning";
+import LigneBudgetaire from "./LigneBudgetaire";
 import SousProjet from "./SousProjet";
 import Calendrier from "./Calendrier";
 import Gantt from "./Gantt";
@@ -83,6 +85,8 @@ export default function DetailsProject() {
   const [isOpenParams, setIsOpenParams] = useState(false);
   const [isTask, setIsTask] = useState(true);
   const [isKanban, setIsKanban] = useState(false);
+  const [isGestionPlanning, setIsGestionPlanning] = useState(false);
+  const [isLigneBudg, setIsLigneBudg] = useState(false);
   const [isSousProjet, setIsSousProjet] = useState(false);
   const [isCalendrier, setIsCalendrier] = useState(false);
   const [isGantt, setIsGantt] = useState(false);
@@ -94,11 +98,33 @@ export default function DetailsProject() {
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
 
+  function showGestLignBudg() {
+    setIsGantt(false);
+    setIsCalendrier(false);
+    setIsSousProjet(false);
+    setIsKanban(false);
+    setIsTask(false);
+    setIsGestionPlanning(false);
+    setIsLigneBudg(true);
+  }
+
+  function showGestPlanning() {
+    setIsGantt(false);
+    setIsCalendrier(false);
+    setIsSousProjet(false);
+    setIsKanban(false);
+    setIsTask(false);
+    setIsLigneBudg(false);
+    setIsGestionPlanning(true);
+  }
+
   function showTask() {
     setIsGantt(false);
     setIsCalendrier(false);
     setIsSousProjet(false);
     setIsKanban(false);
+    setIsGestionPlanning(false);
+    setIsLigneBudg(false);
     setIsTask(true);
   }
 
@@ -107,6 +133,8 @@ export default function DetailsProject() {
     setIsGantt(false);
     setIsCalendrier(false);
     setIsSousProjet(false);
+    setIsGestionPlanning(false);
+    setIsLigneBudg(false);
     setIsKanban(true);
   }
 
@@ -115,6 +143,8 @@ export default function DetailsProject() {
     setIsTask(false);
     setIsGantt(false);
     setIsCalendrier(false);
+    setIsGestionPlanning(false);
+    setIsLigneBudg(false);
     setIsSousProjet(true);
   }
 
@@ -123,6 +153,8 @@ export default function DetailsProject() {
     setIsKanban(false);
     setIsTask(false);
     setIsGantt(false);
+    setIsGestionPlanning(false);
+    setIsLigneBudg(false);
     setIsCalendrier(true);
   }
   function showGantt() {
@@ -130,6 +162,8 @@ export default function DetailsProject() {
     setIsSousProjet(false);
     setIsKanban(false);
     setIsTask(false);
+    setIsGestionPlanning(false);
+    setIsLigneBudg(false);
     setIsGantt(true);
   }
 
@@ -517,14 +551,14 @@ export default function DetailsProject() {
               <div className="buttonList w-[15%]">
                 <div className={styles.fullScreen}>
                   <button
-                    className="w-full font-bold rounded text-white py-2 bg-blue-500"
+                    className="w-full text-xs font-bold rounded text-white py-2 bg-blue-500"
                     onClick={() => setProject()}
                   >
                     INVITER MEMBRE
                   </button>
                   <button
                     onClick={deleteProject}
-                    className="w-full rounded text-white py-2 bg-red-500"
+                    className="w-full text-xs rounded text-white py-2 bg-red-500"
                   >
                     <FontAwesomeIcon icon={faTrash} className=" mr-2 px-1" />
                     Supprimer ce projet
@@ -674,7 +708,7 @@ export default function DetailsProject() {
               }
               onClick={showCalendrier}
             >
-              Calendrier
+              Feuille de temps
             </li>
             <li
               className={
@@ -685,6 +719,26 @@ export default function DetailsProject() {
               onClick={showGantt}
             >
               GANTT
+            </li>
+            <li
+              className={
+                isGestionPlanning
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showGestPlanning}
+            >
+              Gestion de planning
+            </li>
+            <li
+              className={
+                isLigneBudg
+                  ? "text-blue-500 mr-20 cursor-pointer"
+                  : "mr-20 cursor-pointer"
+              }
+              onClick={showGestLignBudg}
+            >
+              Ligne budgétaire
             </li>
           </div>
           {isTask && (
@@ -773,6 +827,8 @@ export default function DetailsProject() {
           {isSousProjet && <SousProjet />}
           {isCalendrier && <Calendrier />}
           {isGantt && <Gantt />}
+          {isGestionPlanning && <GestionPlanning />}
+          {isLigneBudg && <LigneBudgetaire />}
 
           <div>
             {(categorie === "Mes projets" || verifyIfChef) && (
