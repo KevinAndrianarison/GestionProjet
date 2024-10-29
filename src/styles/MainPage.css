@@ -11,13 +11,17 @@
   color: rgba(0, 0, 0, 0.747);
 }
 
+.titles {
+  font-family: "righteous";
+  font-size: 2.0em;
+  color: rgba(0, 0, 0, 0.747);
+}
+
 .description {
-  font-size: 1.2em;
+  font-size: 1.0em;
 }
 
 .logos {
-  width: 120px;
-  height: 100px;
   background-size: cover;
   background-repeat: no-repeat;
   background-image: url("../images/google-tasks-venez-a-bout-de-toutes-vos-taches-er4IE9-removebg-preview.png");
@@ -29,23 +33,16 @@
   flex-wrap: wrap;
   list-style: none;
   align-items: center;
-  font-weight: bold;
   color: rgba(0, 0, 0, 0.836);
-  border-bottom: 2px solid rgba(128, 128, 128, 0.418);
+  font-weight: bold;
 }
 
-@media screen and (max-width: 768px) {
-  .description {
-    display: none;
-  }
-  .title {
-    font-size: 2em;
-  }
-  .ulNavBar,
-  .Page {
-    font-size: 12px;
-  }
+.iconeResponsive{
+  width: 2vw;
+  height: 3vh;
+
 }
+
 
 .faSignOutAlt {
   position: absolute;
@@ -70,3 +67,24 @@
   cursor: pointer;
   color: rgba(0, 0, 0, 0.747);
 }
+
+@media screen and (max-width: 768px) {
+  .description {
+    display: none;
+  }
+  .title {
+    font-size: 2em;
+  }
+  .titles {
+    display: none;
+  }
+  .ulNavBar,
+  .Page {
+    font-size: 12px;
+  }
+  .iconeResponsive{
+    width: 5vw;
+  
+  }
+}
+

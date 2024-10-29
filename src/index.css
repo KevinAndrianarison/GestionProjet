@@ -33,3 +33,9 @@ p {
 ::-webkit-scrollbar-thumb:hover {
   background: #74b9ff;
 }
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
