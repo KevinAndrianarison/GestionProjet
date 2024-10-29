@@ -401,230 +401,246 @@ export default function DetailsProject() {
               className="text-red-600 font-bold border-4 border-red-500 rounded-full px-1 py-0.5"
             />
           </button>
-
-          <h1 className={styles.titreProjet}>
-            {isInputTitre && (
-              <>
-                <FontAwesomeIcon icon={faFile} className="mr-2" />
-                <input
-                  type="text"
-                  className="input text-black  pl-2 pr-3 block rounded-md border-0  text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                  value={nomProjet}
-                  onChange={(e) => setNomProjet(e.target.value)}
-                  disabled={categorie !== "Mes projets" && !verifyIfChef}
-                />
-              </>
-            )}
-            {isdivTitre && (
-              <p
-                className={styles.titreProjetP}
-                onClick={(e) => {
-                  setIsdivTitre(false);
-                  setIsInputTitre(true);
-                  e.stopPropagation();
-                }}
-              >
-                <FontAwesomeIcon icon={faFile} className="mr-2" /> {nomProjet}
-              </p>
-            )}
-          </h1>
-          <div
-            className="detailsContent flex"
-            onClick={() => {
-              modifierProjet();
-              setIsInputTitre(false);
-              setIsdivTitre(true);
-            }}
-          >
-            <div className={styles.left}>
-              <div className=" flex flex-wrap  items-end text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
-                <strong className="mr-2 ">Membres : </strong>
-                {ListChefs.length !== 0 && (
-                  <ul className="flex flex-wrap">
-                    {ListChefs.map((list) => (
-                      <li key={list.id}>
-                        @ {list.nom} <b>(Chef de projet),&nbsp;</b>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {ListMembres.length !== 0 && (
-                  <ul className="flex flex-wrap">
-                    {ListMembres.map((list) => (
-                      <li key={list.id}>
-                        @ {list.nom} <b>(membre),&nbsp;</b>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <Tippy content={showListemembre ? "Moins" : "Plus"}>
-                  <FontAwesomeIcon
-                    icon={faEllipsis}
-                    onClick={() => setShowListemembre(!showListemembre)}
-                    className=" cursor-pointer text-gray-400 focus:outline-none"
-                  />
-                </Tippy>
-              </div>
-              {showListemembre && (
-                <div className="border p-2 w-[90%]">
-                  <h1 className="font-bold">Listes des membres : </h1>
-                  {ListChefs.length !== 0 && (
-                    <ul>
-                      {ListChefs.map((list) => (
-                        <div
-                          key={list.id}
-                          className="flex justify-between items-center"
-                        >
-                          <li>
-                            - {list.nom} <b>(Chef de projet)</b>{" "}
-                          </li>
-                          {(categorie === "Mes projets" || verifyIfChef) && (
-                            <Tippy content="Retirer">
-                              <FontAwesomeIcon
-                                onClick={() => retirerChefs(list.id, list.nom)}
-                                icon={faXmark}
-                                className=" cursor-pointer text-gray-400 focus:outline-none"
-                              />
-                            </Tippy>
-                          )}
-                        </div>
-                      ))}
-                    </ul>
+            <div className="mx-auto">
+              <div className="grid grid-cols-12">
+                <div class="col-span-10">
+                <h1 className={styles.titreProjet}>
+                  {isInputTitre && (
+                    <>
+                      <FontAwesomeIcon icon={faFile} className="mr-2" />
+                      <input
+                        type="text"
+                        className="input w-full text-black pl-2 pr-3 block rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none focus:border-transparent"
+                        value={nomProjet}
+                        onInput={(e) => {
+                          if (e.target.value) {
+                            e.target.classList.add("ring-2", "ring-inset", "ring-[rgba(0, 184, 148, 1.0)]");
+                          } else {
+                            e.target.classList.remove("ring-2", "ring-inset", "ring-[rgba(0, 184, 148, 1.0)]");
+                          }
+                        }}
+                        onChange={(e) => setNomProjet(e.target.value)}
+                        disabled={categorie !== "Mes projets" && !verifyIfChef}
+                      />
+                    </>
                   )}
-                  {ListMembres.length !== 0 && (
-                    <ul>
-                      {ListMembres.map((list) => (
-                        <div
-                          key={list.id}
-                          className="flex justify-between items-center"
-                        >
-                          <li>
-                            - {list.nom} <b>(membre)</b>
-                          </li>
-                          {(categorie === "Mes projets" || verifyIfChef) && (
-                            <Tippy content="Retirer">
-                              <FontAwesomeIcon
-                                onClick={() =>
-                                  retirerMembres(list.id, list.nom)
-                                }
-                                icon={faXmark}
-                                className=" cursor-pointer text-gray-400 focus:outline-none"
-                              />
-                            </Tippy>
-                          )}
-                        </div>
-                      ))}
-                    </ul>
+                  {isdivTitre && (
+                    <p
+                      className={styles.titreProjetP}
+                      onClick={(e) => {
+                        setIsdivTitre(false);
+                        setIsInputTitre(true);
+                        e.stopPropagation();
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faFile} className="mr-2" /> {nomProjet}
+                    </p>
                   )}
-                </div>
-              )}
-
-              <div className="mt-2 hidden flex items-end flex-wrap">
-                <strong className="mr-2">Début :</strong> <div>{dateDebut}</div>
-              </div>
-              {dateFin && (
-                <p className="mt-2 hidden flex items-end flex-wrap">
-                  <strong className="mr-2">Date limite :</strong>
-                  <input
-                    type="date"
-                    disabled={categorie !== "Mes projets" && !verifyIfChef}
-                    className="input pl-3 pr-3 block rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                    value={dateFin}
-                    onChange={(e) => setDateFin(e.target.value)}
-                  />
-                </p>
-              )}
-              {!description && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsTinyDescription(true);
+                </h1>
+                <div
+                  className="detailsContent flex"
+                  onClick={() => {
+                    modifierProjet();
+                    setIsInputTitre(false);
+                    setIsdivTitre(true);
                   }}
-                  className="px-3 py-1 border mt-2 text-white rounded bg-gray-400"
                 >
-                  Ajouter une description
-                </button>
-              )}
+                  <div className={styles.left}>
+                    <div className=" flex flex-wrap items-end text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
+                      <strong className="mr-2 ">Membres : </strong>
+                      {ListChefs.length !== 0 && (
+                        <ul className="flex flex-wrap">
+                          {ListChefs.map((list) => (
+                            <li key={list.id}>
+                              @ {list.nom} <b>(Chef de projet),&nbsp;</b>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {ListMembres.length !== 0 && (
+                        <ul className="flex flex-wrap">
+                          {ListMembres.map((list) => (
+                            <li key={list.id}>
+                              @ {list.nom} <b>(membre),&nbsp;</b>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <Tippy content={showListemembre ? "Moins" : "Plus"}>
+                        <FontAwesomeIcon
+                          icon={faEllipsis}
+                          onClick={() => setShowListemembre(!showListemembre)}
+                          className=" cursor-pointer text-gray-400 focus:outline-none"
+                        />
+                      </Tippy>
+                    </div>
+                    {showListemembre && (
+                      <div className="border p-2 w-[90%]">
+                        <h1 className="font-medium">Listes des membres : </h1>
+                        {ListChefs.length !== 0 && (
+                          <ul>
+                            {ListChefs.map((list) => (
+                              <div
+                                key={list.id}
+                                className="flex justify-between items-center"
+                              >
+                                <li>
+                                  - {list.nom} <b>(Chef de projet)</b>{" "}
+                                </li>
+                                {(categorie === "Mes projets" || verifyIfChef) && (
+                                  <Tippy content="Retirer">
+                                    <FontAwesomeIcon
+                                      onClick={() => retirerChefs(list.id, list.nom)}
+                                      icon={faXmark}
+                                      className=" cursor-pointer text-gray-400 focus:outline-none"
+                                    />
+                                  </Tippy>
+                                )}
+                              </div>
+                            ))}
+                          </ul>
+                        )}
+                        {ListMembres.length !== 0 && (
+                          <ul>
+                            {ListMembres.map((list) => (
+                              <div
+                                key={list.id}
+                                className="flex justify-between items-center"
+                              >
+                                <li>
+                                  - {list.nom} <b>(membre)</b>
+                                </li>
+                                {(categorie === "Mes projets" || verifyIfChef) && (
+                                  <Tippy content="Retirer">
+                                    <FontAwesomeIcon
+                                      onClick={() =>
+                                        retirerMembres(list.id, list.nom)
+                                      }
+                                      icon={faXmark}
+                                      className=" cursor-pointer text-gray-400 focus:outline-none"
+                                    />
+                                  </Tippy>
+                                )}
+                              </div>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-2 hidden flex items-end flex-wrap">
+                      <strong className="mr-2">Début :</strong> <div>{dateDebut}</div>
+                    </div>
+                    {dateFin && (
+                      <p className="mt-2 hidden flex items-end flex-wrap">
+                        <strong className="mr-2">Date limite :</strong>
+                        <input
+                          type="date"
+                          disabled={categorie !== "Mes projets" && !verifyIfChef}
+                          className="input pl-3 pr-3 block rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                          value={dateFin}
+                          onChange={(e) => setDateFin(e.target.value)}
+                        />
+                      </p>
+                    )}
+                    {!description && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsTinyDescription(true);
+                        }}
+                        className="px-3 py-1 border mt-2 text-white rounded bg-gray-400"
+                      >
+                        Ajouter une description
+                      </button>
+                    )}
+                  </div>
+
+                  
+                </div>
+                
+                {isdivDescription && (
+                  <div
+                    className="bg-gray-100 editors p-1 rounded w-full text-grey"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsdivDescription(false);
+                      setIsTinyDescription(true);
+                    }}
+                  ></div>
+                )}
+                {isTinyDescription && (
+                  <>
+                    <h1 className="mt-2 font-bold ">Descriptions : </h1>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="mt-2 editors w-full"
+                    >
+                      <Editor
+                        apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
+                        onInit={(_evt, editor) => {
+                          editorRef.current = editor;
+                        }}
+                        initialValue={description}
+                        disabled={categorie !== "Mes projets" && !verifyIfChef}
+                        init={{
+                          height: 200,
+                          min_height: 200,
+                          menubar: false,
+                          branding: false,
+                          plugins: "textcolor",
+                          toolbar: "bold italic forecolor",
+                          content_style:
+                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+                </div>
+                <div class="col-span-2 p-4">
+                  {(categorie === "Mes projets" || verifyIfChef) && (
+                    <div className="buttonList w-[100%]">
+                      <div className={styles.fullScreen}>
+                        <button
+                          className="w-full text-xs font-medium text-white py-2 bg-blue-500"
+                          onClick={() => setProject()}
+                        >
+                          <FontAwesomeIcon icon={faPlus} className=" mr-2 px-1" />
+                          Inviter membre
+                        </button>
+                        <button
+                          onClick={deleteProject}
+                          className="w-full text-xs text-white py-2 bg-red-500"
+                        >
+                          <FontAwesomeIcon icon={faTrash} className=" mr-2 px-1" />
+                          Supprimer ce projet
+                        </button>
+                      </div>
+                      <div className={styles.smallScreen}>
+                        <Tippy content=" Inviter des membres">
+                          <FontAwesomeIcon
+                            onClick={() => setProject()}
+                            icon={faPlus}
+                            className=" mr-2"
+                          />
+                        </Tippy>
+                        <Tippy content="Supprimer ce projet">
+                          <FontAwesomeIcon
+                            icon={faTrash}
+                            onClick={deleteProject}
+                            className=" text-red-500 mr-2"
+                          />
+                        </Tippy>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-
-            {(categorie === "Mes projets" || verifyIfChef) && (
-              <div className="buttonList w-[15%]">
-                <div className={styles.fullScreen}>
-                  <button
-                    className="w-full text-xs font-bold rounded text-white py-2 bg-blue-500"
-                    onClick={() => setProject()}
-                  >
-                    INVITER MEMBRE
-                  </button>
-                  <button
-                    onClick={deleteProject}
-                    className="w-full text-xs rounded text-white py-2 bg-red-500"
-                  >
-                    <FontAwesomeIcon icon={faTrash} className=" mr-2 px-1" />
-                    Supprimer ce projet
-                  </button>
-                </div>
-                <div className={styles.smallScreen}>
-                  <Tippy content=" Inviter des membres">
-                    <FontAwesomeIcon
-                      onClick={() => setProject()}
-                      icon={faPlus}
-                      className=" mr-2"
-                    />
-                  </Tippy>
-                  <Tippy content="Supprimer ce projet">
-                    <FontAwesomeIcon
-                      icon={faTrash}
-                      onClick={deleteProject}
-                      className=" text-red-500 mr-2"
-                    />
-                  </Tippy>
-                </div>
-              </div>
-            )}
-          </div>
-          {isdivDescription && (
-            <div
-              className="bg-gray-100 editors p-1 rounded"
-              dangerouslySetInnerHTML={{ __html: description }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsdivDescription(false);
-                setIsTinyDescription(true);
-              }}
-            ></div>
-          )}
-          {isTinyDescription && (
-            <>
-              <h1 className="mt-2  font-bold ">Descriptions : </h1>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="mt-2 editors"
-              >
-                <Editor
-                  apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
-                  onInit={(_evt, editor) => {
-                    editorRef.current = editor;
-                  }}
-                  initialValue={description}
-                  disabled={categorie !== "Mes projets" && !verifyIfChef}
-                  init={{
-                    height: 200,
-                    min_height: 200,
-                    menubar: false,
-                    branding: false,
-                    plugins: "textcolor",
-                    toolbar: "bold italic forecolor",
-                    content_style:
-                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                  }}
-                />
-              </div>
-            </>
-          )}
-
           {ListTask.length !== 0 && (
             <>
               {isTask && (
