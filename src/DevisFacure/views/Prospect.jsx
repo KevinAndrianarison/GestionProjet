@@ -30,6 +30,26 @@ function ProspectSCT() {
     setSelectedProspectId(selectedProspectId === id ? null : id);
   };
 
+  const handleDelete = async (id) => {
+    try {
+      // Envoyer la requête DELETE à votre API pour supprimer le prospect
+      await axios.delete(`${FULL_URL}/${id}`);
+
+      // Mettre à jour l'état pour retirer le prospect supprimé
+      const updatedProspects = prospects.filter(
+        (prospect) => prospect.id !== id
+      );
+      setProspects(updatedProspects);
+
+      // Mettre à jour le localStorage avec les nouvelles données
+      localStorage.setItem("dataKey", JSON.stringify(updatedProspects));
+
+      console.log("Prospect supprimé avec succès.");
+    } catch (error) {
+      console.error("Erreur lors de la suppression du prospect:", error);
+    }
+  };
+
   // Fonction pour récupérer les données depuis l'API
   const fetchDataAndStore = async () => {
     try {
@@ -48,7 +68,13 @@ function ProspectSCT() {
   };
 
   useEffect(() => {
-    fetchDataAndStore(); // Appeler la fonction lors du montage du composant
+    // Essayer de récupérer les données du localStorage
+    const storedData = localStorage.getItem("dataKey");
+    if (storedData) {
+      setProspects(JSON.parse(storedData));
+    } else {
+      fetchDataAndStore(); // Appeler la fonction pour récupérer les données depuis l'API si pas de données dans localStorage
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -369,10 +395,10 @@ function ProspectSCT() {
         </div>
       ) : (
         <div>
-          <table className="min-w-full">
-            <thead className="my-10 ">
+          <table className="min-w-full my-2">
+            <thead className="my-10 border-b-4 ">
               <tr className="h-20 ">
-                <th className="text-left text-sm font-medium leading-6 ">
+                <th className="text-left text-sm font-medium leading-6 border-b-10">
                   Type
                 </th>
                 <th className="text-left text-sm font-medium leading-6 ">
@@ -386,22 +412,22 @@ function ProspectSCT() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="border-gray-300 py-2 ">
               {prospects.map((prospect) => (
                 <tr key={prospect.id}>
-                  <td className="border-y border-blue-300">
+                  <td className="border-y  ">
                     <Link to={`/Prospect/${prospect.id}`}>{prospect.type}</Link>
                   </td>
-                  <td className="border-y border-blue-300">
+                  <td className="border-y">
                     <Link to={`/Prospect/${prospect.id}`}>
                       {prospect.nom_societe}
                     </Link>
                   </td>
-                  <td className="border-y border-blue-300">
+                  <td className="border-y ">
                     <Link to={`/Prospect/${prospect.id}`}>{prospect.nom}</Link>
                   </td>
-                  <td className="border-y border-blue-300">{prospect.email}</td>
-                  <td className="border-y border-blue-300"></td>
+                  <td className="border-y py-2 ">{prospect.email}</td>
+                  <td className="border-y"></td>
                 </tr>
               ))}
             </tbody>

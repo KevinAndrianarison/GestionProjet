@@ -18,6 +18,12 @@ import {
 import AllprojectPage from "./AllprojectPage";
 import Devis from "../DevisFacure/views/Devis";
 import Facture from "../DevisFacure/views/Facture";
+import ModifierClient from "../DevisFacure/views/ModifierClient";
+import NavbarClient from "../DevisFacure/views/NavbarClient";
+import NouveauDevis from "../DevisFacure/views/NouveauDevis";
+import ProspectDetail from "../DevisFacure/views/ProspectDetail";
+import EditUser from "../DevisFacure/views/EditUser";
+import EditProspect from "../DevisFacure/views/EditUser";
 import Historique from "../DevisFacure/views/Historique";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
@@ -300,6 +306,17 @@ export default function MainPage() {
             <Route path=":entity/prospect" element={<Prospect />} />
           </Routes>
         </div>
+      </div>
+      <div className="Page mt-5">
+        <Routes>
+          <Route path="/ModifierClient/:id" element={<ModifierClient />} />
+          <Route path="/prospect/:id" element={<ProspectDetail />} />
+          <Route path="/NavbarClient" element={<NavbarClient />} />
+          <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
+          <Route path="/EditProspect/:id" element={<EditProspect />} />
+          <Route path="/edit/:id" element={<EditUser />} />
+          <Route path="/ProspectDetail/:id" element={<ProspectDetail />} />
+        </Routes>
       </div>
     </div>
   );
