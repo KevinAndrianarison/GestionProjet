@@ -57,6 +57,7 @@ export default function LoginComponent() {
             setShowMainPage(true);
           }
           if (response.data.rôle === "admin") {
+            localStorage.setItem("navBar", JSON.stringify("Gestion de projet"));
             navigate(`${entity}/AllProject`);
             setShowAdmin(true);
             setShowMainPage(true);
