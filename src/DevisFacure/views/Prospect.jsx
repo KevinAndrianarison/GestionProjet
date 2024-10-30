@@ -57,10 +57,7 @@ function ProspectSCT() {
       if (response.status === 200 && response.data) {
         setProspects(response.data); // Mettre à jour l'état avec les données récupérées
         localStorage.setItem("dataKey", JSON.stringify(response.data));
-        console.log(
-          "Données récupérées et stockées dans localStorage:",
-          response.data
-        );
+
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données:", error);
@@ -69,7 +66,7 @@ function ProspectSCT() {
 
   useEffect(() => {
     // Essayer de récupérer les données du localStorage
-    const storedData = localStorage.getItem("dataKey");
+    const storedData = localStorage.getItem('dataKey');
     if (storedData) {
       setProspects(JSON.parse(storedData));
     } else {
@@ -77,11 +74,13 @@ function ProspectSCT() {
     }
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('dataKey', JSON.stringify(prospects));
+  }, [prospects]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newId = prospects.length
-      ? Math.max(...prospects.map((p) => p.id)) + 1
-      : 1;
+
 
     setErrorMessage(""); // Réinitialiser le message d'erreur
 
@@ -90,6 +89,10 @@ function ProspectSCT() {
       setErrorMessage("Veuillez entrer une adresse e-mail valide.");
       return;
     }
+
+    const newId = prospects.length
+    ? Math.max(...prospects.map((p) => p.id)) + 1
+    : 1;
 
     const formData = {
       id: newId,
@@ -124,6 +127,7 @@ function ProspectSCT() {
       setNumeroSiren("");
       setTypeClient("societe");
 
+      
       // Mettre à jour l'état prospects pour inclure le nouveau prospect
       setProspects([...prospects, response.data]);
       setShowForm(false); // Masquer le formulaire après soumission
@@ -137,10 +141,10 @@ function ProspectSCT() {
     <div>
       <div className="">
         <div>
-          <nav className="rounded-md flex justify-between items-center p-4 bg-slate-600 text-white">
+          <nav className="rounded-md flex justify-between items-center p-4 ">
             {/* Élément à gauche */}
             <div>
-              <Link to="/" className="text-lg">
+              <Link to="/" className="text-2xl ">
                 Tous les prospects
               </Link>
             </div>
@@ -165,18 +169,18 @@ function ProspectSCT() {
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
-                      className=" border text-gray-800 bg-slate-200 border-blue rounded"
+                      className=" border  border-blue rounded"
                     />
-                    <button className="px-2 py-1 text-white rounded ">
+                    <button className="px-2 py-1  rounded ">
                       <FontAwesomeIcon icon={faMagnifyingGlass} />
                     </button>
 
                     <button
                       onClick={() => setShowForm(true)}
-                      className="flex items-center text-white"
+                      className="flex items-center "
                     >
                       Ajouter
-                      <button className="px-2 py-1 text-white rounded">
+                      <button className="px-2 py-1 e rounded">
                         <FontAwesomeIcon icon={faPlus} className="mr-2" />
                       </button>
                     </button>
@@ -233,7 +237,7 @@ function ProspectSCT() {
                     type="text"
                     value={nom_societe}
                     onChange={(e) => setNomSociete(e.target.value)}
-                    className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                    className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -249,7 +253,7 @@ function ProspectSCT() {
                   type="text"
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -264,7 +268,7 @@ function ProspectSCT() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
               {errorMessage && (
@@ -282,7 +286,7 @@ function ProspectSCT() {
                   type="text"
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -296,7 +300,7 @@ function ProspectSCT() {
                 <select
                   value={sexe}
                   onChange={(e) => setSexe(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 >
                   <option value=""></option>
                   <option value="homme">Homme</option>
@@ -317,7 +321,7 @@ function ProspectSCT() {
                       type="text"
                       value={site_web}
                       onChange={(e) => setSiteWeb(e.target.value)}
-                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -333,7 +337,7 @@ function ProspectSCT() {
                   type="text"
                   value={adresse}
                   onChange={(e) => setAdresse(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -348,7 +352,7 @@ function ProspectSCT() {
                   type="text"
                   value={ville}
                   onChange={(e) => setVille(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -363,7 +367,7 @@ function ProspectSCT() {
                   type="text"
                   value={pays}
                   onChange={(e) => setPays(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -378,7 +382,7 @@ function ProspectSCT() {
                   type="text"
                   value={numero_siren}
                   onChange={(e) => setNumeroSiren(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -394,40 +398,39 @@ function ProspectSCT() {
           </form>
         </div>
       ) : (
-        <div>
-          <table className="min-w-full my-2">
-            <thead className="my-10 border-b-4 ">
-              <tr className="h-20 ">
-                <th className="text-left text-sm font-medium leading-6 border-b-10">
+        <div className="w-full border rounded-lg shadow-md" >
+          <table className="min-w-full ">
+            <thead className="">
+              <tr className="">
+                <th className="text-left p-4 text-sm font-medium leading-6 border-b-10">
                   Type
                 </th>
-                <th className="text-left text-sm font-medium leading-6 ">
+                <th className="text-left p-4 text-sm font-medium leading-6 ">
                   Nom société
                 </th>
-                <th className="text-left text-sm font-medium leading-6 ">
+                <th className="text-left p-4 text-sm font-medium leading-6 ">
                   Nom
                 </th>
-                <th className="text-left text-sm font-medium leading-6 ">
+                <th className="text-left p-4 text-sm font-medium leading-6 ">
                   Email
                 </th>
               </tr>
             </thead>
-            <tbody className="border-gray-300 py-2 ">
+            <tbody className="border-gray-300">
               {prospects.map((prospect) => (
                 <tr key={prospect.id}>
-                  <td className="border-y  ">
+                  <td className="border-y p-4 ">
                     <Link to={`/Prospect/${prospect.id}`}>{prospect.type}</Link>
                   </td>
-                  <td className="border-y">
+                  <td className="border-y p-4">
                     <Link to={`/Prospect/${prospect.id}`}>
                       {prospect.nom_societe}
                     </Link>
                   </td>
-                  <td className="border-y ">
+                  <td className="border-y p-4">
                     <Link to={`/Prospect/${prospect.id}`}>{prospect.nom}</Link>
                   </td>
-                  <td className="border-y py-2 ">{prospect.email}</td>
-                  <td className="border-y"></td>
+                  <td className="border-y p-4 ">{prospect.email}</td>
                 </tr>
               ))}
             </tbody>
