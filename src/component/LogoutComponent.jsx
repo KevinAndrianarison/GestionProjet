@@ -33,6 +33,7 @@ export default function LogoutComponent() {
       })
       .then((response) => {
         localStorage.removeItem("token");
+        localStorage.removeItem("navBar");
         localStorage.removeItem("user");
         localStorage.removeItem("role");
         setShowLogout(false);
