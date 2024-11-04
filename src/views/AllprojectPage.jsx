@@ -66,7 +66,7 @@ export default function AllprojectPage() {
       <div className="myprojectPage pb-5" onClick={closeDropdown}>
         <div>
           <h1 className="titreMyproject mr-5">
-            <FontAwesomeIcon icon={faAnglesRight} className="w-8 h-5" />
+            <FontAwesomeIcon icon={faAnglesRight} className="w-6 h-4" />
             Les projets
           </h1>
           <div className="flex flex-wrap items-end mt-2">

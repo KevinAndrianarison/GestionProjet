@@ -100,9 +100,9 @@ export default function GestionUserPage() {
   return (
     <div className="formulaireAddUsers pb-5" onClick={closeDropdown}>
       <h1 className="titreFormddUser">Inviter une personne :</h1>
-      <div className="formContent flex mt-5">
+      <div className="formContent text-xs flex mt-5">
         <div className="sm:col-span-3 w-60 mr-5">
-          <label className="block text-sm font-medium leading-6 text-gray-900">
+          <label className="block font-medium leading-6 text-gray-900">
             Nom complet
           </label>
           <div className="mt-2">
@@ -117,7 +117,7 @@ export default function GestionUserPage() {
           </div>
         </div>
         <div className="sm:col-span-3 w-60 mr-5">
-          <label className="block text-sm font-medium leading-6 text-gray-900">
+          <label className="block font-medium leading-6 text-gray-900">
             Adresse email
           </label>
           <div className="mt-2">
@@ -137,10 +137,10 @@ export default function GestionUserPage() {
         </div>
 
         <div className="sm:col-span-3 w-44 mr-5">
-          <label className="labelBTN text-sm font-medium leading-6 text-gray-900">
+          <label className=" text-sm font-medium leading-6 text-gray-900">
             &nbsp;
           </label>
-          <div className="mt-2 divBtnInviter">
+          <div className="divBtnInviter">
             <button
               disabled={!email || !nom || showMessageErrorEmail}
               className="btnInviter"
@@ -172,7 +172,7 @@ export default function GestionUserPage() {
           </div>
         </div>
         {showGrid && (
-          <div className="ListMembresGrid mt-4">
+          <div className="ListMembresGrid  mt-4">
             {ListeUser.map(
               (list, index) =>
                 list.role === "employe" && (
@@ -193,7 +193,7 @@ export default function GestionUserPage() {
                         <p className="poste">{list.poste}</p>
                       </div>
                       <div className="adresse">{list.telephone}</div>
-                      <div className="email">
+                      <div className="email text-xs">
                         <p>{list.email}</p>
                       </div>
                     </div>

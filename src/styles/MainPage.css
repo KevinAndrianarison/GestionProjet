@@ -2,23 +2,22 @@
   width: 90%;
   margin: 0 auto;
   background-color: white;
-  height: 100%;
 }
 
 .title {
   font-family: "righteous";
-  font-size: 3em;
+  font-size: 2em;
   color: rgba(0, 0, 0, 0.747);
 }
 
 .titles {
   font-family: "righteous";
-  font-size: 2.0em;
+  font-size: 1.5em;
   color: rgba(0, 0, 0, 0.747);
 }
 
 .description {
-  font-size: 1.0em;
+  font-size: 0.8em;
 }
 
 .logos {
@@ -40,8 +39,8 @@
 }
 
 .iconeResponsive{
-  width: 2vw;
-  height: 3vh;
+  width: 1vw;
+  height: 2vh;
 
 }
 
@@ -75,7 +74,7 @@
     display: none;
   }
   .title {
-    font-size: 2em;
+    font-size: 1em;
   }
   .titles {
     display: none;

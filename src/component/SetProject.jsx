@@ -162,7 +162,7 @@ export default function SetProject() {
     <>
       <div className="showModals" onClick={() => setShowSetProject(false)}>
         <div
-          className="formModalCreatePosts"
+          className="formModalCreatePosts text-xs"
           onClick={(e) => {
             e.stopPropagation();
           }}
