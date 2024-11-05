@@ -28,7 +28,7 @@ export function UserContextProvider({ children }) {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {                
+      .then((response) => {
         if (response.data.utilisateurs.length !== 0) {
           setListeUser(response.data.utilisateurs);
         }

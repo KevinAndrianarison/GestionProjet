@@ -36,6 +36,7 @@ export default function MyProfil() {
   }
 
   useEffect(() => {
+    setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
 
@@ -56,9 +57,11 @@ export default function MyProfil() {
         setEmail(profileResponse.data.administrateur.email);
         setTelephone(profileResponse.data.administrateur.telephone);
         setPoste(profileResponse.data.administrateur.poste);
+        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }, []);
 
@@ -161,7 +164,7 @@ export default function MyProfil() {
       formData.append("email", email || "");
       formData.append("telephone", String(telephone) || "");
       formData.append("poste", poste || "");
-      formData.append("photo_profil", file || "");
+      formData.append("photo_profile", file || "");
 
       axios
         .post(`${url}/${APIname}`, formData, {
@@ -172,6 +175,8 @@ export default function MyProfil() {
           },
         })
         .then((response) => {
+          console.log(response.data.administrateur);
+
           localStorage.setItem(
             "user",
             JSON.stringify(response.data.administrateur)

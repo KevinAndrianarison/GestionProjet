@@ -318,13 +318,14 @@ export default function DetailsProject() {
   }
 
   function modifierProjet() {
-    if (nomProjet !== oldValueTitre || description !== oldDescription) {
+    if (nomProjet !== oldValueTitre || editorRef.current.getContent() !== oldDescription) {
       let formData = {
         titre: nomProjet,
         date_debut: dateDebut,
         date_fin: dateFin,
         description: editorRef.current.getContent(),
       };
+      
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
       const userString = localStorage.getItem("user");
@@ -704,7 +705,7 @@ export default function DetailsProject() {
               }
               onClick={showSousProjet}
             >
-              Sous-projets
+              Grandes étapes
             </li>
             <li
               className={

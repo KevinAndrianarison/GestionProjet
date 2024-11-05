@@ -10,6 +10,7 @@ export const ProjectContext = createContext({
   ListeProjectWhenMembres: [],
   ListMembres: [],
   ListChefs: [],
+  ListStatus: [],
   ListChefAndMembres: [],
   oneProject: {},
   nomProjet: "",
@@ -32,6 +33,7 @@ export function ProjectContextProvider({ children }) {
   const [categorie, setCategorie] = useState("");
   const [idProjet, setIdProjet] = useState({});
   const [ListMembres, setListMembres] = useState([]);
+  const [ListStatus, setListStatus] = useState([]);
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
@@ -110,6 +112,26 @@ export function ProjectContextProvider({ children }) {
       });
   }
 
+  function getAllStatus() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/statuts-projets`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListStatus(response.data)
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
   function getOneProjet(id) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -151,6 +173,7 @@ export function ProjectContextProvider({ children }) {
         ListChefs,
         ListChefAndMembres,
         categorie,
+        ListStatus,
         setCategorie,
         setListeProject,
         setOneProject,
@@ -168,6 +191,8 @@ export function ProjectContextProvider({ children }) {
         setListChefAndMembres,
         setListeProjectWhenMembres,
         setListeProjectWhenChef,
+        setListStatus,
+        getAllStatus
       }}
     >
       {children}

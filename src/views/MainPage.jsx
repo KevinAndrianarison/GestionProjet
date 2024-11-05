@@ -129,12 +129,12 @@ export default function MainPage() {
           ></div>
           <p className="title">Softiceo</p>
         </div>
-        <div className="input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center">
+        <div className="mb-1 input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center">
           <div
             onClick={switchToGestProj}
             className={
               statusNavBar === 1
-                ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                 : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
             }
           >
@@ -145,7 +145,7 @@ export default function MainPage() {
             onClick={switchToGestDevis}
             className={
               statusNavBar === 2
-                ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                 : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
             }
           >
@@ -156,7 +156,7 @@ export default function MainPage() {
             onClick={switchToGestRH}
             className={
               statusNavBar === 3
-                ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                 : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
             }
           >
@@ -166,7 +166,7 @@ export default function MainPage() {
             onClick={switchToGestClient}
             className={
               statusNavBar === 4
-                ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                 : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
             }
           >
@@ -179,7 +179,7 @@ export default function MainPage() {
               <div className="flex mr-5 items-center">
                 <div
                   style={{
-                    backgroundImage: `url(${url}/storage/${user.photo_profil})`,
+                    backgroundImage: `url(${url}/storage/${user.photo_profile})`,
                   }}
                   className="mr-1 bg-cover bg-center rounded-3xl w-14 h-12"
                 ></div>

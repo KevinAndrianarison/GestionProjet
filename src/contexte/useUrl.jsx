@@ -5,7 +5,8 @@ export const UrlContext = createContext({
 });
 export function UrlContextProvider({ children }) {
   // const [url, setUrl] = useState("http://192.168.1.115:8000");
-  const [url, setUrl] = useState("https://bg.societe-manage.com/public");
+  // const [url, setUrl] = useState("https://bg.societe-manage.com/public");
+  const [url, setUrl] = useState("http://85.215.240.107/back-end/public");
 
   return (
     <UrlContext.Provider
