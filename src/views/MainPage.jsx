@@ -193,13 +193,6 @@ export default function MainPage() {
                   />
                 </Tippy>
               </NavLink>
-              <Tippy content="Créer un projet ">
-                <FontAwesomeIcon
-                  onClick={createProject}
-                  icon={faPlusCircle}
-                  className="mr-5 focus:outline-none iconeResponsive"
-                />
-              </Tippy>
               <FontAwesomeIcon
                 onClick={logout}
                 icon={faSignOutAlt}
@@ -211,7 +204,18 @@ export default function MainPage() {
       </div>
       <div className="mains">
         <div className="header">
-          <div className="titles mt-2">{TitreNavBar}</div>
+          <div className="titles mt-2 flex items-center">
+            {TitreNavBar}
+            {statusNavBar === 1 && (
+              <Tippy content="Créer un projet ">
+                <FontAwesomeIcon
+                  onClick={createProject}
+                  icon={faPlusCircle}
+                  className="ml-5 focus:outline-none iconeResponsive"
+                />
+              </Tippy>
+            )}
+          </div>
           {(showAdmin || showUser) && (
             <div
               className="description  mt-2"

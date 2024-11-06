@@ -111,7 +111,7 @@ export default function AllprojectPage() {
                     getAllComs(list.id);
                   }}
                 >
-                  <li className="pl-5 Titres">{list.titre}</li>
+                  <li className="pl-5 Titres">{list.nom}</li>
 
                   <li
                     className="Priorite  mr-2"

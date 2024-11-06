@@ -50,14 +50,14 @@ export function ProjectContextProvider({ children }) {
     let user = JSON.parse(userString);
 
     axios
-      .get(`${url}/api/entreprises/${user.gest_com_entreprise_id}/projets`, {
+      .get(`${url}/api/projets`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         setShowSpinner(false);
-        setListeProject(response.data.data.reverse());
+        setListeProject(response.data);        
       })
       .catch((err) => {
         console.error(err);
@@ -123,7 +123,7 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setListStatus(response.data)
+        setListStatus(response.data)        
         setShowSpinner(false);
       })
       .catch((err) => {
@@ -149,7 +149,6 @@ export function ProjectContextProvider({ children }) {
         setIdProjet(response.data.data.id);
         setShowDetails(true);
         setListMembres(response.data.data.membres);
-
         setListChefs(response.data.data.chefs);
       })
       .catch((err) => {

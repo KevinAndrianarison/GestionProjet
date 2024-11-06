@@ -175,8 +175,6 @@ export default function MyProfil() {
           },
         })
         .then((response) => {
-          console.log(response.data.administrateur);
-
           localStorage.setItem(
             "user",
             JSON.stringify(response.data.administrateur)
