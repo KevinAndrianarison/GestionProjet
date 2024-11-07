@@ -318,14 +318,17 @@ export default function DetailsProject() {
   }
 
   function modifierProjet() {
-    if (nomProjet !== oldValueTitre || editorRef.current.getContent() !== oldDescription) {
+    if (
+      nomProjet !== oldValueTitre ||
+      editorRef.current.getContent() !== oldDescription
+    ) {
       let formData = {
         titre: nomProjet,
         date_debut: dateDebut,
         date_fin: dateFin,
         description: editorRef.current.getContent(),
       };
-      
+
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
       const userString = localStorage.getItem("user");
@@ -402,9 +405,9 @@ export default function DetailsProject() {
               className="text-red-600 font-bold border-4 border-red-500 rounded-full px-1 py-0.5"
             />
           </button>
-            <div className="mx-auto">
-              <div className="grid grid-cols-12">
-                <div class="col-span-10">
+          <div className="mx-auto">
+            <div className="grid grid-cols-12">
+              <div className="col-span-10">
                 <h1 className={styles.titreProjet}>
                   {isInputTitre && (
                     <>
@@ -415,9 +418,17 @@ export default function DetailsProject() {
                         value={nomProjet}
                         onInput={(e) => {
                           if (e.target.value) {
-                            e.target.classList.add("ring-2", "ring-inset", "ring-[rgba(0, 184, 148, 1.0)]");
+                            e.target.classList.add(
+                              "ring-2",
+                              "ring-inset",
+                              "ring-[rgba(0, 184, 148, 1.0)]"
+                            );
                           } else {
-                            e.target.classList.remove("ring-2", "ring-inset", "ring-[rgba(0, 184, 148, 1.0)]");
+                            e.target.classList.remove(
+                              "ring-2",
+                              "ring-inset",
+                              "ring-[rgba(0, 184, 148, 1.0)]"
+                            );
                           }
                         }}
                         onChange={(e) => setNomProjet(e.target.value)}
@@ -434,7 +445,8 @@ export default function DetailsProject() {
                         e.stopPropagation();
                       }}
                     >
-                      <FontAwesomeIcon icon={faFile} className="mr-2" /> {nomProjet}
+                      <FontAwesomeIcon icon={faFile} className="mr-2" />{" "}
+                      {nomProjet}
                     </p>
                   )}
                 </h1>
@@ -453,16 +465,16 @@ export default function DetailsProject() {
                         <ul className="flex flex-wrap">
                           {ListChefs.map((list) => (
                             <li key={list.id}>
-                              @ {list.nom} <b>(Chef de projet),&nbsp;</b>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {ListMembres.length !== 0 && (
-                        <ul className="flex flex-wrap">
-                          {ListMembres.map((list) => (
-                            <li key={list.id}>
-                              @ {list.nom} <b>(membre),&nbsp;</b>
+                              @ {list.utilisateur.nom}
+                              {list.role === "resp" && (
+                                <b>(Responsable hierarchique),&nbsp;</b>
+                              )}
+                              {list.role === "chef" && (
+                                <b>(Chef de projet),&nbsp;</b>
+                              )}
+                              {list.role === "membre" && (
+                                <b>(Membre),&nbsp;</b>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -486,36 +498,23 @@ export default function DetailsProject() {
                                 className="flex justify-between items-center"
                               >
                                 <li>
-                                  - {list.nom} <b>(Chef de projet)</b>{" "}
+                                  - {list.utilisateur.nom}{" "}
+                                  {list.role === "resp" && (
+                                    <b>(Responsable hierarchique),&nbsp;</b>
+                                  )}
+                                  {list.role === "chef" && (
+                                    <b>(Chef de projet),&nbsp;</b>
+                                  )}
+                                  {list.role === "membre" && (
+                                    <b>(Membre),&nbsp;</b>
+                                  )}{" "}
                                 </li>
-                                {(categorie === "Mes projets" || verifyIfChef) && (
-                                  <Tippy content="Retirer">
-                                    <FontAwesomeIcon
-                                      onClick={() => retirerChefs(list.id, list.nom)}
-                                      icon={faXmark}
-                                      className=" cursor-pointer text-gray-400 focus:outline-none"
-                                    />
-                                  </Tippy>
-                                )}
-                              </div>
-                            ))}
-                          </ul>
-                        )}
-                        {ListMembres.length !== 0 && (
-                          <ul>
-                            {ListMembres.map((list) => (
-                              <div
-                                key={list.id}
-                                className="flex justify-between items-center"
-                              >
-                                <li>
-                                  - {list.nom} <b>(membre)</b>
-                                </li>
-                                {(categorie === "Mes projets" || verifyIfChef) && (
+                                {(categorie === "Mes projets" ||
+                                  verifyIfChef) && (
                                   <Tippy content="Retirer">
                                     <FontAwesomeIcon
                                       onClick={() =>
-                                        retirerMembres(list.id, list.nom)
+                                        retirerChefs(list.id, list.nom)
                                       }
                                       icon={faXmark}
                                       className=" cursor-pointer text-gray-400 focus:outline-none"
@@ -530,14 +529,17 @@ export default function DetailsProject() {
                     )}
 
                     <div className="mt-2 hidden flex items-end flex-wrap">
-                      <strong className="mr-2">Début :</strong> <div>{dateDebut}</div>
+                      <strong className="mr-2">Début :</strong>{" "}
+                      <div>{dateDebut}</div>
                     </div>
                     {dateFin && (
                       <p className="mt-2 hidden flex items-end flex-wrap">
                         <strong className="mr-2">Date limite :</strong>
                         <input
                           type="date"
-                          disabled={categorie !== "Mes projets" && !verifyIfChef}
+                          disabled={
+                            categorie !== "Mes projets" && !verifyIfChef
+                          }
                           className="input pl-3 pr-3 block rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                           value={dateFin}
                           onChange={(e) => setDateFin(e.target.value)}
@@ -556,10 +558,8 @@ export default function DetailsProject() {
                       </button>
                     )}
                   </div>
-
-                  
                 </div>
-                
+
                 {isdivDescription && (
                   <div
                     className="bg-gray-100 editors p-1 rounded w-full text-grey text-xs"
@@ -601,47 +601,50 @@ export default function DetailsProject() {
                     </div>
                   </>
                 )}
-                </div>
-                <div class="col-span-2 p-4">
-                  {(categorie === "Mes projets" || verifyIfChef) && (
-                    <div className="buttonList w-[100%]">
-                      <div className={styles.fullScreen}>
-                        <button
-                          className="w-full text-xs font-medium text-white py-2 bg-blue-500"
-                          onClick={() => setProject()}
-                        >
-                          <FontAwesomeIcon icon={faPlus} className=" mr-2 px-1" />
-                          Inviter membre
-                        </button>
-                        <button
-                          onClick={deleteProject}
-                          className="w-full text-xs text-white py-2 bg-red-500"
-                        >
-                          <FontAwesomeIcon icon={faTrash} className=" mr-2 px-1" />
-                          Supprimer ce projet
-                        </button>
-                      </div>
-                      <div className={styles.smallScreen}>
-                        <Tippy content=" Inviter des membres">
-                          <FontAwesomeIcon
-                            onClick={() => setProject()}
-                            icon={faPlus}
-                            className=" mr-2"
-                          />
-                        </Tippy>
-                        <Tippy content="Supprimer ce projet">
-                          <FontAwesomeIcon
-                            icon={faTrash}
-                            onClick={deleteProject}
-                            className=" text-red-500 mr-2"
-                          />
-                        </Tippy>
-                      </div>
+              </div>
+              <div className="col-span-2 p-4">
+                {(categorie === "Mes projets" || verifyIfChef) && (
+                  <div className="buttonList w-[100%]">
+                    <div className={styles.fullScreen}>
+                      <button
+                        className="w-full text-xs font-medium text-white py-2 bg-blue-500"
+                        onClick={() => setProject()}
+                      >
+                        <FontAwesomeIcon icon={faPlus} className=" mr-2 px-1" />
+                        Inviter membre
+                      </button>
+                      <button
+                        onClick={deleteProject}
+                        className="w-full text-xs text-white py-2 bg-red-500"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          className=" mr-2 px-1"
+                        />
+                        Supprimer ce projet
+                      </button>
                     </div>
-                  )}
-                </div>
+                    <div className={styles.smallScreen}>
+                      <Tippy content=" Inviter des membres">
+                        <FontAwesomeIcon
+                          onClick={() => setProject()}
+                          icon={faPlus}
+                          className=" mr-2"
+                        />
+                      </Tippy>
+                      <Tippy content="Supprimer ce projet">
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          onClick={deleteProject}
+                          className=" text-red-500 mr-2"
+                        />
+                      </Tippy>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          </div>
           {ListTask.length !== 0 && (
             <>
               {isTask && (
@@ -927,9 +930,7 @@ export default function DetailsProject() {
                   {(categorie === "Mes projets" || verifyIfChef) && (
                     <div className="section mt-5 text-xs">
                       {inputFields.length !== 0 && (
-                        <div className="label">
-                          Liste des champs :
-                        </div>
+                        <div className="label">Liste des champs :</div>
                       )}
                       <div className=" w-full  sections">
                         {inputFields.map((input, index) => (

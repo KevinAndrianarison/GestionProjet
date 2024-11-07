@@ -92,6 +92,7 @@ export default function CreateProject() {
   }, []);
 
   function handleSearchChange(event) {
+    setStepTwoDone(false);
     const value = event.target.value;
     setSearchTerm(value);
     setIsDropdownOpenMembers(value !== "");
@@ -102,6 +103,7 @@ export default function CreateProject() {
   }
 
   function handleSearchChangeResponsables(event) {
+    setStepTwoDone(false);
     const value = event.target.value;
     setSearchTermResponsable(value);
     setIsDropdownOpenResponsable(value !== "");
@@ -112,12 +114,14 @@ export default function CreateProject() {
   }
 
   function handleSearchChangeChefs(event) {
+    console.log(ListeUser);
+    setStepTwoDone(false);
     const value = event.target.value;
     setSearchTermChef(value);
     setIsDropdownOpenChef(value !== "");
     const options = ListeUser.filter(
       (user) =>
-        user.valeur === "chef" &&
+        (user.grade === "chef" || user.role === "admin") &&
         user.email.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredOptionsChefs(options);
@@ -212,6 +216,7 @@ export default function CreateProject() {
         gest_com_utilisateur_ids: idChefs,
       };
     }
+    console.log(response.data);
 
     axios
       .post(`${url}/api/projets/role-utilisateurs`, formData, {
@@ -219,7 +224,9 @@ export default function CreateProject() {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {})
+      .then((response) => {
+        console.log(response.data);
+      })
       .catch((err) => {
         console.error(err);
       });
@@ -267,7 +274,7 @@ export default function CreateProject() {
     }
     let formData = {
       nom: titreProjet,
-      description: editorRef.current.getContent(),
+      description: editorRef.current.getContent() || "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
       date_fin: dateFin,
@@ -294,15 +301,15 @@ export default function CreateProject() {
         if (userIdsResp.length !== 0) {
           addResp(response.data.projet.id);
         }
-        // if (categorie === "Tous les projets") {
-        //   getAllproject();
-        // }
-        // if (categorie === "Mes projets") {
-        //   getProjectWhenChef();
-        // }
-        // if (categorie === "Les projets dont je fait partie") {
-        //   getProjectWhenMembres();
-        // }
+        if (categorie === "Tous les projets") {
+          getAllproject();
+        }
+        if (categorie === "Mes projets") {
+          getProjectWhenChef();
+        }
+        if (categorie === "Les projets dont je fait partie") {
+          getProjectWhenMembres();
+        }
         setTitreProjet("");
         setLigneBudgetaire("");
         setClients("");
@@ -359,15 +366,15 @@ export default function CreateProject() {
         if (userIdsResp.length !== 0) {
           addResp(response.data.projet.id);
         }
-        // if (categorie === "Tous les projets") {
-        //   getAllproject();
-        // }
-        // if (categorie === "Mes projets") {
-        //   getProjectWhenChef();
-        // }
-        // if (categorie === "Les projets dont je fait partie") {
-        //   getProjectWhenMembres();
-        // }
+        if (categorie === "Tous les projets") {
+          getAllproject();
+        }
+        if (categorie === "Mes projets") {
+          getProjectWhenChef();
+        }
+        if (categorie === "Les projets dont je fait partie") {
+          getProjectWhenMembres();
+        }
         setTitreProjet("");
         setLigneBudgetaire("");
         setClients("");
@@ -394,6 +401,7 @@ export default function CreateProject() {
   }
 
   function createProjetFirstStep() {
+    setShowSpinner(true);
     let statusIfNotselect;
     if (statusProjetId === "") {
       statusIfNotselect = ListStatus[0].id;
@@ -409,22 +417,45 @@ export default function CreateProject() {
       client: clients,
       gest_proj_statuts_projet_id: Number(statusProjetId) || statusIfNotselect,
     };
-    axios
-      .post(`${url}/api/projets`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setIdProjectLoad(response.data.projet.id);
-        setStepOneDone(true);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+
+    if (!stepOneDone) {
+      axios
+        .post(`${url}/api/projets`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          setIdProjectLoad(response.data.projet.id);
+          setStepOneDone(true);
+          setShowSpinner(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setShowSpinner(false);
+        });
+    }
+    if (stepOneDone) {
+      axios
+        .put(`${url}/api/projets/${idProjectLoad}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          setIdProjectLoad(response.data.projet.id);
+          setStepOneDone(true);
+          setShowSpinner(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setShowSpinner(false);
+        });
+    }
   }
 
   function createProjetStepThree() {
+    setShowSpinner(true);
     let formData = {
       nb_jour: nbrJR,
       taux_j_moyen: TJM,
@@ -437,12 +468,14 @@ export default function CreateProject() {
       })
       .then((response) => {
         setStepThreeDone(true);
+        setShowSpinner(false);
         if (stepOneDone && stepTwoDone) {
           setShowcreateTask(false);
         }
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
 
@@ -595,27 +628,97 @@ export default function CreateProject() {
                       <button
                         onClick={createProjetFirstStep}
                         disabled={!titreProjet}
-                        className="border bg-blue-500 rounded text-white px-5 py-2"
+                        className=" bg-blue-500 rounded text-white px-5 py-2"
                       >
                         Enregistrer
                       </button>
                     )}
                     {stepOneDone && (
-                      <p className="text-xs">
-                        Vous avez terminé la première étape ! ✅
-                      </p>
+                      <button
+                        onClick={createProjetFirstStep}
+                        disabled={!titreProjet}
+                        className=" bg-yellow-500 font-bold rounded text-black px-5 py-2"
+                      >
+                        Modifier
+                      </button>
                     )}
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger>
+                {" "}
+                <h1 className="font-bold text-xl mt-2">
+                  <FontAwesomeIcon icon={faFontAwesome} className="mr-2" />
+                  Etape 02
+                </h1>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div>
+                  <div className="flex flex-wrap items-end">
+                    <div className="w-52 mr-2 mt-2">
+                      <div className="label w-full">NB jours :</div>
+                      <input
+                        type="number"
+                        value={nbrJR}
+                        onChange={(e) => setNbrJR(e.target.value)}
+                        className="mt-2 input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                      />
+                    </div>
+                    <div className="w-52 mr-2 mt-2">
+                      <div className="label w-full">
+                        Taux Journalier Moyen (€) :
+                      </div>
+                      <input
+                        type="number"
+                        value={TJM}
+                        onChange={(e) => setTJM(e.target.value)}
+                        className="mt-2 input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                      />
+                    </div>
+                    {!stepThreeDone && (
+                      <button
+                        onClick={createProjetStepThree}
+                        disabled={!idProjectLoad}
+                        className="mt-4 h-8 rounded bg-blue-500 text-white w-52 mr-2"
+                      >
+                        Enregistrer
+                      </button>
+                    )}
+                    {stepThreeDone && (
+                      <button
+                        onClick={createProjetStepThree}
+                        disabled={!idProjectLoad}
+                        className="mt-4 h-8 rounded font-bold bg-yellow-500 text-black w-52 mr-2"
+                      >
+                        Modifier
+                      </button>
+                    )}
+
+                    {TJM && nbrJR && (
+                      <div className="mt-5 w-52 flex items-end text-gray-900 text-xl">
+                        <div className="mr-2">Total :</div>
+                        <div className="text-blue-500 font-bold">
+                          {TJM * nbrJR} €
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
           <Accordion type="single" collapsible>
             <AccordionItem value="item-1">
               <AccordionTrigger>
                 <h1 className="font-bold text-xl mt-2">
                   <FontAwesomeIcon icon={faFontAwesome} className="mr-2" />
-                  Etape 02
+                  Etape 03
                 </h1>
               </AccordionTrigger>
               <AccordionContent>
@@ -792,10 +895,10 @@ export default function CreateProject() {
                     </div>
                   )}
                   {user.role === "admin" && (
-                    <div className=" mt-5 flex items-center font-bold">
+                    <div className=" mt-5 flex items-center text-xs font-bold">
                       <input
                         type="checkbox"
-                        className="mr-2 "
+                        className="mr-2"
                         checked={isChecked}
                         onChange={handleCheckboxChange}
                       />
@@ -814,7 +917,7 @@ export default function CreateProject() {
                     )}
                     {stepTwoDone && (
                       <p className="text-xs">
-                        Vous avez terminé la deuxième étape ! ✅
+                        Vous avez terminé la troixième étape ! ✅
                       </p>
                     )}
                   </div>
@@ -880,66 +983,6 @@ export default function CreateProject() {
                           </div>
                         </div>
                       )} */}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-          <Accordion type="single" collapsible>
-            <AccordionItem value="item-1">
-              <AccordionTrigger>
-                {" "}
-                <h1 className="font-bold text-xl mt-2">
-                  <FontAwesomeIcon icon={faFontAwesome} className="mr-2" />
-                  Etape 03
-                </h1>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div>
-                  <div className="flex flex-wrap items-end">
-                    <div className="w-52 mr-2">
-                      <div className="label mt-5">NB jours :</div>
-                      <input
-                        type="number"
-                        value={nbrJR}
-                        onChange={(e) => setNbrJR(e.target.value)}
-                        className="mt-2 input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                      />
-                    </div>
-                    <div className="w-52 mr-2">
-                      <div className="label mt-5">
-                        Taux Journalier Moyen HT (€) :
-                      </div>
-                      <input
-                        type="number"
-                        value={TJM}
-                        onChange={(e) => setTJM(e.target.value)}
-                        className="mt-2 input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                      />
-                    </div>
-                    {!stepThreeDone && (
-                      <button
-                        onClick={createProjetStepThree}
-                        disabled={!idProjectLoad}
-                        className="mt-4 h-8 rounded bg-blue-500 text-white w-52 mr-2"
-                      >
-                        Enregistrer
-                      </button>
-                    )}
-
-                    {TJM && nbrJR && (
-                      <div className="mt-5 w-52 flex items-end text-gray-900 text-xl">
-                        <div className="mr-2">Total :</div>
-                        <div className="text-blue-500 font-bold">
-                          {TJM * nbrJR} €
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {stepThreeDone && (
-                    <p className="text-xs mt-2">
-                      Vous avez terminé la troixième étape ! ✅
-                    </p>
-                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>

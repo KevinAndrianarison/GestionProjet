@@ -263,7 +263,7 @@ export default function MyProfil() {
               />
             </div>
             {showMessageErrorEmail && (
-              <p className="errEmail">Adresse email invalide</p>
+              <p className="errEmail text-xs">Adresse email invalide</p>
             )}
           </div>
           <div className="sm:col-span-3 w-60 mr-5">

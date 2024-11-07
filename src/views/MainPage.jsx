@@ -129,50 +129,54 @@ export default function MainPage() {
           ></div>
           <p className="title">Softiceo</p>
         </div>
-        <div className="mb-1 input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center">
-          <div
-            onClick={switchToGestProj}
-            className={
-              statusNavBar === 1
-                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-            }
-          >
-            <FontAwesomeIcon icon={faDiagramProject} className="mr-2 " />{" "}
-            Gestion de projet
+        {(showAdmin || showUser) && (
+          <div className="mb-1 input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center">
+            <div
+              onClick={switchToGestProj}
+              className={
+                statusNavBar === 1
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
+              }
+            >
+              <FontAwesomeIcon icon={faDiagramProject} className="mr-2 " />{" "}
+              Gestion de projet
+            </div>
+            <div
+              onClick={switchToGestDevis}
+              className={
+                statusNavBar === 2
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
+              }
+            >
+              <FontAwesomeIcon icon={faReceipt} className="mr-2 " /> Gestion de
+              devis-facture
+            </div>
+            <div
+              onClick={switchToGestRH}
+              className={
+                statusNavBar === 3
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
+              }
+            >
+              <FontAwesomeIcon icon={faUsersGear} className="mr-2 " /> Gestion
+              RH
+            </div>
+            <div
+              onClick={switchToGestClient}
+              className={
+                statusNavBar === 4
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
+              }
+            >
+              <FontAwesomeIcon icon={faStar} className="mr-2 " /> Gestion client
+            </div>
           </div>
-          <div
-            onClick={switchToGestDevis}
-            className={
-              statusNavBar === 2
-                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-            }
-          >
-            <FontAwesomeIcon icon={faReceipt} className="mr-2 " /> Gestion de
-            devis-facture
-          </div>
-          <div
-            onClick={switchToGestRH}
-            className={
-              statusNavBar === 3
-                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-            }
-          >
-            <FontAwesomeIcon icon={faUsersGear} className="mr-2 " /> Gestion RH
-          </div>
-          <div
-            onClick={switchToGestClient}
-            className={
-              statusNavBar === 4
-                ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-            }
-          >
-            <FontAwesomeIcon icon={faStar} className="mr-2 " /> Gestion client
-          </div>
-        </div>
+        )}
+
         <div className="text-xs flex items-center text-gray-700">
           {(showAdmin || showUser) && (
             <>
@@ -193,29 +197,32 @@ export default function MainPage() {
                   />
                 </Tippy>
               </NavLink>
-              <FontAwesomeIcon
-                onClick={logout}
-                icon={faSignOutAlt}
-                className="mr-5 iconeResponsive"
-              />
             </>
           )}
+          <FontAwesomeIcon
+            onClick={logout}
+            icon={faSignOutAlt}
+            className="mr-5 iconeResponsive"
+          />
         </div>
       </div>
       <div className="mains">
         <div className="header">
-          <div className="titles mt-2 flex items-center">
-            {TitreNavBar}
-            {statusNavBar === 1 && (
-              <Tippy content="Créer un projet ">
-                <FontAwesomeIcon
-                  onClick={createProject}
-                  icon={faPlusCircle}
-                  className="ml-5 focus:outline-none iconeResponsive"
-                />
-              </Tippy>
-            )}
-          </div>
+          {(showAdmin || showUser) && (
+            <div className="titles mt-2 flex items-center">
+              {TitreNavBar}
+              {statusNavBar === 1 && (
+                <Tippy content="Créer un projet ">
+                  <FontAwesomeIcon
+                    onClick={createProject}
+                    icon={faPlusCircle}
+                    className="cursor-pointer ml-5 focus:outline-none iconeResponsive"
+                  />
+                </Tippy>
+              )}
+            </div>
+          )}
+
           {(showAdmin || showUser) && (
             <div
               className="description  mt-2"

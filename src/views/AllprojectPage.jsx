@@ -1,16 +1,19 @@
 import "../styles/MyprojectPage.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ShowContext } from "../contexte/useShow";
 import { useContext, useEffect, useState } from "react";
 import { TaskContext } from "../contexte/useTask";
 import { ComsContext } from "../contexte/useComs";
 import { faAnglesRight, faSort } from "@fortawesome/free-solid-svg-icons";
 import { ProjectContext } from "../contexte/useProject";
+import { faTrash, faSliders } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Tippy from "@tippyjs/react";
 
 export default function AllprojectPage() {
   const [activeDropdown, setActiveDropdown] = useState("");
 
-  const { showAdmin, showUser, setShowSpinner } = useContext(ShowContext);
+  const { showAdmin, showUser, setShowSpinner, setShowDeleteTask } =
+    useContext(ShowContext);
   const {
     getAllproject,
     setIdProject,
@@ -23,6 +26,8 @@ export default function AllprojectPage() {
     categorie,
     setCategorie,
     getOneProjet,
+    getProjectWhenResp,
+    ListeProjectWhenResp,
   } = useContext(ProjectContext);
 
   const { getAllTaskFirst } = useContext(TaskContext);
@@ -41,6 +46,10 @@ export default function AllprojectPage() {
     if (categorie === "Les projets dont je fait partie") {
       setShowSpinner(true);
       getProjectWhenMembres();
+    }
+    if (categorie === "Responsable hierarchique") {
+      setShowSpinner(true);
+      getProjectWhenResp();
     }
   }, [categorie]);
 
@@ -89,13 +98,18 @@ export default function AllprojectPage() {
               <option value="Les projets dont je fait partie">
                 📁 Les projets dont je fait partie
               </option>
+              <option value="Responsable hierarchique">
+                📁 Responsable hierarchique
+              </option>
             </select>
           </div>
         </div>
         <div className="contentMyproject   mt-2">
           <div className="headMyProject">
             <li className="pl-5 Titres">Titre</li>
-            <li className="Priorite mr-3">Description</li>
+            <li className="Priorite">Description</li>
+            <li className="w-5"></li>
+            <li className="w-5"></li>
           </div>
           {ListeProject.length !== 0 && (
             <div className="LISTES">
@@ -104,19 +118,42 @@ export default function AllprojectPage() {
                   key={list.id}
                   className="BodyProject "
                   onClick={() => {
-                    setListChefAndMembres([...list.chefs, ...list.membres]);
+                    setListChefAndMembres(list.utilisateur_roles.chefs);
                     setIdProject(list.id);
                     getOneProjet(list.id);
-                    getAllTaskFirst(list.id);
+                    // getAllTaskFirst(list.id);
                     getAllComs(list.id);
                   }}
                 >
-                  <li className="pl-5 Titres">{list.nom}</li>
+                  <li className="pl-5 text-xs Titres">{list.nom}</li>
 
                   <li
                     className="Priorite  mr-2"
                     dangerouslySetInnerHTML={{ __html: list.description }}
                   ></li>
+                  <li>
+                    <Tippy content="Modifier">
+                      <FontAwesomeIcon
+                        icon={faSliders}
+                        className="text-gray-600 w-5 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
+                  <li
+                    className="w-5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIdProject(list.id);
+                      setShowDeleteTask(true);
+                    }}
+                  >
+                    <Tippy content="Supprimer">
+                      <FontAwesomeIcon
+                        icon={faTrash}
+                        className="text-red-500 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
                 </div>
               ))}
             </div>
@@ -129,18 +166,41 @@ export default function AllprojectPage() {
                   key={list.id}
                   className="BodyProject"
                   onClick={() => {
-                    setListChefAndMembres([...list.chefs, ...list.membres]);
+                    setListChefAndMembres(list.utilisateur_roles.chefs);
                     setIdProject(list.id);
                     getOneProjet(list.id);
-                    getAllTaskFirst(list.id);
+                    // getAllTaskFirst(list.id);
                     getAllComs(list.id);
                   }}
                 >
-                  <li className="pl-5 Titres">{list.titre}</li>
+                  <li className="pl-5 Titres">{list.nom}</li>
                   <li
                     className="Priorite"
                     dangerouslySetInnerHTML={{ __html: list.description }}
                   ></li>
+                  <li>
+                    <Tippy content="Modifier">
+                      <FontAwesomeIcon
+                        icon={faSliders}
+                        className="text-gray-600 w-5 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
+                  <li
+                    className="w-5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIdProject(list.id);
+                      setShowDeleteTask(true);
+                    }}
+                  >
+                    <Tippy content="Supprimer">
+                      <FontAwesomeIcon
+                        icon={faTrash}
+                        className="text-red-500 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
                 </div>
               ))}
             </div>
@@ -153,18 +213,86 @@ export default function AllprojectPage() {
                   key={list.id}
                   className="BodyProject"
                   onClick={() => {
-                    setListChefAndMembres([...list.chefs, ...list.membres]);
+                    setListChefAndMembres(list.utilisateur_roles.chefs);
                     setIdProject(list.id);
                     getOneProjet(list.id);
-                    getAllTaskFirst(list.id);
+                    // getAllTaskFirst(list.id);
                     getAllComs(list.id);
                   }}
                 >
-                  <li className="pl-5 Titres">{list.titre}</li>
+                  <li className="pl-5 Titres">{list.nom}</li>
                   <li
                     className="Priorite"
                     dangerouslySetInnerHTML={{ __html: list.description }}
                   ></li>
+                  <li>
+                    <Tippy content="Modifier">
+                      <FontAwesomeIcon
+                        icon={faSliders}
+                        className="text-gray-600 w-5 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
+                  <li
+                    className="w-5"
+                    onClick={() => {
+                      setIdProject(list.id);
+                      setShowDeleteTask(true);
+                    }}
+                  >
+                    <Tippy content="Supprimer">
+                      <FontAwesomeIcon
+                        icon={faTrash}
+                        className="text-red-500 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
+                </div>
+              ))}
+            </div>
+          )}
+          {ListeProjectWhenResp.length !== 0 && (
+            <div className="LISTES">
+              {ListeProjectWhenResp.map((list, index) => (
+                <div
+                  key={list.id}
+                  className="BodyProject"
+                  onClick={() => {
+                    setListChefAndMembres(list.utilisateur_roles.chefs);
+                    setIdProject(list.id);
+                    getOneProjet(list.id);
+                    // getAllTaskFirst(list.id);
+                    getAllComs(list.id);
+                  }}
+                >
+                  <li className="pl-5 Titres">{list.nom}</li>
+                  <li
+                    className="Priorite"
+                    dangerouslySetInnerHTML={{ __html: list.description }}
+                  ></li>
+                  <li>
+                    <Tippy content="Modifier">
+                      <FontAwesomeIcon
+                        icon={faSliders}
+                        className="text-gray-600 w-5 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
+                  <li
+                    className="w-5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIdProject(list.id);
+                      setShowDeleteTask(true);
+                    }}
+                  >
+                    <Tippy content="Supprimer">
+                      <FontAwesomeIcon
+                        icon={faTrash}
+                        className="text-red-500 focus:outline-none"
+                      />
+                    </Tippy>
+                  </li>
                 </div>
               ))}
             </div>

@@ -24,6 +24,7 @@ export function ProjectContextProvider({ children }) {
   const [ListeProject, setListeProject] = useState([]);
   const [idProject, setIdProject] = useState("");
   const [ListeProjectWhenChef, setListeProjectWhenChef] = useState([]);
+  const [ListeProjectWhenResp, setListeProjectWhenResp] = useState([]);
   const [ListeProjectWhenMembres, setListeProjectWhenMembres] = useState([]);
   const [oneProject, setOneProject] = useState({});
   const [nomProjet, setNomProjet] = useState({});
@@ -43,11 +44,9 @@ export function ProjectContextProvider({ children }) {
     setListeProjectWhenMembres([]);
     setListeProjectWhenChef([]);
     setListeProject([]);
-
+    setListeProjectWhenResp([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
 
     axios
       .get(`${url}/api/projets`, {
@@ -56,8 +55,9 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
+        console.log(response.data);
         setShowSpinner(false);
-        setListeProject(response.data);        
+        setListeProject(response.data);
       })
       .catch((err) => {
         console.error(err);
@@ -68,19 +68,18 @@ export function ProjectContextProvider({ children }) {
     setListeProject([]);
     setListeProjectWhenMembres([]);
     setListeProjectWhenChef([]);
+    setListeProjectWhenResp([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
     axios
-      .get(`${url}/api/entreprises/projets/${user.id}/projets-chefs`, {
+      .get(`${url}/api/projets/chef`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         setShowSpinner(false);
-        setListeProjectWhenChef(response.data.data.reverse());
+        setListeProjectWhenChef(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
@@ -92,19 +91,41 @@ export function ProjectContextProvider({ children }) {
     setListeProject([]);
     setListeProjectWhenChef([]);
     setListeProjectWhenMembres([]);
+    setListeProjectWhenResp([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
     axios
-      .get(`${url}/api/entreprises/projets/${user.id}/projets-membre`, {
+      .get(`${url}/api/projets/membre`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         setShowSpinner(false);
-        setListeProjectWhenMembres(response.data.data.reverse());
+        setListeProjectWhenMembres(response.data.reverse());
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
+  function getProjectWhenResp() {
+    setListeProject([]);
+    setListeProjectWhenChef([]);
+    setListeProjectWhenMembres([]);
+    setListeProjectWhenResp([]);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/resp`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setShowSpinner(false);
+        setListeProjectWhenResp(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
@@ -123,7 +144,7 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setListStatus(response.data)        
+        setListStatus(response.data);
         setShowSpinner(false);
       })
       .catch((err) => {
@@ -136,20 +157,22 @@ export function ProjectContextProvider({ children }) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .get(`${url}/api/entreprise/projets/${id}`, {
+      .get(`${url}/api/projets/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setNomProjet(response.data.data.titre);
-        setDateDebut(response.data.data.date_debut);
-        setDateFin(response.data.data.date_fin);
-        setDescription(response.data.data.description);
-        setIdProjet(response.data.data.id);
+        console.log(response.data);
+
+        setNomProjet(response.data.nom);
+        setDateDebut(response.data.date_debut);
+        setDateFin(response.data.date_fin);
+        setDescription(response.data.description);
+        setIdProjet(response.data.id);
         setShowDetails(true);
-        setListMembres(response.data.data.membres);
-        setListChefs(response.data.data.chefs);
+        setListMembres(response.data.membres);
+        setListChefs(response.data.utilisateur_roles);
       })
       .catch((err) => {
         console.error(err);
@@ -173,7 +196,10 @@ export function ProjectContextProvider({ children }) {
         ListChefAndMembres,
         categorie,
         ListStatus,
+        ListeProjectWhenResp,
         setCategorie,
+        setListeProjectWhenResp,
+        getProjectWhenResp,
         setListeProject,
         setOneProject,
         getAllproject,
@@ -191,7 +217,8 @@ export function ProjectContextProvider({ children }) {
         setListeProjectWhenMembres,
         setListeProjectWhenChef,
         setListStatus,
-        getAllStatus
+        setIdProjet,
+        getAllStatus,
       }}
     >
       {children}
