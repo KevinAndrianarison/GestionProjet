@@ -105,6 +105,9 @@ function ProspectSCT() {
 
       // Mettre à jour l'état prospects pour inclure le nouveau prospect
       setProspects([...prospects, response.data]);
+
+      setFirstModalOpen(false);
+
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
       setErrorMessage("Une erreur s'est produite. Veuillez réessayer.");
