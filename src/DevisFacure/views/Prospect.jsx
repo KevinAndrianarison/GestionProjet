@@ -182,8 +182,8 @@ function ProspectSCT() {
       </div>
 
       {/* Affichage de la liste des prospects ou du formulaire */}
-        <div className="w-full border rounded-lg shadow-md" >
-          <table className="min-w-full ">
+        <div className="w-full border rounded-lg shadow-md overflow-x-auto" >
+          <table className="min-w-full">
             <thead className="">
               <tr className="">
                 <th className="text-left p-4 text-sm font-medium leading-6 border-b-10">
@@ -236,7 +236,7 @@ function ProspectSCT() {
                     >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
-              <button onClick={() => handleDelete(prospect.id)} className=" hover:text-red-500 ">
+              <button onClick={() => handleDelete(prospect.id)} className=" hover:text-red-500 ml-2">
                 <FontAwesomeIcon icon={faTrash} />
               </button>
 
@@ -248,7 +248,7 @@ function ProspectSCT() {
         </div>
           <div className="p-6">
 
-          <div className="p-5">
+          <div >
 
       <Modal isOpen={isFirstModalOpen} onClose={() => setFirstModalOpen(false)}>
         <h2 className="text-xl ">Nouveau prospect</h2>
