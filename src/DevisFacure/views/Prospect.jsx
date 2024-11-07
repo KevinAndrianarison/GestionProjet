@@ -26,6 +26,8 @@ function ProspectSCT() {
   const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
   const [selectedProspectId, setSelectedProspectId] = useState(null);
   const [prospectToEdit, setProspectToEdit] = useState({});
+  const [type_client_edit, setTypeClientEdit] = useState(""); // Pour l'édition
+
   const handleDelete = async (prospectId) => {
       // Demander confirmation avant de supprimer
   const confirmed = window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?");
@@ -115,6 +117,7 @@ function ProspectSCT() {
       const response = await axios.get(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${id}`);
       if (response.status === 200) {
         setProspectToEdit(response.data); // Mettre les données dans l'état
+        setTypeClientEdit(response.data.type); // Initialiser le type pour l'édition
         setSecondModalOpen(true); // Ouvrir le modal
       }
     } catch (error) {
@@ -122,37 +125,25 @@ function ProspectSCT() {
     }
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page
-    console.log("Données à soumettre :", prospectToEdit);
-
-    if (!prospectToEdit.id) {
-      console.error("ID du prospect manquant !");
-      return; // Annule l'envoi de la requête si l'ID est absent
-    }
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const editedData = {
+      ...prospectToEdit,
+      type: type_client_edit, // Utilisation de type_client_edit pour l'édition
+    };
+  
+    console.log("Données envoyées pour la mise à jour :", editedData); // Vérification
     
-    // Envoyer les données vers le serveur (exemple avec axios)
-    axios
-      .put(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, prospectToEdit) // Remplacez l'URL par la vôtre
-
-      .then((response) => {
-        console.log("Prospect mis à jour:", response.data);
-        // Vous pouvez fermer le modal et rafraîchir les données ici
-        setSecondModalOpen(false);
-      })
-      .catch((error) => {
-        if (error.response) {
-          // Erreur de réponse (statut HTTP 4xx ou 5xx)
-          console.error("Erreur de réponse:", error.response.data);
-        } else if (error.request) {
-          // Pas de réponse reçue du serveur
-          console.error("Aucune réponse reçue:", error.request);
-        } else {
-          // Autre erreur (par ex., configuration de la requête)
-          console.error("Erreur lors de la requête:", error.message);
-        }
-      });
+    try {
+      const response = await axios.put(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, editedData);
+      console.log("Réponse de mise à jour :", response.data);
+      setSecondModalOpen(false);
+      fetchDataAndStore();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du prospect:", error);
+    }
   };
+  
   
   return (
     <div>
@@ -440,8 +431,8 @@ function ProspectSCT() {
                 <input
                   type="radio"
                   value="societe"
-                  checked={prospectToEdit.type === "societe"}
-                  onChange={() => setProspectToEdit({ ...prospectToEdit, type_client: "societe" })}
+                  checked={type_client_edit === "societe"}
+                  onChange={() => setTypeClientEdit("societe")}
                   className="mr-2"
                 />
                 Société
@@ -450,8 +441,8 @@ function ProspectSCT() {
                 <input
                   type="radio"
                   value="particulier"
-                  checked={prospectToEdit.type === "particulier"}
-                  onChange={() => setProspectToEdit({ ...prospectToEdit, type_client: "particulier" })}
+                  checked={type_client_edit === "particulier"}
+                  onChange={() => setTypeClientEdit("particulier")}
                   className="mr-2"
                 />
                 Particulier
@@ -460,7 +451,7 @@ function ProspectSCT() {
           </div>
 
       <form onSubmit={handleFormSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-      {type_client === "societe" && (
+      {type_client_edit  === "societe" && (
 
         <div className="sm:col-span-1">
           <label className="block text-sm font-medium leading-6 text-gray-900">
@@ -539,7 +530,7 @@ function ProspectSCT() {
               </select>
             </div>
 
-            {type_client === "societe" && (
+            {type_client_edit === "societe" && (
               <div className="sm:col-span-1">
                 <label className="block text-sm font-medium leading-6 text-gray-900">
                   Site Web
@@ -597,7 +588,7 @@ function ProspectSCT() {
               />
             </div>
 
-            {type_client === "societe" && (
+            {type_client_edit  === "societe" && (
               <div className="sm:col-span-1">
                 <label className="block text-sm font-medium leading-6 text-gray-900">
                   Numéro SIREN
@@ -627,8 +618,6 @@ function ProspectSCT() {
 </Modal>
 
     </div>
-    </div>
-    <div>
     </div>
     </div>
   );
