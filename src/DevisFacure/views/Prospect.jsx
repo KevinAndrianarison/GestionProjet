@@ -3,7 +3,6 @@ import axios from "axios";
 import { FULL_URL } from "../contextes/ApiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faMagnifyingGlass,
   faTrash, faEdit
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
@@ -25,10 +24,14 @@ function ProspectSCT() {
   const [numero_siren, setNumeroSiren] = useState("");
   const [errorMessage, setErrorMessage] = useState(""); // État pour le message d'erreur
   const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
-
-  
-  
+  const [selectedProspectId, setSelectedProspectId] = useState(null);
+  const [prospectToEdit, setProspectToEdit] = useState({});
   const handleDelete = async (prospectId) => {
+      // Demander confirmation avant de supprimer
+  const confirmed = window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?");
+  if (!confirmed) {
+    return; // Si l'utilisateur annule, ne rien faire
+  }
     try {
       const response = await axios.delete(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${prospectId}`);
       console.log('Données supprimées :', response.data);
@@ -40,8 +43,7 @@ function ProspectSCT() {
       console.error('Erreur lors de la suppression des données :', error);
     }
     };
-  
-
+    
   // Fonction pour récupérer les données depuis l'API
   const fetchDataAndStore = async () => {
     try {
@@ -99,7 +101,6 @@ function ProspectSCT() {
       setNumeroSiren("");
       setTypeClient("societe");
 
-      
       // Mettre à jour l'état prospects pour inclure le nouveau prospect
       setProspects([...prospects, response.data]);
     } catch (error) {
@@ -108,6 +109,51 @@ function ProspectSCT() {
     }
   };
 
+  const handleEditClick = async (id) => {
+    setSelectedProspectId(id);
+    try {
+      const response = await axios.get(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${id}`);
+      if (response.status === 200) {
+        setProspectToEdit(response.data); // Mettre les données dans l'état
+        setSecondModalOpen(true); // Ouvrir le modal
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données du prospect:", error);
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault(); // Empêche le rechargement de la page
+    console.log("Données à soumettre :", prospectToEdit);
+
+    if (!prospectToEdit.id) {
+      console.error("ID du prospect manquant !");
+      return; // Annule l'envoi de la requête si l'ID est absent
+    }
+    
+    // Envoyer les données vers le serveur (exemple avec axios)
+    axios
+      .put(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, prospectToEdit) // Remplacez l'URL par la vôtre
+
+      .then((response) => {
+        console.log("Prospect mis à jour:", response.data);
+        // Vous pouvez fermer le modal et rafraîchir les données ici
+        setSecondModalOpen(false);
+      })
+      .catch((error) => {
+        if (error.response) {
+          // Erreur de réponse (statut HTTP 4xx ou 5xx)
+          console.error("Erreur de réponse:", error.response.data);
+        } else if (error.request) {
+          // Pas de réponse reçue du serveur
+          console.error("Aucune réponse reçue:", error.request);
+        } else {
+          // Autre erreur (par ex., configuration de la requête)
+          console.error("Erreur lors de la requête:", error.message);
+        }
+      });
+  };
+  
   return (
     <div>
       <div className="">
@@ -121,13 +167,7 @@ function ProspectSCT() {
 
             <div className="">
                   <div className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      className=" border  border-blue rounded"
-                    />
-                    <button className="px-2 py-1  rounded ">
-                      <FontAwesomeIcon icon={faMagnifyingGlass} />
-                    </button>
+
                     <button
         onClick={() => setFirstModalOpen(true)} 
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
@@ -141,7 +181,6 @@ function ProspectSCT() {
       </div>
 
       {/* Affichage de la liste des prospects ou du formulaire */}
-
         <div className="w-full border rounded-lg shadow-md" >
           <table className="min-w-full ">
             <thead className="">
@@ -164,33 +203,33 @@ function ProspectSCT() {
               {prospects.map((prospect) => (
                 <tr key={prospect.id}>
                   <td className="border-y py-2 px-4 "  >
-                  <button onClick={() => setSecondModalOpen(true)}>
+                  <button onClick={() => handleEditClick(prospect.id)}>
 
                     {prospect.type}
                     </button>
                   </td>
                   <td className="border-y px-4">
-                  <button onClick={() => setSecondModalOpen(true)}>
+                  <button onClick={() => handleEditClick(prospect.id)}>
 
                       {prospect.nom_societe}
                       </button>
 
                   </td>
                   <td className="border-y px-4">
-                  <button onClick={() => setSecondModalOpen(true)}>
+                  <button onClick={() => handleEditClick(prospect.id)}>
 
                     {prospect.nom}
                     </button>
 
                   </td>
                   <td className="border-y px-4 ">
-                  <button onClick={() => setSecondModalOpen(true)}>
+                  <button onClick={() => handleEditClick(prospect.id)}>
 
                   {prospect.email}
                   </button>
                   </td>
                   <td className="border-y text-right px-4">
-                    <button onClick={() => setSecondModalOpen(true)} 
+                  <button onClick={() => handleEditClick(prospect.id)}
 
                       className=" rounded hover:text-red-500"
                     >
@@ -212,8 +251,8 @@ function ProspectSCT() {
 
       <Modal isOpen={isFirstModalOpen} onClose={() => setFirstModalOpen(false)}>
         <h2 className="text-xl ">Nouveau prospect</h2>
-        <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
-          <div className="sm:col-span-2">
+    <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
+        <div className="sm:col-span-2">
             <label className="block text-sm font-normal leading-6 text-gray-900">
               Type de client
             </label>
@@ -242,6 +281,7 @@ function ProspectSCT() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+
             {type_client === "societe" && (
               <div className="sm:col-span-1">
                 <label className="block text-sm font-medium leading-6 text-gray-900">
@@ -373,7 +413,7 @@ function ProspectSCT() {
                 />
               </div>
             )}
-<br />
+            <br />
             <div className="sm:col-span-1 py-2">
               <button 
                 type="submit"
@@ -386,21 +426,209 @@ function ProspectSCT() {
         </div>
       </Modal>
 
+
       <Modal isOpen={isSecondModalOpen} onClose={() => setSecondModalOpen(false)}>
-      <h2 className="text-xl">Modifier le prospect</h2>
-      <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
-      <div className="sm:col-span-2">
+  <h2 className="text-xl">Modifier le prospect</h2>
+  <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
+    <div className="sm:col-span-2">
+    <div>
+            <label className="block text-sm font-normal leading-6 text-gray-900">
+              Type de client
+            </label>
+            <div className="mt-2 flex space-x-4">
+              <label>
+                <input
+                  type="radio"
+                  value="societe"
+                  checked={prospectToEdit.type === "societe"}
+                  onChange={() => setProspectToEdit({ ...prospectToEdit, type_client: "societe" })}
+                  className="mr-2"
+                />
+                Société
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="particulier"
+                  checked={prospectToEdit.type === "particulier"}
+                  onChange={() => setProspectToEdit({ ...prospectToEdit, type_client: "particulier" })}
+                  className="mr-2"
+                />
+                Particulier
+              </label>
+            </div>
+          </div>
 
-      Formulaire mmmmmmmmmmmmmmmm
-      </div>
-      </div>
+      <form onSubmit={handleFormSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+      {type_client === "societe" && (
 
-      </Modal>
+        <div className="sm:col-span-1">
+          <label className="block text-sm font-medium leading-6 text-gray-900">
+            Dénomination de la société
+          </label>
+          <input
+            type="text"
+            value={prospectToEdit.nom_societe || ""}
+            onChange={(e) =>
+              setProspectToEdit({ ...prospectToEdit, nom_societe: e.target.value })
+            }
+            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+          />
+        </div>
+            )}
+
+        <div className="sm:col-span-1">
+          <label className="block text-sm font-medium leading-6 text-gray-900">
+            Nom complet
+          </label>
+          <input
+            type="text"
+            value={prospectToEdit.nom || ""}
+            onChange={(e) =>
+              setProspectToEdit({ ...prospectToEdit, nom: e.target.value })
+            }
+            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+          />
+        </div>
+
+        <div className="sm:col-span-1">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Email
+              </label>
+              <input
+                type="email"
+                value={prospectToEdit.email || ""}
+                onChange={(e) =>
+                  setProspectToEdit({ ...prospectToEdit, email: e.target.value })
+                }                
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+              />
+              {errorMessage && (
+                <span className="text-red-600 text-sm">{errorMessage}</span>
+              )}
+            </div>
+
+            <div className="sm:col-span-1">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Téléphone
+              </label>
+              <input
+                type="text"
+                value={prospectToEdit.telephone || ""}
+                onChange={(e) =>
+                  setProspectToEdit({ ...prospectToEdit, telephone: e.target.value })
+                }
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-1">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Sexe
+              </label>
+              <select
+            value={prospectToEdit.sexe || ""}
+            onChange={(e) =>
+              setProspectToEdit({ ...prospectToEdit, sexe: e.target.value })
+            }
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+              >
+                <option value=""></option>
+                <option value="homme">Homme</option>
+                <option value="femme">Femme</option>
+              </select>
+            </div>
+
+            {type_client === "societe" && (
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  Site Web
+                </label>
+                <input
+                  type="text"
+                  value={prospectToEdit.site_web || ""}
+                  onChange={(e) =>
+                    setProspectToEdit({ ...prospectToEdit, site_web: e.target.value })
+                  }
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                />
+              </div>
+            )}
+
+            <div className="sm:col-span-1">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Adresse
+              </label>
+              <input
+                type="text"
+                value={prospectToEdit.adresse || ""}
+                onChange={(e) =>
+                  setProspectToEdit({ ...prospectToEdit, adresse: e.target.value })
+                }
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-1">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Ville
+              </label>
+              <input
+                type="text"
+                value={prospectToEdit.ville || ""}
+                onChange={(e) =>
+                  setProspectToEdit({ ...prospectToEdit, ville: e.target.value })
+                }
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-1">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Pays
+              </label>
+              <input
+                type="text"
+                value={prospectToEdit.pays || ""}
+                onChange={(e) =>
+                  setProspectToEdit({ ...prospectToEdit, pays: e.target.value })
+                }
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+              />
+            </div>
+
+            {type_client === "societe" && (
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  Numéro SIREN
+                </label>
+                <input
+                  type="text"
+                  value={prospectToEdit.numero_siren || ""}
+                  onChange={(e) =>
+                    setProspectToEdit({ ...prospectToEdit, numero_siren: e.target.value })
+                  }
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                />
+              </div>
+            )}
+<br />
+        <div className="sm:col-span-1 py-2">
+          <button
+            type="submit"
+            className="bg-blue-500 pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Modal>
+
     </div>
     </div>
     <div>
-
-
     </div>
     </div>
   );
