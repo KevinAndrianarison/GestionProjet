@@ -7,7 +7,6 @@ import {
   faTrash, faEdit
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import Modal from './Modal';
 
 function ProspectSCT() {
@@ -27,9 +26,7 @@ function ProspectSCT() {
   const [errorMessage, setErrorMessage] = useState(""); // État pour le message d'erreur
   const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
 
-  const entityString = localStorage.getItem("entity");
-  let entity = JSON.parse(entityString);
-  const navigate = useNavigate();
+  
   
   const handleDelete = async (prospectId) => {
     try {
@@ -38,7 +35,6 @@ function ProspectSCT() {
   
       // Mettre à jour la liste des prospects après suppression
       setProspects(prospects.filter((prospect) => prospect.id !== prospectId));
-      navigate(`/${entity}/prospect`);
   
     } catch (error) {
       console.error('Erreur lors de la suppression des données :', error);
@@ -167,18 +163,32 @@ function ProspectSCT() {
             <tbody className="border-gray-300" >
               {prospects.map((prospect) => (
                 <tr key={prospect.id}>
-                  <td className="border-y py-2 px-4 ">
-                    <Link to={`/Prospect/${prospect.id}`}>{prospect.type}</Link>
+                  <td className="border-y py-2 px-4 "  >
+                  <button onClick={() => setSecondModalOpen(true)}>
+
+                    {prospect.type}
+                    </button>
                   </td>
                   <td className="border-y px-4">
-                    <Link to={`/Prospect/${prospect.id}`}>
+                  <button onClick={() => setSecondModalOpen(true)}>
+
                       {prospect.nom_societe}
-                    </Link>
+                      </button>
+
                   </td>
                   <td className="border-y px-4">
-                    <Link to={`/Prospect/${prospect.id}`}>{prospect.nom}</Link>
+                  <button onClick={() => setSecondModalOpen(true)}>
+
+                    {prospect.nom}
+                    </button>
+
                   </td>
-                  <td className="border-y px-4 ">{prospect.email}</td>
+                  <td className="border-y px-4 ">
+                  <button onClick={() => setSecondModalOpen(true)}>
+
+                  {prospect.email}
+                  </button>
+                  </td>
                   <td className="border-y text-right px-4">
                     <button onClick={() => setSecondModalOpen(true)} 
 
@@ -378,9 +388,13 @@ function ProspectSCT() {
 
       <Modal isOpen={isSecondModalOpen} onClose={() => setSecondModalOpen(false)}>
       <h2 className="text-xl">Modifier le prospect</h2>
-        
+      <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
+      <div className="sm:col-span-2">
+
       Formulaire mmmmmmmmmmmmmmmm
-     
+      </div>
+      </div>
+
       </Modal>
     </div>
     </div>
