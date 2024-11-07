@@ -131,6 +131,13 @@ function ProspectSCT() {
       ...prospectToEdit,
       type: type_client_edit, // Utilisation de type_client_edit pour l'édition
     };
+
+      // Supprimer les champs spécifiques aux sociétés si le type est "particulier"
+  if (type_client_edit === "particulier") {
+    editedData.nom_societe = null; //asiana "delete" + esapce  eo aloha raha hamafa
+    editedData.numero_siren = null;
+    editedData.site_web = null;
+  }
   
     console.log("Données envoyées pour la mise à jour :", editedData); // Vérification
     
