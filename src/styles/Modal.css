@@ -41,7 +41,7 @@
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   z-index: 12;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
 }
 
@@ -172,7 +172,6 @@
 
 .headCreateTask {
   display: flex;
-  justify-content: space-between;
 }
 
 .editors {
@@ -212,16 +211,9 @@
   width: 50%;
 }
 
-.btnFlex{
-  align-items: end;
-}
-
 @media screen and (max-width: 768px) {
   .formModalCreatePost {
-    width: 100vw;
-  }
-  .btnFlex{
-    align-items: start;
+    width: 350px;
   }
   .addElement{
     width: 100%;
@@ -247,7 +239,9 @@
 }
 
 @media screen and (max-width: 650px) {
-
+  .formModalCreatePost {
+    width: 300px;
+  }
   .faSquarePlus {
     display: none;
   }

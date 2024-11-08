@@ -14,10 +14,14 @@ import {
   faDiagramProject,
   faReceipt,
   faUsersGear,
+  faStar,
 } from "@fortawesome/free-solid-svg-icons";
 import AllprojectPage from "./AllprojectPage";
 import Devis from "../DevisFacure/views/Devis";
 import Facture from "../DevisFacure/views/Facture";
+import ModifierClient from "../DevisFacure/views/ModifierClient";
+import NavbarClient from "../DevisFacure/views/NavbarClient";
+import NouveauDevis from "../DevisFacure/views/NouveauDevis";
 import Historique from "../DevisFacure/views/Historique";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
@@ -26,7 +30,7 @@ import { GestionEntity } from "./GestionEntity";
 import MyProfil from "./MyProfil";
 import { Routes, Route, NavLink } from "react-router-dom";
 import { ShowContext } from "../contexte/useShow";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Tippy from "@tippyjs/react";
 import { useNavigate } from "react-router-dom";
 import { UrlContext } from "../contexte/useUrl";
@@ -51,11 +55,29 @@ export default function MainPage() {
     setShowLogout(true);
   }
 
+  useEffect(() => {
+    const navBarString = localStorage.getItem("navBar");
+    let navBar = JSON.parse(navBarString);
+    if (navBar === "Gestion de projet") {
+      switchToGestProj();
+    }
+    if (navBar === "Gestion de devis-facture") {
+      switchToGestDevis();
+    }
+    if (navBar === "Gestion RH") {
+      switchToGestRH();
+    }
+    if (navBar === "Gestion client") {
+      switchToGestClient();
+    }
+  }, []);
+
   function createProject() {
     setShowcreateTask(true);
   }
 
   function switchToGestProj() {
+    localStorage.setItem("navBar", JSON.stringify("Gestion de projet"));
     navigate(`${entity}/AllProject`);
     setDescrNavBar(
       "Bienvenue sur votre espace de gestion de projet, où chaque tâche trouve sa <b>solution</b> et chaque équipe atteint ses <b> objectifs</b> !"
@@ -65,6 +87,7 @@ export default function MainPage() {
   }
 
   function switchToGestDevis() {
+    localStorage.setItem("navBar", JSON.stringify("Gestion de devis-facture"));
     navigate(`${entity}/services`);
     setDescrNavBar(
       " Bienvenue dans votre espace de gestion de devis et factures, où chaque transaction est <b>simplifiée</b> et chaque détail est <b>maîtrisé</b> ! "
@@ -73,22 +96,24 @@ export default function MainPage() {
     setStatusNavBar(2);
   }
 
+  function switchToGestClient() {
+    localStorage.setItem("navBar", JSON.stringify("Gestion client"));
+    navigate(`${entity}/prospect`);
+    setDescrNavBar(
+      "Bienvenue dans votre espace Client, pour une gestion simple et <b>optimisée</b> de vos relations clients !"
+    );
+    setTitreNavBar("Gestion client");
+    setStatusNavBar(4);
+  }
+
   function switchToGestRH() {
+    localStorage.setItem("navBar", JSON.stringify("Gestion RH"));
     navigate(`${entity}/`);
     setDescrNavBar(
       " Bienvenue dans votre espace RH, pour une gestion simple et <b>efficace<b> de votre équipe !  "
     );
     setTitreNavBar("Gestion RH");
     setStatusNavBar(3);
-  }
-
-  function switchToGestClient() {
-    navigate(`${entity}/`);
-    setDescrNavBar(
-      "   "
-    );
-    setTitreNavBar("Gestion Client");
-    setStatusNavBar(4);
   }
 
   return (
@@ -144,7 +169,7 @@ export default function MainPage() {
                   : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
               }
             >
-              <FontAwesomeIcon icon={faUsersGear} className="mr-2 " /> Gestion Client
+              <FontAwesomeIcon icon={faStar} className="mr-2 " /> Gestion client
             </div>
           </div>
           <div className=" flex items-center text-gray-700">
@@ -272,19 +297,6 @@ export default function MainPage() {
                 </li>
                 <li className="mr-5  mt-2 pb-2">
                   <NavLink
-                    to={`${entity}/prospect`}
-                    className={({ isActive }) =>
-                      isActive
-                        ? "mr-2 border-b-4 border-yellow-500 pb-2 "
-                        : "mr-2 pb-2"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
-                    Prospects
-                  </NavLink>
-                </li>
-                <li className="mr-5  mt-2 pb-2">
-                  <NavLink
                     to={`${entity}/historique`}
                     className={({ isActive }) =>
                       isActive
@@ -294,6 +306,23 @@ export default function MainPage() {
                   >
                     <FontAwesomeIcon icon={faHistory} className="mr-2" />
                     Historiques
+                  </NavLink>
+                </li>
+              </ul>
+            )}
+            {statusNavBar === 4 && (
+              <ul className="ulNavBar border-b-2">
+                <li className="mr-5  mt-2 pb-2">
+                  <NavLink
+                    to={`${entity}/prospect`}
+                    className={({ isActive }) =>
+                      isActive
+                        ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                        : "mr-2 pb-2"
+                    }
+                  >
+                    <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
+                    Prospects
                   </NavLink>
                 </li>
               </ul>
@@ -319,6 +348,13 @@ export default function MainPage() {
             <Route path=":entity/prospect" element={<Prospect />} />
           </Routes>
         </div>
+      </div>
+      <div className="Page mt-5">
+        <Routes>
+          <Route path="/ModifierClient/:id" element={<ModifierClient />} />
+          <Route path="/NavbarClient" element={<NavbarClient />} />
+          <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
+        </Routes>
       </div>
     </div>
   );

@@ -318,14 +318,13 @@ export default function DetailsProject() {
   }
 
   function modifierProjet() {
-    if (nomProjet !== oldValueTitre || editorRef.current.getContent() !== oldDescription) {
+    if (nomProjet !== oldValueTitre || description !== oldDescription) {
       let formData = {
         titre: nomProjet,
         date_debut: dateDebut,
         date_fin: dateFin,
         description: editorRef.current.getContent(),
       };
-      
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
       const userString = localStorage.getItem("user");
@@ -476,7 +475,7 @@ export default function DetailsProject() {
                       </Tippy>
                     </div>
                     {showListemembre && (
-                      <div className="border p-2 w-[90%] text-xs">
+                      <div className="border p-2 w-[90%]">
                         <h1 className="font-medium">Listes des membres : </h1>
                         {ListChefs.length !== 0 && (
                           <ul>
@@ -562,7 +561,7 @@ export default function DetailsProject() {
                 
                 {isdivDescription && (
                   <div
-                    className="bg-gray-100 editors p-1 rounded w-full text-grey text-xs"
+                    className="bg-gray-100 editors p-1 rounded w-full text-grey"
                     dangerouslySetInnerHTML={{ __html: description }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -573,12 +572,12 @@ export default function DetailsProject() {
                 )}
                 {isTinyDescription && (
                   <>
-                    <h1 className="mt-2 text-xs">Descriptions : </h1>
+                    <h1 className="mt-2 font-bold ">Descriptions : </h1>
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
-                      className="mt-2 editors w-full "
+                      className="mt-2 editors w-full"
                     >
                       <Editor
                         apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
@@ -645,7 +644,7 @@ export default function DetailsProject() {
           {ListTask.length !== 0 && (
             <>
               {isTask && (
-                <div className="flex flex-wrap mt-4 text-xs">
+                <div className="flex flex-wrap mt-4">
                   <h1 className="mt-2 font-bold mr-4">Tâches du groupe : </h1>
                   <div
                     className="relative"
@@ -654,13 +653,13 @@ export default function DetailsProject() {
                     }}
                   >
                     <button
-                      className="input w-40 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
+                      className="input w-48 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
                       onClick={handleToggle}
                     >
                       AJOUTER
                       <FontAwesomeIcon
                         icon={faCaretDown}
-                        className=" w-4 h-4 cursor-pointer focus:outline-none"
+                        className=" w-5 h-5 cursor-pointer focus:outline-none"
                       />
                     </button>
                     {isOpen && (
@@ -705,7 +704,7 @@ export default function DetailsProject() {
               }
               onClick={showSousProjet}
             >
-              Grandes étapes
+              Sous-projets
             </li>
             <li
               className={
@@ -759,7 +758,7 @@ export default function DetailsProject() {
             </li>
           </div>
           {isTask && (
-            <div className="overflow-x-auto shadow-lg text-xs">
+            <div className="overflow-x-auto shadow-lg">
               <div className="mt-1 flex  items-center min-w-max  border py-2 px-2">
                 <li className={styles.options}>
                   <input type="checkbox" className="w-5 mr-2" />
@@ -873,7 +872,7 @@ export default function DetailsProject() {
                   <h2 className="modal-title text-left font-bold">
                     Ajouter un champ :
                   </h2>
-                  <div className="modal-body text-xs">
+                  <div className="modal-body">
                     <div className=" text-left flex items-end flex-wrap   mt-5 inputGroup">
                       <label className="input text-black mr-5">
                         Type d'input :
@@ -907,7 +906,7 @@ export default function DetailsProject() {
                       />
                     </div>
                   </div>
-                  <div className="modal-footer text-xs mt-5">
+                  <div className="modal-footer mt-5">
                     <button
                       onClick={handleAddField}
                       className="mr-2 bg-blue-500 text-white px-4 py-2 rounded-sm"
@@ -925,15 +924,15 @@ export default function DetailsProject() {
                     </button>
                   </div>
                   {(categorie === "Mes projets" || verifyIfChef) && (
-                    <div className="section mt-5 text-xs">
+                    <div className="section mt-5">
                       {inputFields.length !== 0 && (
-                        <div className="label">
+                        <div className="label font-bold">
                           Liste des champs :
                         </div>
                       )}
-                      <div className=" w-full  sections">
+                      <div className=" w-full  sections mt-2">
                         {inputFields.map((input, index) => (
-                          <div key={index} className="w-full relative mt-1">
+                          <div key={index} className="w-full relative mt-2">
                             {input.label && (
                               <label className="input text-black font-bold input-label">
                                 {input.label} :

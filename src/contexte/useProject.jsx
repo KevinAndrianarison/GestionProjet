@@ -10,7 +10,6 @@ export const ProjectContext = createContext({
   ListeProjectWhenMembres: [],
   ListMembres: [],
   ListChefs: [],
-  ListStatus: [],
   ListChefAndMembres: [],
   oneProject: {},
   nomProjet: "",
@@ -33,7 +32,6 @@ export function ProjectContextProvider({ children }) {
   const [categorie, setCategorie] = useState("");
   const [idProjet, setIdProjet] = useState({});
   const [ListMembres, setListMembres] = useState([]);
-  const [ListStatus, setListStatus] = useState([]);
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
@@ -50,14 +48,14 @@ export function ProjectContextProvider({ children }) {
     let user = JSON.parse(userString);
 
     axios
-      .get(`${url}/api/projets`, {
+      .get(`${url}/api/entreprises/${user.gest_com_entreprise_id}/projets`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         setShowSpinner(false);
-        setListeProject(response.data);        
+        setListeProject(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
@@ -112,26 +110,6 @@ export function ProjectContextProvider({ children }) {
       });
   }
 
-  function getAllStatus() {
-    const tokenString = localStorage.getItem("token");
-    let token = JSON.parse(tokenString);
-
-    axios
-      .get(`${url}/api/projets/statuts-projets`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setListStatus(response.data)        
-        setShowSpinner(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setShowSpinner(false);
-      });
-  }
-
   function getOneProjet(id) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -149,6 +127,7 @@ export function ProjectContextProvider({ children }) {
         setIdProjet(response.data.data.id);
         setShowDetails(true);
         setListMembres(response.data.data.membres);
+
         setListChefs(response.data.data.chefs);
       })
       .catch((err) => {
@@ -172,7 +151,6 @@ export function ProjectContextProvider({ children }) {
         ListChefs,
         ListChefAndMembres,
         categorie,
-        ListStatus,
         setCategorie,
         setListeProject,
         setOneProject,
@@ -190,8 +168,6 @@ export function ProjectContextProvider({ children }) {
         setListChefAndMembres,
         setListeProjectWhenMembres,
         setListeProjectWhenChef,
-        setListStatus,
-        getAllStatus
       }}
     >
       {children}

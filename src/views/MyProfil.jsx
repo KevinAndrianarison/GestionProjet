@@ -36,7 +36,6 @@ export default function MyProfil() {
   }
 
   useEffect(() => {
-    setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
 
@@ -57,11 +56,9 @@ export default function MyProfil() {
         setEmail(profileResponse.data.administrateur.email);
         setTelephone(profileResponse.data.administrateur.telephone);
         setPoste(profileResponse.data.administrateur.poste);
-        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
       });
   }, []);
 
@@ -164,7 +161,7 @@ export default function MyProfil() {
       formData.append("email", email || "");
       formData.append("telephone", String(telephone) || "");
       formData.append("poste", poste || "");
-      formData.append("photo_profile", file || "");
+      formData.append("photo_profil", file || "");
 
       axios
         .post(`${url}/${APIname}`, formData, {
@@ -209,15 +206,15 @@ export default function MyProfil() {
 
   return (
     <>
-      <div className="setInfosPerso text-xs pb-5 mt-10">
+      <div className="setInfosPerso pb-5 mt-10">
         <h1 className="titreInfos">
-          <FontAwesomeIcon icon={faGears} className="mr-2 w-5 h-5" />
+          <FontAwesomeIcon icon={faGears} className="mr-2 w-6 h-6" />
           Ajouter ou modifier vos informations personnelles
         </h1>
         <div className="informationsForm mt-5">
           {showAdmin && (
-            <div className="sm:col-span-3 w-60 mr-5 ">
-              <label className="block font-bold leading-6 text-gray-900">
+            <div className="sm:col-span-3 w-60 mr-5">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
                 Nom de la société
               </label>
               <div className="mt-2">
@@ -233,7 +230,7 @@ export default function MyProfil() {
           )}
 
           <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block   font-bold leading-6 text-gray-900">
+            <label className="block text-sm font-bold leading-6 text-gray-900">
               Votre nom complet
             </label>
             <div className="mt-2">
@@ -247,7 +244,7 @@ export default function MyProfil() {
             </div>
           </div>
           <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block   font-bold leading-6 text-gray-900">
+            <label className="block text-sm font-bold leading-6 text-gray-900">
               Adresse email
             </label>
             <div className="mt-2">
@@ -267,7 +264,7 @@ export default function MyProfil() {
             )}
           </div>
           <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block   font-bold leading-6 text-gray-900">
+            <label className="block text-sm font-bold leading-6 text-gray-900">
               Téléphone
             </label>
             <div className="mt-2">
@@ -281,7 +278,7 @@ export default function MyProfil() {
             </div>
           </div>
           <div className="sm:col-span-3 w-60 mr-5">
-            <label className="block   font-bold leading-6 text-gray-900">
+            <label className="block text-sm font-bold leading-6 text-gray-900">
               Poste
             </label>
             <div className="mt-2">
@@ -296,7 +293,7 @@ export default function MyProfil() {
           </div>
 
           <div className="flex items-start flex-col">
-            <label className="   font-bold  text-gray-900">
+            <label className=" text-sm font-bold  text-gray-900">
               Photo de profil
             </label>
             <label
@@ -316,10 +313,10 @@ export default function MyProfil() {
           </div>
 
           <div className="sm:col-span-3 w-44 mr-5">
-            <label className="   font-medium leading-6 text-gray-900">
+            <label className=" text-sm font-medium leading-6 text-gray-900">
               &nbsp;
             </label>
-            <div>
+            <div className="mt-2 ">
               <button
                 onClick={toggleEditing}
                 className={isEditing ? "btnEnregistrer" : "btnInviter"}
@@ -331,13 +328,13 @@ export default function MyProfil() {
         </div>
         <div className="mt-10 pb-1">
           <h1 className="titreInfos">
-            <FontAwesomeIcon icon={faGears} className="mr-2 w-5 h-5" />
+            <FontAwesomeIcon icon={faGears} className="mr-2 w-6 h-6" />
             Modifier votre mot de passe
           </h1>
 
           <div className="informationsForm mt-5">
             <div className="sm:col-span-3 w-60 mr-5">
-              <label className="block   font-bold leading-6 text-gray-900">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
                 Mot de passe actuel
               </label>
               <div className="mt-2 relative">
@@ -350,7 +347,7 @@ export default function MyProfil() {
               </div>
             </div>
             <div className="sm:col-span-3 w-60 mr-5">
-              <label className="block   font-bold leading-6 text-gray-900">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
                 Nouveau mot de passe
               </label>
               <div className="mt-2 relative">
@@ -380,7 +377,7 @@ export default function MyProfil() {
               </div>
             </div>
             <div className="sm:col-span-3 w-60 mr-5">
-              <label className="block   font-bold leading-6 text-gray-900">
+              <label className="block text-sm font-bold leading-6 text-gray-900">
                 Confirmer le mot de passe
               </label>
               <div className="mt-2 relative">
@@ -411,10 +408,10 @@ export default function MyProfil() {
               )}
             </div>
             <div className="sm:col-span-3 w-44 mr-5">
-              <label className="   font-medium leading-6 text-gray-900">
+              <label className=" text-sm font-medium leading-6 text-gray-900">
                 &nbsp;
               </label>
-              <div>
+              <div className="mt-2 ">
                 <button
                   onClick={putMdp}
                   disabled={showMessageMdpError}
