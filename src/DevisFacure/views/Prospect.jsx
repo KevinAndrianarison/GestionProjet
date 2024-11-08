@@ -4,7 +4,6 @@ import { FULL_URL } from "../contextes/ApiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash, faEdit,
-  faBars,
   faEllipsisV
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
@@ -29,10 +28,10 @@ function ProspectSCT() {
   const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
-  const [selectedProspectId, setSelectedProspectId] = useState(null);
   const [prospectToEdit, setProspectToEdit] = useState({});
   const [type_client_edit, setTypeClientEdit] = useState(""); 
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+
 
   const handleDelete = async (prospectId) => {
     // Demander confirmation avant de supprimer
@@ -102,6 +101,17 @@ function ProspectSCT() {
         setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
       };
   
+        // Fonction pour récupérer les données depuis l'API
+  const fetchDataAndStore = async () => {
+    try {
+      const response = await axios.get("https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects"); // Remplace FULL_URL par l'URL de l'API pour récupérer les données
+      if (response.status === 200 && response.data) {
+        setProspects(response.data); // Mettre à jour l'état avec les données récupérées
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données:", error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -130,7 +140,7 @@ function ProspectSCT() {
     console.log("Données du formulaire : ", formData);
 
     try {
-      const response = await axios.post(FULL_URL, formData);
+      const response = await axios.post('https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects', formData);
       console.log("Réponse de l'API:", response.data);
       setErrorMessage("");
 
@@ -161,7 +171,6 @@ function ProspectSCT() {
   };
 
   const handleEditClick = async (id) => {
-    setSelectedProspectId(id);
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
     try {
       const response = await axios.get(`${FULL_URL}gest/fact/prospects/${id}`);
@@ -174,6 +183,7 @@ function ProspectSCT() {
       console.error("Erreur lors de la récupération des données du prospect:", error);
     }
   };
+
 
 
   const handleFormSubmit = async (e) => {
@@ -200,8 +210,10 @@ function ProspectSCT() {
     try {
       const response = await axios.put(`${FULL_URL}gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, editedData);
       console.log("Réponse de mise à jour :", response.data);
-      setSecondModalOpen(false);
       fetchDataAndStore();
+
+      setSecondModalOpen(false);
+      
       setTimeout(() => {
         alert("Modification de client avec succès !");
       }, 500);
