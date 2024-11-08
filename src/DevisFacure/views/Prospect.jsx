@@ -65,12 +65,14 @@ function ProspectSCT() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(""); // Réinitialiser le message d'erreur
-    // Vérification de l'email
     if (!email.includes("@") || !email.includes(".")) {
       setErrorMessage("Veuillez entrer une adresse e-mail valide.");
       return;
     }
-
+      if (type_client === "societe" && !nom_societe.trim()) {
+        setErrorMessage("Le nom de la société est requis pour le type 'société'.");
+        return; // Arrête la soumission si la condition n'est pas remplie
+      }
     const formData = {
       nom_societe,
       nom,
@@ -89,6 +91,7 @@ function ProspectSCT() {
     try {
       const response = await axios.post(FULL_URL, formData);
       console.log("Réponse de l'API:", response.data);
+      setErrorMessage("");
 
       // Réinitialiser tous les champs après la soumission
       setNomSociete("");
@@ -107,7 +110,9 @@ function ProspectSCT() {
       setProspects([...prospects, response.data]);
 
       setFirstModalOpen(false);
-
+      setTimeout(() => {
+        alert("Ajout de client avec succès !");
+      }, 500);
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
       setErrorMessage("Une erreur s'est produite. Veuillez réessayer.");
@@ -141,14 +146,22 @@ function ProspectSCT() {
     editedData.numero_siren = null;
     editedData.site_web = null;
   }
-  
+    setErrorMessage("");
+
+    if (type_client_edit === "societe" && (!editedData.nom_societe || !editedData.nom_societe.trim())) {
+      setErrorMessage("Le nom de la société est requis pour le type 'société'.");
+      return; // Arrête la soumission si la condition n'est pas remplie
+    }
     console.log("Données envoyées pour la mise à jour :", editedData); // Vérification
-    
+  
     try {
       const response = await axios.put(`https://bg.societe-manage.com/public/api/gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, editedData);
       console.log("Réponse de mise à jour :", response.data);
       setSecondModalOpen(false);
       fetchDataAndStore();
+      setTimeout(() => {
+        alert("Modification de client avec succès !");
+      }, 500);
     } catch (error) {
       console.error("Erreur lors de la mise à jour du prospect:", error);
     }
@@ -423,7 +436,8 @@ function ProspectSCT() {
                 Enregistrer
               </button>
             </div>
-          </form>
+
+          </form>            
         </div>
       </Modal>
 
