@@ -65,10 +65,10 @@ function Service() {
   return (
     <div>
       <div className="">
-        <nav className="rounded-md flex justify-between items-center p-4 bg-slate-600 text-white">
+        <nav className="rounded-md flex justify-between items-center p-4 text-slate-900">
           {/* Élément à gauche */}
           <div>
-            <Link to="/" className="text-lg">
+            <Link to="/" className="text-2xl">
               Tous les services
             </Link>
           </div>
@@ -86,7 +86,7 @@ function Service() {
             ) : (
               <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center text-white"
+                className="flex items-center"
               >
                 Ajouter
                 <FontAwesomeIcon icon={faPlus} className="ml-2" />
@@ -109,26 +109,23 @@ function Service() {
                 type="text"
                 value={type_service}
                 onChange={(e) => setTypeService(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
-              {/* Sexe du contact */}
               <div className="sm:col-span-3 w-60 mr-5">
               <label className="block text-sm font-medium leading-6 text-gray-900">
                 Type
               </label>
-              <div className="mt-2">
                 <select
                   value={type_service}
                   onChange={(e) => setTypeService(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
                 >
                   <option value=""></option>
                   <option value="service">Service</option>
                   <option value="produit">Produit</option>
                 </select>
-              </div>
             </div>
 
             {/* Nom du produit */}
@@ -140,7 +137,7 @@ function Service() {
                 type="text"
                 value={nom_produit}
                 onChange={(e) => setNomProduit(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -153,7 +150,7 @@ function Service() {
                 type="text"
                 value={remarque}
                 onChange={(e) => setRemarque(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -166,7 +163,7 @@ function Service() {
                 type="text"
                 value={unite}
                 onChange={(e) => setUnite(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -179,7 +176,7 @@ function Service() {
                 type="text"
                 value={prix_base}
                 onChange={(e) => setPrixBase(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -192,7 +189,7 @@ function Service() {
                 type="text"
                 value={prix_hors_tva}
                 onChange={(e) => setPrixHorsTva(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -205,7 +202,7 @@ function Service() {
                 type="text"
                 value={tva}
                 onChange={(e) => setTva(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -218,7 +215,7 @@ function Service() {
                 type="text"
                 value={prix_ttc}
                 onChange={(e) => setPrixTtc(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 focus:ring-2 focus:ring-inset focus:ring-gray-500 focus:outline-none"
+                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -230,31 +227,31 @@ function Service() {
           </form>
         </div>
       ) : (
-        <div>
-          <table className="min-w-full my-4">
-            <thead className="my-10 border-b-4 ">
-              <tr className="h-20 ">
-                <th className="text-left text-sm font-medium leading-6 border-b-10">Type</th>
-                <th className="text-left text-sm font-medium leading-6">Nom du produit</th>
-                <th className="text-left text-sm font-medium leading-6">Remarque</th>
-                <th className="text-left text-sm font-medium leading-6">Unité</th>
-                <th className="text-left text-sm font-medium leading-6">Prix de base</th>
-                <th className="text-left text-sm font-medium leading-6">Prix hors TVA</th>
-                <th className="text-left text-sm font-medium leading-6">TVA</th>
-                <th className="text-left text-sm font-medium leading-6">Prix TTC</th>
+        <div className="w-full border rounded-lg shadow-md">
+          <table className="min-w-full ">
+            <thead className="">
+              <tr className="">
+                <th className="p-4 text-left text-sm font-medium leading-6 border-b-10">Type</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">Nom du produit</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">Remarque</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">Unité</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">Prix de base</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">Prix hors TVA</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">TVA</th>
+                <th className="p-4 text-left text-sm font-medium leading-6">Prix TTC</th>
               </tr>
             </thead>
             <tbody className="border-gray-300  ">
               {services.map((service, index) => (
                 <tr key={index} className="">
-                  <td className="border-y py-2">{service.type_service}</td>
-                  <td className="border-y py-2">{service.nom_produit}</td>
-                  <td className="border-y py-2">{service.remarque}</td>
-                  <td className="border-y py-2">{service.unite}</td>
-                  <td className="border-y py-2">{service.prix_base}</td>
-                  <td className="border-y py-2">{service.prix_hors_tva}</td>
-                  <td className="border-y py-2">{service.tva}</td>
-                  <td className="border-y py-2">{service.prix_ttc}</td>
+                  <td className="border-y p-4">{service.type_service}</td>
+                  <td className="border-y p-4">{service.nom_produit}</td>
+                  <td className="border-y p-4">{service.remarque}</td>
+                  <td className="border-y p-4">{service.unite}</td>
+                  <td className="border-y p-4">{service.prix_base}</td>
+                  <td className="border-y p-4">{service.prix_hors_tva}</td>
+                  <td className="border-y p-4">{service.tva}</td>
+                  <td className="border-y p-4">{service.prix_ttc}</td>
                 </tr>
               ))}
             </tbody>

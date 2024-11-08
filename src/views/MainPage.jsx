@@ -22,9 +22,6 @@ import Facture from "../DevisFacure/views/Facture";
 import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
-import ProspectDetail from "../DevisFacure/views/ProspectDetail";
-import EditUser from "../DevisFacure/views/EditUser";
-import EditProspect from "../DevisFacure/views/EditUser";
 import Historique from "../DevisFacure/views/Historique";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
@@ -373,6 +370,17 @@ export default function MainPage() {
           </Routes>
         </div>
       </div>
+<<<<<<< HEAD
     </>
+=======
+      <div className="Page mt-5">
+        <Routes>
+          <Route path="/ModifierClient/:id" element={<ModifierClient />} />
+          <Route path="/NavbarClient" element={<NavbarClient />} />
+          <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
+        </Routes>
+      </div>
+    </div>
+>>>>>>> acc1eb24982f8efb3fb0a7f866ed237eabbbe719
   );
 }
