@@ -211,7 +211,8 @@ export default function MainPage() {
           {(showAdmin || showUser) && (
             <div className="titles mt-2 flex items-center">
               {TitreNavBar}
-              {statusNavBar === 1 && (
+              {((statusNavBar === 1 && user.grade === "chef") ||
+                (statusNavBar === 1 && user.role === "admin")) && (
                 <Tippy content="Créer un projet ">
                   <FontAwesomeIcon
                     onClick={createProject}

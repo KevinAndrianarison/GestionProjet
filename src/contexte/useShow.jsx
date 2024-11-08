@@ -11,6 +11,7 @@ export const ShowContext = createContext({
   showcreateTask: false,
   showDeleteTask: false,
   showDeletetask: false,
+  showDeleteEtape: false,
   showSetProject: false,
   showSeretirer: false,
   showRetierChefs: false,
@@ -20,6 +21,7 @@ export const ShowContext = createContext({
   showRetirer: false,
   showTask: false,
   showSetTask: false,
+  showListProjet: false,
 });
 
 export function ShowContextProvider({ children }) {
@@ -33,6 +35,7 @@ export function ShowContextProvider({ children }) {
   const [showDeleteEntity, setShowDeleteEntity] = useState(false);
   const [showcreateTask, setShowcreateTask] = useState(false);
   const [showDeleteTask, setShowDeleteTask] = useState(false);
+  const [showDeleteEtape, setShowDeleteEtape] = useState(false);
   const [showDeletetask, setShowDeletetask] = useState(false);
   const [showSetProject, setShowSetProject] = useState(false);
   const [showSetTask, setShowSetTask] = useState(false);
@@ -41,6 +44,7 @@ export function ShowContextProvider({ children }) {
   const [showRetierChefs, setShowRetierChefs] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showListProjet, setShowListProjet] = useState(false);
   const [showUser, setUser] = useState(false);
   const [showTask, setShowTask] = useState(false);
 
@@ -67,7 +71,11 @@ export function ShowContextProvider({ children }) {
         showTask,
         showDeletetask,
         showSetTask,
+        showListProjet,
+        showDeleteEtape,
         setShowDeletetask,
+        setShowDeleteEtape,
+        setShowListProjet,
         setShowSetTask,
         setShowTask,
         setShowLoginComponent,

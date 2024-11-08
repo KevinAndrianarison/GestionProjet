@@ -49,6 +49,7 @@ export default function CreateProject() {
   const [nbrJR, setNbrJR] = useState("");
   const [TJM, setTJM] = useState("");
   const [isChecked, setIsChecked] = useState(false);
+  const [isCheckedMembres, setIsCheckedMembres] = useState(false);
   const [stepOneDone, setStepOneDone] = useState(false);
   const [stepTwoDone, setStepTwoDone] = useState(false);
   const [stepThreeDone, setStepThreeDone] = useState(false);
@@ -87,6 +88,10 @@ export default function CreateProject() {
     setIsChecked(event.target.checked);
   }
 
+  function handleCheckboxChangeMembres(event) {
+    setIsCheckedMembres(event.target.checked);
+  }
+
   useEffect(() => {
     getAllStatus();
   }, []);
@@ -114,7 +119,6 @@ export default function CreateProject() {
   }
 
   function handleSearchChangeChefs(event) {
-    console.log(ListeUser);
     setStepTwoDone(false);
     const value = event.target.value;
     setSearchTermChef(value);
@@ -174,20 +178,44 @@ export default function CreateProject() {
   }
 
   function addmembres(id) {
-    let formData = {
-      role: "membre",
-      gest_proj_projet_id: id,
-      gest_com_utilisateur_ids: userIds,
-    };
+    let formData;
+    let idMembres;
+    idMembres = [...userIdsChef, user.id];
+    if (user.role === "admin") {
+      if (!isCheckedMembres) {
+        formData = {
+          role: "membre",
+          gest_proj_projet_id: id,
+          gest_com_utilisateur_ids: userIds,
+        };
+      }
+      if (isCheckedMembres) {
+        formData = {
+          role: "membre",
+          gest_proj_projet_id: id,
+          gest_com_utilisateur_ids: idMembres,
+        };
+      }
+    } else {
+      formData = {
+        role: "membre",
+        gest_proj_projet_id: id,
+        gest_com_utilisateur_ids: userIds,
+      };
+    }
+
     axios
       .post(`${url}/api/projets/role-utilisateurs`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {})
+      .then((response) => {
+        setShowSpinner(false);
+      })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
   function addChefs(id) {
@@ -216,7 +244,6 @@ export default function CreateProject() {
         gest_com_utilisateur_ids: idChefs,
       };
     }
-    console.log(response.data);
 
     axios
       .post(`${url}/api/projets/role-utilisateurs`, formData, {
@@ -225,23 +252,19 @@ export default function CreateProject() {
         },
       })
       .then((response) => {
-        console.log(response.data);
+        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
 
   function createProjetsetwo() {
-    if (userIds.length !== 0) {
-      addmembres(idProjectLoad);
-    }
-    if (userIdsChef.length !== 0) {
-      addChefs(idProjectLoad);
-    }
-    if (userIdsResp.length !== 0) {
-      addResp(idProjectLoad);
-    }
+    setShowSpinner(true);
+    addmembres(idProjectLoad);
+    addChefs(idProjectLoad);
+    addResp(idProjectLoad);
     setStepTwoDone(true);
     if (stepOneDone && stepThreeDone) {
       setShowcreateTask(false);
@@ -260,9 +283,12 @@ export default function CreateProject() {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {})
+      .then((response) => {
+        setShowSpinner(false);
+      })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
 
@@ -274,7 +300,7 @@ export default function CreateProject() {
     }
     let formData = {
       nom: titreProjet,
-      description: editorRef.current.getContent() || "",
+      description: editorRef.current ? editorRef.current.getContent() : "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
       date_fin: dateFin,
@@ -292,15 +318,9 @@ export default function CreateProject() {
         },
       })
       .then((response) => {
-        if (userIds.length !== 0) {
-          addmembres(response.data.projet.id);
-        }
-        if (userIdsChef.length !== 0) {
-          addChefs(response.data.projet.id);
-        }
-        if (userIdsResp.length !== 0) {
-          addResp(response.data.projet.id);
-        }
+        addmembres(response.data.projet.id);
+        addChefs(response.data.projet.id);
+        addResp(response.data.projet.id);
         if (categorie === "Tous les projets") {
           getAllproject();
         }
@@ -316,7 +336,6 @@ export default function CreateProject() {
         setRefClient("");
         setNbrJR("");
         setTJM("");
-        editorRef.current.setContent("");
         setDateFin("");
         setDateDebut("");
         setMessageSucces(response.data.message);
@@ -339,7 +358,7 @@ export default function CreateProject() {
     }
     let formData = {
       nom: titreProjet,
-      description: editorRef.current.getContent(),
+      description: editorRef.current ? editorRef.current.getContent() : "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
       date_fin: dateFin,
@@ -357,15 +376,9 @@ export default function CreateProject() {
         },
       })
       .then((response) => {
-        if (userIds.length !== 0) {
-          addmembres(response.data.projet.id);
-        }
-        if (userIdsChef.length !== 0) {
-          addChefs(response.data.projet.id);
-        }
-        if (userIdsResp.length !== 0) {
-          addResp(response.data.projet.id);
-        }
+        addmembres(response.data.projet.id);
+        addChefs(response.data.projet.id);
+        addResp(response.data.projet.id);
         if (categorie === "Tous les projets") {
           getAllproject();
         }
@@ -381,7 +394,6 @@ export default function CreateProject() {
         setRefClient("");
         setNbrJR("");
         setTJM("");
-        editorRef.current.setContent("");
         setDateFin("");
         setDateDebut("");
         setMessageSucces(response.data.message);
@@ -408,7 +420,7 @@ export default function CreateProject() {
     }
     let formData = {
       nom: titreProjet,
-      description: editorRef.current.getContent(),
+      description: editorRef.current ? editorRef.current.getContent() : "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
       date_fin: dateFin,
@@ -427,6 +439,15 @@ export default function CreateProject() {
         })
         .then((response) => {
           setIdProjectLoad(response.data.projet.id);
+          if (categorie === "Tous les projets") {
+            getAllproject();
+          }
+          if (categorie === "Mes projets") {
+            getProjectWhenChef();
+          }
+          if (categorie === "Les projets dont je fait partie") {
+            getProjectWhenMembres();
+          }
           setStepOneDone(true);
           setShowSpinner(false);
         })
@@ -511,7 +532,7 @@ export default function CreateProject() {
             </div>
           </div>
 
-          <Accordion type="single" collapsible>
+          <Accordion type="single" collapsible defaultValue="item-1">
             <AccordionItem value="item-1">
               <AccordionTrigger>
                 <h1 className="font-bold text-xl">
@@ -895,31 +916,39 @@ export default function CreateProject() {
                     </div>
                   )}
                   {user.role === "admin" && (
-                    <div className=" mt-5 flex items-center text-xs font-bold">
-                      <input
-                        type="checkbox"
-                        className="mr-2"
-                        checked={isChecked}
-                        onChange={handleCheckboxChange}
-                      />
-                      Je veux être parmi les chefs de ce projet
-                    </div>
+                    <>
+                      {!isCheckedMembres && (
+                        <div className=" mt-5 flex items-center text-xs font-bold">
+                          <input
+                            type="checkbox"
+                            className="mr-2"
+                            checked={isChecked}
+                            onChange={handleCheckboxChange}
+                          />
+                          Je veux être parmi les chefs de ce projet
+                        </div>
+                      )}
+                      {!isChecked && (
+                        <div className=" mt-2 flex items-center text-xs font-bold">
+                          <input
+                            type="checkbox"
+                            className="mr-2"
+                            checked={isCheckedMembres}
+                            onChange={handleCheckboxChangeMembres}
+                          />
+                          Je veux être parmi les membres de ce projet
+                        </div>
+                      )}
+                    </>
                   )}
                   <div className="flex justify-end mt-2">
-                    {!stepTwoDone && (
-                      <button
-                        onClick={createProjetsetwo}
-                        disabled={!idProjectLoad}
-                        className="border bg-blue-500 rounded text-white px-5 py-2"
-                      >
-                        Enregistrer
-                      </button>
-                    )}
-                    {stepTwoDone && (
-                      <p className="text-xs">
-                        Vous avez terminé la troixième étape ! ✅
-                      </p>
-                    )}
+                    <button
+                      onClick={createProjetsetwo}
+                      disabled={!idProjectLoad}
+                      className="border bg-blue-500 rounded text-white px-5 py-2"
+                    >
+                      Enregistrer
+                    </button>
                   </div>
 
                   {/* <div className="section mt-5 flex items-center">

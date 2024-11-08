@@ -38,7 +38,7 @@ export function ProjectContextProvider({ children }) {
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
-  const { setShowSpinner, setShowDetails } = useContext(ShowContext);
+  const { setShowSpinner, setShowDetails, setShowListProjet } = useContext(ShowContext);
 
   function getAllproject() {
     setListeProjectWhenMembres([]);
@@ -55,13 +55,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        console.log(response.data);
-        setShowSpinner(false);
+        setShowListProjet(true);
         setListeProject(response.data);
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
+        setShowListProjet(true);
       });
   }
   function getProjectWhenChef() {
@@ -78,12 +77,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setShowSpinner(false);
+        setShowListProjet(true);
         setListeProjectWhenChef(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
+        setShowListProjet(true);
       });
   }
 
@@ -101,12 +100,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setShowSpinner(false);
+        setShowListProjet(true);
         setListeProjectWhenMembres(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
+        setShowListProjet(true);
       });
   }
 
@@ -124,12 +123,12 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setShowSpinner(false);
+        setShowListProjet(true);
         setListeProjectWhenResp(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
+        setShowListProjet(true);
       });
   }
 
@@ -154,6 +153,7 @@ export function ProjectContextProvider({ children }) {
   }
 
   function getOneProjet(id) {
+    setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
@@ -163,8 +163,6 @@ export function ProjectContextProvider({ children }) {
         },
       })
       .then((response) => {
-        console.log(response.data);
-
         setNomProjet(response.data.nom);
         setDateDebut(response.data.date_debut);
         setDateFin(response.data.date_fin);
@@ -173,9 +171,11 @@ export function ProjectContextProvider({ children }) {
         setShowDetails(true);
         setListMembres(response.data.membres);
         setListChefs(response.data.utilisateur_roles);
+        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
   return (

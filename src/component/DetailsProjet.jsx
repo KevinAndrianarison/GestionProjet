@@ -78,7 +78,7 @@ export default function DetailsProject() {
   const editorRef = useRef("");
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { url } = useContext(UrlContext);
-  const { setIduser, setNomuser } = useContext(UserContext);
+  const { setIduser, setNomuser, setIdRoleuser } = useContext(UserContext);
   const { getAllComs, listeCommentaire } = useContext(ComsContext);
   const fileInputRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -168,14 +168,22 @@ export default function DetailsProject() {
   }
 
   useEffect(() => {
+    let idIfChef;
     if (!description) {
       setIsdivDescription(false);
     }
     setOldValueTitre(nomProjet);
     setOldDescription(description);
     ListChefs.forEach((list) => {
-      if (user.id === list.id) {
-        setVerifyIfChef(true);
+      
+      if (
+        list.utilisateur.grade === "chef" ||
+        list.utilisateur.role === "admin"
+      ) {
+        idIfChef = list.utilisateur.id;
+        if (user.id === idIfChef) {
+          setVerifyIfChef(true);
+        }
       }
     });
   }, []);
@@ -245,14 +253,8 @@ export default function DetailsProject() {
       });
   }
 
-  function retirerMembres(id, nom) {
-    setIduser(id);
-    setNomuser(nom);
-    setShowRetirer(true);
-  }
-
   function retirerChefs(id, nom) {
-    setIduser(id);
+    setIdRoleuser(id);
     setNomuser(nom);
     setShowRetierChefs(true);
   }
@@ -472,9 +474,7 @@ export default function DetailsProject() {
                               {list.role === "chef" && (
                                 <b>(Chef de projet),&nbsp;</b>
                               )}
-                              {list.role === "membre" && (
-                                <b>(Membre),&nbsp;</b>
-                              )}
+                              {list.role === "membre" && <b>(Membre),&nbsp;</b>}
                             </li>
                           ))}
                         </ul>
@@ -488,8 +488,8 @@ export default function DetailsProject() {
                       </Tippy>
                     </div>
                     {showListemembre && (
-                      <div className="border p-2 w-[90%] text-xs">
-                        <h1 className="font-medium">Listes des membres : </h1>
+                      <div className="border p-2 w-full text-xs">
+                        <h1 className="font-bold">Listes des membres : </h1>
                         {ListChefs.length !== 0 && (
                           <ul>
                             {ListChefs.map((list) => (
@@ -514,7 +514,10 @@ export default function DetailsProject() {
                                   <Tippy content="Retirer">
                                     <FontAwesomeIcon
                                       onClick={() =>
-                                        retirerChefs(list.id, list.nom)
+                                        retirerChefs(
+                                          list.id,
+                                          list.utilisateur.nom
+                                        )
                                       }
                                       icon={faXmark}
                                       className=" cursor-pointer text-gray-400 focus:outline-none"
@@ -525,6 +528,7 @@ export default function DetailsProject() {
                             ))}
                           </ul>
                         )}
+                        {ListChefs.length === 0 && <p>...</p>}
                       </div>
                     )}
 
@@ -546,23 +550,24 @@ export default function DetailsProject() {
                         />
                       </p>
                     )}
-                    {!description && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsTinyDescription(true);
-                        }}
-                        className="px-3 py-1 border mt-2 text-white rounded bg-gray-400"
-                      >
-                        Ajouter une description
-                      </button>
-                    )}
+                    {!description &&
+                      (categorie === "Mes projets" || verifyIfChef) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsTinyDescription(true);
+                          }}
+                          className="px-3 py-1 border mt-2 text-white rounded bg-gray-400"
+                        >
+                          Ajouter une description
+                        </button>
+                      )}
                   </div>
                 </div>
 
                 {isdivDescription && (
                   <div
-                    className="bg-gray-100 editors p-1 rounded w-full text-grey text-xs"
+                    className="bg-gray-100 editors p-1 rounded w-full text-grey text-xs mt-2"
                     dangerouslySetInnerHTML={{ __html: description }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -645,49 +650,45 @@ export default function DetailsProject() {
               </div>
             </div>
           </div>
-          {ListTask.length !== 0 && (
-            <>
-              {isTask && (
-                <div className="flex flex-wrap mt-4 text-xs">
-                  <h1 className="mt-2 font-bold mr-4">Tâches du groupe : </h1>
-                  <div
-                    className="relative"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <button
-                      className="input w-40 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
-                      onClick={handleToggle}
+          {isTask && (
+            <div className=" flex flex-wrap text-xs mt-2">
+              <h1 className="mt-2 font-bold mr-4">Tâches du groupe : </h1>
+              <div
+                className="relative"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <button
+                  className="input w-40 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
+                  onClick={handleToggle}
+                >
+                  AJOUTER
+                  <FontAwesomeIcon
+                    icon={faCaretDown}
+                    className=" w-4 h-4 cursor-pointer focus:outline-none"
+                  />
+                </button>
+                {isOpen && (
+                  <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
+                    <li
+                      onClick={addInputField}
+                      className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
                     >
-                      AJOUTER
-                      <FontAwesomeIcon
-                        icon={faCaretDown}
-                        className=" w-4 h-4 cursor-pointer focus:outline-none"
-                      />
-                    </button>
-                    {isOpen && (
-                      <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
-                        <li
-                          onClick={addInputField}
-                          className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
-                        >
-                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                          Ajouter un champ
-                        </li>
-                        <li
-                          onClick={addtask}
-                          className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
-                        >
-                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                          Ajouter une tâche
-                        </li>
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              )}
-            </>
+                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                      Ajouter un champ
+                    </li>
+                    <li
+                      onClick={addtask}
+                      className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                    >
+                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                      Ajouter une tâche
+                    </li>
+                  </ul>
+                )}
+              </div>
+            </div>
           )}
           <div className="flex flex-wrap bg-blue-100 mt-2 py-2 text-gray-500 rounded px-5  text-xs sm:text-xs md:text-sm lg:text-sm xl:text-sm">
             <li

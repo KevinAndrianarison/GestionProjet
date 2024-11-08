@@ -13,6 +13,7 @@ import { EntityContextProvider } from "./contexte/useEntity.jsx";
 import { ProjectContextProvider } from "./contexte/useProject.jsx";
 import { TaskContextProvider } from "./contexte/useTask.jsx";
 import { ComsContextProvider } from "./contexte/useComs.jsx";
+import { EtapeContextProvider } from "./contexte/useEtape.jsx";
 import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")).render(
@@ -24,11 +25,13 @@ createRoot(document.getElementById("root")).render(
             <EntityContextProvider>
               <UserContextProvider>
                 <ProjectContextProvider>
-                  <TaskContextProvider>
-                    <ComsContextProvider>
-                      <App />
-                    </ComsContextProvider>
-                  </TaskContextProvider>
+                  <EtapeContextProvider>
+                    <TaskContextProvider>
+                      <ComsContextProvider>
+                        <App />
+                      </ComsContextProvider>
+                    </TaskContextProvider>
+                  </EtapeContextProvider>
                 </ProjectContextProvider>
               </UserContextProvider>
             </EntityContextProvider>

@@ -12,7 +12,6 @@ import "../styles/SetProject.css";
 export default function SetProject() {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [userIds, setUserIds] = useState([]);
-  const [inputFields, setInputFields] = useState([]);
   const [chefDeProjet, setChefDeProjet] = useState("");
 
   const [searchTermChef, setSearchTermChef] = useState("");
@@ -20,38 +19,12 @@ export default function SetProject() {
   const [isDropdownOpenChef, setIsDropdownOpenChef] = useState(false);
   const [isDropdownOpenMembre, setIsDropdownOpenMembre] = useState(false);
 
-  const [showAddFieldModal, setShowAddFieldModal] = useState(false);
-  const [newFieldType, setNewFieldType] = useState("text");
-  const [newFieldLabel, setNewFieldLabel] = useState("");
-
   const { idProjet, getOneProjet, getAllproject, getProjectWhenMembres } =
     useContext(ProjectContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { url } = useContext(UrlContext);
-  const {
-    setShowSpinner,
-    setShowSetProject,
-    setShowRetirer,
-    setShowRetierChefs,
-  } = useContext(ShowContext);
-  const { ListeUser, setIduser, setNomuser } = useContext(UserContext);
-
-  function handleAddField() {
-    if (newFieldLabel.trim() !== "") {
-      setInputFields([
-        ...inputFields,
-        { type: newFieldType, label: newFieldLabel },
-      ]);
-      setShowAddFieldModal(false);
-      setNewFieldLabel("");
-    }
-  }
-
-  function removeInputField(index) {
-    const values = [...inputFields];
-    values.splice(index, 1);
-    setInputFields(values);
-  }
+  const { setShowSpinner, setShowSetProject } = useContext(ShowContext);
+  const { ListeUser } = useContext(UserContext);
 
   const filteredOptionsChef = ListeUser.filter((user) =>
     user.email.toLowerCase().includes(searchTermChef.toLowerCase())
@@ -65,10 +38,6 @@ export default function SetProject() {
     const value = event.target.value;
     setSearchTermChef(value);
     setIsDropdownOpenChef(value !== "");
-  }
-
-  function addInputField() {
-    setShowAddFieldModal(true);
   }
 
   function handleSearchChangeMembre(event) {
@@ -86,7 +55,7 @@ export default function SetProject() {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .put(`${url}/api/entreprises/projets/${idProjet}`, formData, {
+      .put(`${url}/api/projets`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -142,7 +111,6 @@ export default function SetProject() {
         });
     }
   }
-
 
   function handleRemoveMember(member) {
     setSelectedMembers(selectedMembers.filter((m) => m !== member));
