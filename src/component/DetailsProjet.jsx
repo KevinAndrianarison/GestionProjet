@@ -321,8 +321,9 @@ export default function DetailsProject() {
 
   function modifierProjet() {
     if (
-      nomProjet !== oldValueTitre ||
-      editorRef.current.getContent() !== oldDescription
+      nomProjet !== oldValueTitre 
+      // ||
+      // editorRef.current.getContent() !== oldDescription
     ) {
       let formData = {
         titre: nomProjet,
@@ -367,9 +368,9 @@ export default function DetailsProject() {
       if (nomProjet !== oldValueTitre) {
         setOldValueTitre(nomProjet);
       }
-      if (editorRef.current.getContent() !== oldDescription) {
-        setOldDescription(editorRef.current.getContent());
-      }
+      // if (editorRef.current.getContent() !== oldDescription) {
+      //   setOldDescription(editorRef.current.getContent());
+      // }
     }
   }
 

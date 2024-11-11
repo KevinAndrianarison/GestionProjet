@@ -14,7 +14,7 @@ export default function SousProjet() {
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { idProjet } = useContext(ProjectContext);
-  const { listEtape, getAlletapeByProjets, setIdEtape } =
+  const { listEtape, getAlletapeByProjets, setIdEtape, idEtape } =
     useContext(EtapeContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,10 +22,74 @@ export default function SousProjet() {
   const [description, setDescription] = useState("");
   const [dateFin, setDateFin] = useState("");
   const [dateDebut, setDateDebut] = useState("");
+  const [dateDebutModif, setDateDebutModif] = useState("");
+  const [dateFinModif, setDateFinModif] = useState("");
+  const [descriptionModif, setDescriptionModif] = useState("");
+  const [nomModif, setNomModif] = useState("");
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
+  function toggleModal(id) {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/etapes/etape/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setIdEtape(response.data.id);
+        setDateDebutModif(response.data.date_debut);
+        setDateFinModif(response.data.date_fin);
+        setDescriptionModif(response.data.description);
+        setNomModif(response.data.nom);
+        setShowSpinner(false);
+        setIsModalOpen(true);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
+  function putEtap() {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    let formData = {
+      nom: nomModif,
+      description: descriptionModif,
+      date_fin: dateFinModif,
+      date_debut: dateDebutModif,
+    };
+    axios
+      .put(`${url}/api/projets/etapes/${idEtape}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        getAlletapeByProjets();
+        setDateDebutModif("");
+        setDateFinModif("");
+        setDescriptionModif("");
+        setNomModif("");
+        setMessageSucces(response.data.message);
+        setIsModalOpen(false);
+        setShowSpinner(false);
+        setTimeout(() => {
+          setMessageSucces("");
+        }, 5000);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
+  function close() {
+    setIsModalOpen(false);
+  }
 
   const closeModalOnOutsideClick = (e) => {
     if (e.target.id === "modal-background") {
@@ -119,7 +183,7 @@ export default function SousProjet() {
             />
           </div>
           <button
-            disabled={!nom}
+            disabled={!nom || !dateDebut}
             onClick={createGradeEtapes}
             className="border mt-2 px-5 bg-blue-500 text-white h-8 rounded"
           >
@@ -149,7 +213,7 @@ export default function SousProjet() {
                     <FontAwesomeIcon
                       icon={faSliders}
                       className="w-5 text-gray-500 mr-1 focus:outline-none"
-                      onClick={toggleModal}
+                      onClick={() => toggleModal(list.id)}
                     />
                   </Tippy>
                   <Tippy content="Supprimer">
@@ -181,30 +245,47 @@ export default function SousProjet() {
               <input
                 type="text"
                 placeholder="Nom de la grande étape"
+                value={nomModif}
+                onChange={(e) => setNomModif(e.target.value)}
                 className="mt-1 mb-4 pl-3 pr-3 block w-full h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
               />
             </div>
             <div className="text-xs">
               <label>Description</label>
-              <textarea className="mt-1 mb-4 pl-3 pr-3 block w-full min-h-20 h-20 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"></textarea>
+              <textarea
+                value={descriptionModif}
+                onChange={(e) => setDescriptionModif(e.target.value)}
+                className="mt-1 mb-4 pl-3 pr-3 block w-full min-h-20 h-20 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              ></textarea>
+            </div>
+            <div className="text-xs">
+              <label>Date de début</label>
+              <input
+                type="date"
+                value={dateDebutModif}
+                onChange={(e) => setDateDebutModif(e.target.value)}
+                className="mt-1 mb-4 pl-3 pr-3 block w-full h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              />
             </div>
             <div className="text-xs">
               <label>Date de fin réel</label>
               <input
                 type="date"
+                value={dateFinModif}
+                onChange={(e) => setDateFinModif(e.target.value)}
                 className="mt-1 mb-4 pl-3 pr-3 block w-full h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
               />
             </div>
             <div className="flex justify-end text-xs">
               <button
                 className="px-5 bg-blue-500 text-white h-8 rounded mr-2"
-                onClick={toggleModal}
+                onClick={putEtap}
               >
                 Sauvegarder
               </button>
               <button
                 className="px-5 bg-gray-500 text-white h-8 rounded"
-                onClick={toggleModal}
+                onClick={close}
               >
                 Annuler
               </button>

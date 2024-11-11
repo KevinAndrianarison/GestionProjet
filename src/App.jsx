@@ -74,7 +74,6 @@ function App() {
         setUser(true);
         setShowMainPage(true);
       }
-      getAllUser();
     } else {
       setShowMainPage(false);
       setShowLoginPage(true);

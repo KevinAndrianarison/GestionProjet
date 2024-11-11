@@ -171,6 +171,7 @@ export function ProjectContextProvider({ children }) {
         setShowDetails(true);
         setListMembres(response.data.membres);
         setListChefs(response.data.utilisateur_roles);
+        
         setShowSpinner(false);
       })
       .catch((err) => {

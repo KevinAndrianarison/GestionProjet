@@ -17,37 +17,93 @@ export default function Task() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [titreTask, setTitreTask] = useState("");
   const [dateFin, setDateFin] = useState("");
+  const [showChecklistModal, setShowChecklistModal] = useState(false);
+  const [checklistName, setChecklistName] = useState("");
   const editorRef = useRef("");
+  const [checklists, setChecklists] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const checklistRef = useRef();
+  const [userIds, setUserIds] = useState([]);
 
   const { url } = useContext(UrlContext);
   const { getAllTask } = useContext(TaskContext);
   const { setShowSpinner, setShowTask } = useContext(ShowContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { ListChefAndMembres, idProject } = useContext(ProjectContext);
+  const { idProject, ListChefs } = useContext(ProjectContext);
+  const [filteredOptions, setFilteredOptions] = useState([]);
 
   function closeTask() {
     setShowTask(false);
   }
 
-  const filteredOptions = ListChefAndMembres.filter((user) =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  function closeModal(e) {
+    if (checklistRef.current && !checklistRef.current.contains(e.target)) {
+      setShowChecklistModal(false);
+    }
+  }
+  function removeChecklist(index) {
+    const updatedChecklists = [...checklists];
+    updatedChecklists.splice(index, 1);
+    setChecklists(updatedChecklists);
+  }
+
+  function removeElementFromChecklist(checklistIndex, elementIndex) {
+    const updatedChecklists = [...checklists];
+    updatedChecklists[checklistIndex].elements.splice(elementIndex, 1);
+    setChecklists(updatedChecklists);
+  }
+
+  function addChecklist() {
+    setShowChecklistModal(false);
+    setChecklists([
+      ...checklists,
+      {
+        name: checklistName,
+        elements: [],
+        newElement: "",
+        showAddElement: false,
+      },
+    ]);
+    setChecklistName("");
+  }
+
+  function addElementToChecklist(index, element) {
+    if (element.trim() !== "") {
+      const updatedChecklists = [...checklists];
+      updatedChecklists[index].elements.push(element);
+      updatedChecklists[index].newElement = "";
+      setChecklists(updatedChecklists);
+    }
+  }
+
+  function handleNewElementChange(index, value) {
+    const updatedChecklists = [...checklists];
+    updatedChecklists[index].newElement = value;
+    setChecklists(updatedChecklists);
+  }
 
   function handleSearchChange(event) {
     const value = event.target.value;
     setSearchTerm(value);
     setIsDropdownOpen(value !== "");
+    const options = ListChefs.filter((user) =>
+      user.utilisateur.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredOptions(options);
+  }
+
+  function handleRemoveMember(member) {
+    setSelected(selected.filter((m) => m !== member));
+    setUserIds(userIds.filter((id) => id !== member.id));
   }
 
   function handleOptionSelect(option) {
-    setSelectedMember(option);
-    setSearchTerm(option.email);
     setIsDropdownOpen(false);
-  }
-
-  function handleRemoveMember() {
-    setSelectedMember(null);
     setSearchTerm("");
+    if (!selected.includes(option)) {
+      setSelected([...selected, option]);
+      setUserIds([...userIds, option.utilisatuer.id]);
+    }
   }
 
   function createTask() {
@@ -171,7 +227,7 @@ export default function Task() {
                 }}
               />
             </div>
-            <div className="flex items-start flex-col">
+            <div className="hidden flex items-start flex-col">
               <label
                 htmlFor="file-upload"
                 className="input mt-2 cursor-pointer text-gray-400 px-4 py-2 rounded-md border-dashed border-2  border-gray-300 transition duration-300 mr-5"
@@ -185,38 +241,121 @@ export default function Task() {
                 accept=".jpg,.jpeg,.png"
               />
             </div>
-            <div className="mt-4">
-              <h1 className="input text-black ">
-                <FontAwesomeIcon icon={faSquareCheck} className="mr-2" /> Nom de
-                la liste de contrôle
-              </h1>
-              <p className="ml-5 input mt-2 text-black">
-                <input type="checkbox" /> Element 1
-              </p>
-              <div className="ml-5 input mt-2 text-black">
-                <input
-                  type="text"
-                  placeholder="Ajouter un élément "
-                  className="addElement px-3 -md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                />
-                <div className="flex mt-1 w-60">
-                  <button className="border bg-blue-400  px-5 py-1 rounded-lg mr-2">
-                    Ajouter
-                  </button>
-                  <button className=" px-5 py-1 hover:bg-gray-300 rounded-lg">
-                    Annuler
+
+            {showChecklistModal && (
+              <div
+                onClick={closeModal}
+                className="fixed inset-0 z-10 bg-black bg-opacity-25 flex justify-center items-center"
+              >
+                <div
+                  ref={checklistRef}
+                  className="bg-white p-6 rounded-lg shadow-lg relative w-96"
+                >
+                  <FontAwesomeIcon
+                    icon={faXmark}
+                    className="absolute top-2 right-2 text-gray-500 cursor-pointer w-5 h-5"
+                    onClick={() => setShowChecklistModal(false)}
+                  />
+                  <h2 className="text-sm font-bold mb-4">
+                    Ajouter une liste de contrôle
+                  </h2>
+                  <input
+                    type="text"
+                    placeholder="Nom de la liste de contrôle"
+                    value={checklistName}
+                    onChange={(e) => setChecklistName(e.target.value)}
+                    className="w-full border p-2 rounded-md mb-4 focus:outline-none"
+                  />
+                  <button
+                    disabled={!checklistName}
+                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                    onClick={addChecklist}
+                  >
+                    Valider
                   </button>
                 </div>
-                <button className=" px-5 py-2 bg-gray-200 mt-2 hover:bg-gray-300 rounded-lg">
-                  Ajouter un élément
-                </button>
               </div>
-              <button className=" py-2  mt-2  input text-black  rounded-lg">
-                {" "}
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une
-                liste de contrôle
-              </button>
-            </div>
+            )}
+            {checklists.map((checklist, index) => (
+              <div key={index} className="mt-4">
+                <h1 className="input text-black">
+                  <FontAwesomeIcon icon={faSquareCheck} className="mr-2" />
+                  {checklist.name}
+                  <FontAwesomeIcon
+                    icon={faXmark}
+                    className="text-red-500 ml-2 cursor-pointer"
+                    onClick={() => removeChecklist(index)}
+                  />
+                </h1>
+
+                {checklist.elements.map((el, elIndex) => (
+                  <div className=" flex mt-2 items-center" key={elIndex}>
+                    <p className=" flex ml-5 input text-black">
+                      <input type="checkbox" className="mr-2" /> {el}
+                    </p>
+                    <FontAwesomeIcon
+                      icon={faXmark}
+                      className="ml-3 text-red-500 cursor-pointer"
+                      onClick={() => removeElementFromChecklist(index, elIndex)}
+                    />
+                  </div>
+                ))}
+                {!checklist.showAddElement && (
+                  <button
+                    className=" px-5 py-2 bg-gray-200 mt-2 hover:bg-gray-300 rounded-lg"
+                    onClick={() => {
+                      const updatedChecklists = [...checklists];
+                      updatedChecklists[index].showAddElement = true;
+                      setChecklists(updatedChecklists);
+                    }}
+                  >
+                    Ajouter un élément
+                  </button>
+                )}
+                {checklist.showAddElement && (
+                  <div className="ml-5 input mt-2 text-black">
+                    <input
+                      className="addElement px-3 -md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                      type="text"
+                      placeholder="Ajouter un élément"
+                      value={checklist.newElement}
+                      onChange={(e) =>
+                        handleNewElementChange(index, e.target.value)
+                      }
+                    />
+                    <div className="flex mt-1 w-60">
+                      <button
+                        className="border bg-blue-400  px-5 py-1 rounded-lg mr-2"
+                        onClick={() =>
+                          addElementToChecklist(index, checklist.newElement)
+                        }
+                      >
+                        Ajouter
+                      </button>
+                      <button
+                        className=" px-5 py-1 hover:bg-gray-300 rounded-lg"
+                        onClick={() => {
+                          const updatedChecklists = [...checklists];
+                          updatedChecklists[index].showAddElement = false;
+                          updatedChecklists[index].newElement = "";
+                          setChecklists(updatedChecklists);
+                        }}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            <button
+              className=" py-2  mt-2  input text-black  rounded-lg"
+              onClick={() => setShowChecklistModal(true)}
+            >
+              <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une
+              liste de contrôle
+            </button>
+
             <div className="section mt-2 flex items-center">
               <div className="relative w-full">
                 <div className="label">Responsable(s) :</div>
@@ -227,11 +366,6 @@ export default function Task() {
                     className="input pl-3 pr-10 block w-72 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                     value={selectedMember ? selectedMember.email : searchTerm}
                     onChange={handleSearchChange}
-                  />
-                  <FontAwesomeIcon
-                    icon={faXmark}
-                    className="relative right-5 text-gray-400 cursor-pointer transition duration-200 hover:text-[rgba(0, 184, 148,1.0)] hover:scale-125"
-                    onClick={() => handleRemoveMember()}
                   />
                 </div>
 
@@ -244,7 +378,7 @@ export default function Task() {
                           className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-200"
                           onClick={() => handleOptionSelect(user)}
                         >
-                          {user.email}
+                          {user.utilisateur.email}
                         </div>
                       ))
                     ) : (
@@ -252,6 +386,25 @@ export default function Task() {
                         Aucune option disponible
                       </div>
                     )}
+                  </div>
+                )}
+                {selected.length > 0 && (
+                  <div>
+                    <div className="flex flex-wrap">
+                      {selected.map((member, index) => (
+                        <div
+                          key={index}
+                          className="mr-5 input text-black w-60 mt-2 bg-gray-200 rounded-md px-4 py-2 flex justify-between items-center"
+                        >
+                          {member.utilisateur.email}
+                          <FontAwesomeIcon
+                            icon={faXmark}
+                            className="cursor-pointer text-red-500 hover:text-red-700"
+                            onClick={() => handleRemoveMember(member)}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
