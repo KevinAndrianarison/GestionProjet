@@ -161,9 +161,14 @@ function ProspectSCT() {
       setProspects([...prospects, response.data]);
 
       setFirstModalOpen(false);
-      setTimeout(() => {
-        alert("Ajout de client avec succès !");
-      }, 500);
+    // Utiliser SweetAlert2 pour afficher une alerte de succès
+    Swal.fire({
+      title: 'Succès!',
+      text: 'Ajout de client avec succès!',
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
       setErrorMessage("Une erreur s'est produite. Veuillez réessayer.");
@@ -214,9 +219,13 @@ function ProspectSCT() {
 
       setSecondModalOpen(false);
       
-      setTimeout(() => {
-        alert("Modification de client avec succès !");
-      }, 500);
+      Swal.fire({
+        title: 'Succès!',
+        text: 'Modification de client avec succès!',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
     } catch (error) {
       console.error("Erreur lors de la mise à jour du prospect:", error);
     }
@@ -327,7 +336,11 @@ function ProspectSCT() {
         <div className="p-6">
         <div >
 
-      <Modal isOpen={isFirstModalOpen} onClose={() => setFirstModalOpen(false)}>
+      <Modal 
+      isOpen={isFirstModalOpen} 
+      onClose={() => {
+        setFirstModalOpen(false);
+        setErrorMessage("")}}>
         <h2 className="text-xl ">Nouveau prospect</h2>
     <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
         <div className="sm:col-span-2">
@@ -356,10 +369,15 @@ function ProspectSCT() {
                 Particulier
               </label>
             </div>
+
+            <div>
+            {errorMessage && (
+                <span className="text-red-600 text-sm">{errorMessage}</span>
+              )}              
+            </div>
+
           </div>
-
           <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-
             {type_client === "societe" && (
               <div className="sm:col-span-1">
                 <label className="block text-sm font-medium leading-6 text-gray-900">
@@ -396,9 +414,7 @@ function ProspectSCT() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
-              {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}
+
             </div>
 
             <div className="sm:col-span-1">
@@ -492,6 +508,7 @@ function ProspectSCT() {
               </div>
             )}
             <br />
+
             <div className="sm:col-span-1 py-2">
               <button 
                 type="submit"
@@ -499,6 +516,7 @@ function ProspectSCT() {
 >
                 Enregistrer
               </button>
+
             </div>
 
           </form>            
@@ -506,7 +524,11 @@ function ProspectSCT() {
       </Modal>
 
 
-      <Modal isOpen={isSecondModalOpen} onClose={() => setSecondModalOpen(false)}>
+      <Modal 
+      isOpen={isSecondModalOpen}
+      onClose={() => {
+        setSecondModalOpen(false); 
+        setErrorMessage("");  }}>
   <h2 className="text-xl">Modifier le prospect</h2>
   <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
     <div className="sm:col-span-2">
@@ -536,11 +558,14 @@ function ProspectSCT() {
                 Particulier
               </label>
             </div>
+            <div>
+            {errorMessage && (
+                <span className="text-red-600 text-sm">{errorMessage}</span>
+              )}              
+            </div>
           </div>
-
       <form onSubmit={handleFormSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
       {type_client_edit  === "societe" && (
-
         <div className="sm:col-span-1">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Dénomination de la société
@@ -582,9 +607,7 @@ function ProspectSCT() {
                 }                
                 className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
-              {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}
+
             </div>
 
             <div className="sm:col-span-1">
