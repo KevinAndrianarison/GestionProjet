@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Modal from './Modal'; // Assurez-vous que le chemin d'importation est correct
 import Swal from 'sweetalert2';
@@ -20,6 +20,8 @@ function Service() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(null); // Track which row's options are open
+  const [page, setPage] = useState(1); // Page actuelle
+  const itemsPerPage = 4; // Nombre de prospects par page
 
   useEffect(() => {
     // Récupérer les services depuis le localStorage
@@ -31,6 +33,24 @@ function Service() {
     fetchServicesFromLocalStorage();
   }, []);
 
+  const currentProspects = services.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+  
+  const handleNext = () => {
+    if (page < Math.ceil(services.length / itemsPerPage)) {
+      setPage(page + 1);
+    }
+  };
+  
+  const handlePrev = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+  
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     const newService = { type_service, nom_produit, remarque, unite, prix_base, prix_hors_tva, tva, prix_ttc };
@@ -152,13 +172,48 @@ function Service() {
 
   return (
     <div>
-      <div>
-        <nav className="rounded-md flex justify-between items-center p-4">
-          <Link className="text-2xl">Tous les services</Link>
+            <div className="">
+        <div>
+          <nav className="rounded-md flex justify-between items-center p-4 ">
+            <div>
+              <Link className="text-2xl ">
+                Tous les services
+              </Link>
+            </div>
+           </nav>
+        </div>
+      </div>
+      <div className="flex flex-wrap">
+      <div className="w-full md:w-10/12 sm:w-10/12">
+      <div className="flex items-center space-x-2">
+        <nav>
           <button onClick={() => {setIsModalOpen(true); setIsEditModalOpen(false)}} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
             Nouveau service
           </button>
         </nav>
+        </div>
+        </div>
+
+        <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
+            <div className="flex mb-4 m-auto py-2">
+            <button 
+      onClick={handlePrev} 
+      disabled={page === 1} 
+      className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+    >
+      Prev
+    </button>
+    <button 
+      onClick={handleNext} 
+      disabled={page >= Math.ceil(services.length / itemsPerPage)} 
+      className={`px-4 py-1 border rounded ${page >= Math.ceil(services.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+    >
+      Next
+    </button>
+
+            </div>
+          </div>
+          
       </div>
 
       {/* Table d'affichage des services */}
@@ -177,7 +232,7 @@ function Service() {
             </tr>
           </thead>
           <tbody>
-            {services.map((service, index) => (
+            {currentProspects.map((service, index) => (
               <tr key={index}>
                 <td className="border-y p-4">{service.type_service}</td>
                 <td className="border-y p-4">{service.nom_produit}</td>
@@ -199,8 +254,8 @@ function Service() {
                       handleEditService(service);
                       setIsOptionsOpen(null); // Ferme le menu après l'édition
                     }}                          
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                        >
+                    className="text-blue-500 hover:text-blue-700 flex items-center mb-2">
+                        <FontAwesomeIcon icon={faEdit} className="mr-2" />                          
                           Modifier
                         </button>
                         <button 
@@ -208,8 +263,8 @@ function Service() {
                       handleDeleteService(service);
                       setIsOptionsOpen(null); // Ferme le menu après la suppression
                     }}                          
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                        >
+                    className="text-red-500 hover:text-red-700 flex items-center">
+                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
                           Supprimer
                         </button>
                       </div>
@@ -268,7 +323,7 @@ function Service() {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium">Remarque</label>
+            <label className="block text-sm font-medium">{type_service === "produit" ? "Remarque" : "Description"}</label>
             <textarea
               value={remarque}
               onChange={(e) => setRemarque(e.target.value)}
@@ -381,8 +436,8 @@ function Service() {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-medium">Remarque</label>
-          <textarea
+        <label className="block text-sm font-medium">{type_service === "produit" ? "Remarque" : "Description"}</label>
+        <textarea
             value={remarque}
             onChange={(e) => setRemarque(e.target.value)}
             className="mt-1 block w-full p-2 border border-gray-300 h-full rounded-md focus:outline-none"
