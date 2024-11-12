@@ -6,11 +6,19 @@ import Modal from './Modal'; // Assurez-vous que le chemin d'importation est cor
 import Swal from 'sweetalert2';
 
 function Service() {
+
   const [type_service, setTypeService] = useState("service");
   const [nom_produit, setNomProduit] = useState("");
-  const [remarque, setRemarque] = useState("");
+  const [description, setDescription] = useState("");
   const [unite, setUnite] = useState("");
-  const [prix_base, setPrixBase] = useState("");
+
+  const [duree_estimee, setDureeEstimee] = useState("");  
+  const [disponibilite, setDisponibilite] = useState("");
+  const [condition, setCondition] = useState("");
+
+  const [image_produit, setImageProduit] = useState("");
+  const [statut, setStatut] = useState("");
+  const [categorie, setCategorie] = useState("");
   const [prix_hors_tva, setPrixHorsTva] = useState("");
   const [tva, setTva] = useState("");
   const [prix_ttc, setPrixTtc] = useState("");
@@ -23,6 +31,7 @@ function Service() {
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
 
+  
   useEffect(() => {
     // Récupérer les services depuis le localStorage
     const fetchServicesFromLocalStorage = () => {
@@ -53,7 +62,7 @@ function Service() {
   
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newService = { type_service, nom_produit, remarque, unite, prix_base, prix_hors_tva, tva, prix_ttc };
+    const newService = { type_service, nom_produit, description, unite, duree_estimee, disponibilite, condition, image_produit, statut, categorie, prix_hors_tva, tva, prix_ttc };
     setErrorMessage("");
 
     const updatedServices = [...services, newService];
@@ -61,14 +70,9 @@ function Service() {
     setServices(updatedServices);
 
     // Réinitialiser les champs et fermer le modal
+    resetFields();
     setTypeService("");
-    setNomProduit("");
-    setRemarque("");
-    setUnite("");
-    setPrixBase("");
-    setPrixHorsTva("");
-    setTva("");
-    setPrixTtc("");
+
     setIsModalOpen(false);
             // Utiliser SweetAlert2 pour afficher une alerte de succès
             Swal.fire({
@@ -79,13 +83,40 @@ function Service() {
             });
   };
 
+  useEffect(() => {
+    if (isEditModalOpen && serviceToEdit) {
+      setNomProduit(serviceToEdit.nom_produit || '');
+      setDescription(serviceToEdit.description || '');
+      setCategorie(serviceToEdit.categorie || '');
+      setStatut(serviceToEdit.statut || '');
+      setTypeService(serviceToEdit.type_service || '');
+      setUnite(serviceToEdit.unite || '');
+      setDureeEstimee(serviceToEdit.duree_estimee || '');
+      setDisponibilite(serviceToEdit.disponibilite || '');
+      setCondition(serviceToEdit.condition || '');
+      setImageProduit(serviceToEdit.image_produit || '');
+      setPrixHorsTva(serviceToEdit.prix_hors_tva || '');
+      setTva(serviceToEdit.tva || '');
+      setPrixTtc(serviceToEdit.prix_ttc || '');
+    } else if (!isEditModalOpen) {
+      // Réinitialiser tous les champs lorsque le modal est fermé
+      resetFields();
+    }
+  }, [isEditModalOpen, serviceToEdit]);
+
+
   const handleEditService = (service) => {
     setServiceToEdit(service);
     setTypeService(service.type_service);
     setNomProduit(service.nom_produit);
-    setRemarque(service.remarque);
+    setDescription(service.description);
     setUnite(service.unite);
-    setPrixBase(service.prix_base);
+    setDureeEstimee(service.duree_estimee);
+    setDisponibilite(service.disponibilite);
+    setCondition(service.condition);
+    setImageProduit(service.image_produit);
+    setStatut(service.image_produit);
+    setCategorie(service.image_produit);
     setPrixHorsTva(service.prix_hors_tva);
     setTva(service.tva);
     setPrixTtc(service.prix_ttc);
@@ -94,7 +125,7 @@ function Service() {
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    const updatedService = { type_service, nom_produit, remarque, unite, prix_base, prix_hors_tva, tva, prix_ttc };
+    const updatedService = { type_service, nom_produit, description, unite, duree_estimee, disponibilite, condition, image_produit, statut, categorie, prix_hors_tva, tva, prix_ttc };
 
     const updatedServices = services.map((service) =>
       service === serviceToEdit ? updatedService : service
@@ -102,15 +133,8 @@ function Service() {
     localStorage.setItem("services", JSON.stringify(updatedServices));
 
     setServices(updatedServices);
+    resetFields();
 
-    setTypeService("");
-    setNomProduit("");
-    setRemarque("");
-    setUnite("");
-    setPrixBase("");
-    setPrixHorsTva("");
-    setTva("");
-    setPrixTtc("");
     setIsEditModalOpen(false);
             // Utiliser SweetAlert2 pour afficher une alerte de succès
             Swal.fire({
@@ -125,14 +149,18 @@ function Service() {
     const resetFields = () => {
       setTypeService("service");
       setNomProduit("");
-      setRemarque("");
+      setDescription("");
       setUnite("");
-      setPrixBase("");
+      setDureeEstimee("");
+      setDisponibilite("");
+      setCondition("");
+      setImageProduit("");
+      setStatut("");
+      setCategorie("");
       setPrixHorsTva("");
       setTva("");
       setPrixTtc("");
     };
-
 
   // Réinitialisation des champs à l'ouverture du modal d'ajout
   useEffect(() => {
@@ -172,7 +200,7 @@ function Service() {
 
   return (
     <div>
-            <div className="">
+          <div className="">
         <div>
           <nav className="rounded-md flex justify-between items-center p-4 ">
             <div>
@@ -217,18 +245,15 @@ function Service() {
       </div>
 
       {/* Table d'affichage des services */}
-      <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
+      <div className="w-full border rounded-lg shadow-md overflow-auto h-[500px]">
       <table className="min-w-full">
           <thead>
             <tr>
               <th className="p-4 text-left text-sm font-medium leading-6">Type</th>
-              <th className="p-4 text-left text-sm font-medium leading-6">Nom du produit</th>
-              <th className="p-4 text-left text-sm font-medium leading-6">Remarque</th>
-              <th className="p-4 text-left text-sm font-medium leading-6">Unité</th>
-              <th className="p-4 text-left text-sm font-medium leading-6">Prix de base</th>
-              <th className="p-4 text-left text-sm font-medium leading-6">Prix hors TVA</th>
-              <th className="p-4 text-left text-sm font-medium leading-6">TVA</th>
+              <th className="p-4 text-left text-sm font-medium leading-6">Nom</th>
+              <th className="p-4 text-left text-sm font-medium leading-6">Description</th>
               <th className="p-4 text-left text-sm font-medium leading-6">Prix TTC</th>
+              <th className="p-4 text-left text-sm font-medium leading-6">Statut</th>
             </tr>
           </thead>
           <tbody>
@@ -236,12 +261,9 @@ function Service() {
               <tr key={index}>
                 <td className="border-y p-4">{service.type_service}</td>
                 <td className="border-y p-4">{service.nom_produit}</td>
-                <td className="border-y p-4">{service.remarque}</td>
-                <td className="border-y p-4">{service.unite}</td>
-                <td className="border-y p-4">{service.prix_base}</td>
-                <td className="border-y p-4">{service.prix_hors_tva}</td>
-                <td className="border-y p-4">{service.tva}</td>
+                <td className="border-y p-4">{service.description}</td>
                 <td className="border-y p-4">{service.prix_ttc}</td>
+                <td className="border-y p-4">{service.statut}</td>
                 <td className="border-y p-4">
                   <div className="relative">
                     <button  onClick={() => setIsOptionsOpen(isOptionsOpen === index ? null : index)}>
@@ -312,6 +334,7 @@ function Service() {
         </div>
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
         <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+          
           <div className="mb-4">
           <label className="block text-sm font-medium">
     {type_service === "produit" ? "Nom du produit" : "Nom du service"}
@@ -323,14 +346,60 @@ function Service() {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium">{type_service === "produit" ? "Remarque" : "Description"}</label>
+            <label className="block text-sm font-medium">Description</label>
             <textarea
-              value={remarque}
-              onChange={(e) => setRemarque(e.target.value)}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none h-full"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none py-0"
             />
           </div>
-          {type_service  === "produit" && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Catégorie</label>
+            <select value={categorie} onChange={(e) => setCategorie(e.target.value)} className="mt-1 bloc pl-3 pr-3 w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+            <option value=""></option>
+                  {type_service === "service" && (
+                    <>
+                      <option value="professionnels">Professionnels</option>
+                      <option value="personnels">Personnels</option>
+                      <option value="technologiques">Technologiques</option>
+                      <option value="logistique">Logistique</option>
+                      <option value="financiers">Financiers</option>
+                    </>
+                  )}
+                  {type_service === "produit" && (
+                    <>
+                      <option >Technologie</option>
+                      <option >Consommation</option>
+                      <option >Santé et Hygiène</option>
+                      <option >Maison</option>
+                      <option >Mode</option>
+                    </>
+                  )}
+              </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Statut</label>
+            <select value={statut} onChange={(e) => setStatut(e.target.value)} className="mt-1 bloc pl-3 pr-3 w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+                <option></option>
+                  {type_service === "service" && (
+                    <>
+                      <option >Actif</option>
+                      <option >Suspendu</option>
+                      <option >En attente</option>
+                    </>
+                  )}
+                  {type_service === "produit" && (
+                    <>
+                      <option >Disponible</option>
+                      <option >En rupture de stock</option>
+                      <option >Précommande</option>
+                    </>
+                  )}
+              </select>
+          </div>
+
+          {type_service  === "produit" && ( 
+             <>
           <div className="mb-4">
             <label className="block text-sm font-medium">Unité</label>
             <input
@@ -339,17 +408,16 @@ function Service() {
               onChange={(e) => setUnite(e.target.value)}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
             />
-          </div>)}
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium">Prix de base</label>
-            <input
-              type="number"
-              value={prix_base}
-              onChange={(e) => setPrixBase(e.target.value)}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
-            />
           </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Image produit</label>
+            <input
+              type="file"
+              value={image_produit}
+              onChange={(e) => setImageProduit(e.target.value)}
+              className="mt-1 py-1.5 block w-full border border-gray-300 rounded-md focus:outline-none"/>
+           </div>
+
           <div className="mb-4">
             <label className="block text-sm font-medium">Prix hors TVA</label>
             <input
@@ -368,8 +436,44 @@ function Service() {
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
             />
           </div>
+           </>)}
+
+           {type_service  === "service" && ( 
+             <>           
+           <div className="mb-4">
+            <label className="block text-sm font-medium">Durée estimée</label>
+            <input
+              type="number"
+              value={duree_estimee}
+              onChange={(e) => setDureeEstimee(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+
           <div className="mb-4">
-            <label className="block text-sm font-medium">Prix TTC</label>
+            <label className="block text-sm font-medium">Disponibilité</label>
+            <input
+              type="number"
+              value={disponibilite}
+              onChange={(e) => setDisponibilite(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Condition</label>
+            <input
+              type="number"
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+           </>)}
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium">{type_service === "produit" ? "Prix TTC" : "Tarif en Ar (/h ou /j)"}
+            </label>
             <input
               type="number"
               value={prix_ttc}
@@ -385,8 +489,7 @@ function Service() {
           >
             Enregistrer
           </button>
-        </div>       </form>
-        </div>            </div>
+        </div></form></div></div>
       </Modal>
 
 
@@ -436,51 +539,129 @@ function Service() {
           />
         </div>
         <div className="mb-4">
-        <label className="block text-sm font-medium">{type_service === "produit" ? "Remarque" : "Description"}</label>
+        <label className="block text-sm font-medium">Description</label>
         <textarea
-            value={remarque}
-            onChange={(e) => setRemarque(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 h-full rounded-md focus:outline-none"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none py-0"
           />
         </div>
-        {type_service  === "produit" && (
         <div className="mb-4">
-          <label className="block text-sm font-medium">Unité</label>
-          <input
-            type="text"
-            value={unite}
-            onChange={(e) => setUnite(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
-          />
-        </div>            )}
+            <label className="block text-sm font-medium">Catégorie</label>
+            <select value={categorie || ""} onChange={(e) => setCategorie(e.target.value)} className="mt-1 bloc pl-3 pr-3 w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+                <option value=""></option>
+                  {type_service === "service" && (
+                    <>
+                      <option value="professionnels">Professionnels</option>
+                      <option value="personnels">Personnels</option>
+                      <option value="technologiques">Technologiques</option>
+                      <option value="logistique">Logistique</option>
+                      <option value="financiers">Financiers</option>
+                    </>
+                  )}
+                  {type_service === "produit" && (
+                    <>
+                      <option >Technologie</option>
+                      <option >Consommation</option>
+                      <option >Santé et Hygiène</option>
+                      <option >Maison</option>
+                      <option >Mode</option>
+                    </>
+                  )}
+              </select>
+          </div>
+        <div className="mb-4">
+            <label className="block text-sm font-medium">Statut</label>
+            <select value={statut} onChange={(e) => setStatut(e.target.value)} className="mt-1 bloc pl-3 pr-3 w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+                <option></option>
+                  {type_service === "service" && (
+                    <>
+                      <option >Actif</option>
+                      <option >Suspendu</option>
+                      <option >En attente</option>
+                    </>
+                  )}
+                  {type_service === "produit" && (
+                    <>
+                      <option >Disponible</option>
+                      <option >En rupture de stock</option>
+                      <option >Précommande</option>
+                    </>
+                  )}
+              </select>
+          </div>
+          {type_service  === "produit" && ( 
+             <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Unité</label>
+            <input
+              type="text"
+              value={unite}
+              onChange={(e) => setUnite(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Image produit</label>
+            <input
+              type="file"
+              value={image_produit}
+              onChange={(e) => setImageProduit(e.target.value)}
+              className="mt-1 py-1.5 block w-full border border-gray-300 rounded-md focus:outline-none"/>
+           </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Prix de base</label>
-          <input
-            type="number"
-            value={prix_base}
-            onChange={(e) => setPrixBase(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Prix hors TVA</label>
-          <input
-            type="number"
-            value={prix_hors_tva}
-            onChange={(e) => setPrixHorsTva(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md  focus:outline-none"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium">TVA</label>
-          <input
-            type="number"
-            value={tva}
-            onChange={(e) => setTva(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none "
-          />
-        </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Prix hors TVA</label>
+            <input
+              type="number"
+              value={prix_hors_tva}
+              onChange={(e) => setPrixHorsTva(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">TVA</label>
+            <input
+              type="number"
+              value={tva}
+              onChange={(e) => setTva(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+           </>)}
+
+           {type_service  === "service" && ( 
+             <>           
+           <div className="mb-4">
+            <label className="block text-sm font-medium">Durée estimée</label>
+            <input
+              type="number"
+              value={duree_estimee}
+              onChange={(e) => setDureeEstimee(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Disponibilité</label>
+            <input
+              type="number"
+              value={disponibilite}
+              onChange={(e) => setDisponibilite(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Condition</label>
+            <input
+              type="number"
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none"
+            />
+          </div>
+           </>)}
         <div className="mb-4">
           <label className="block text-sm font-medium">Prix TTC</label>
           <input
