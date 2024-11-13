@@ -11,7 +11,7 @@ import axios from "axios";
 export default function RetirerChefs() {
   const { setShowRetierChefs, setShowSpinner } = useContext(ShowContext);
   const { url } = useContext(UrlContext);
-  const { iduser, Nomuser } = useContext(UserContext);
+  const { idRoleuser, Nomuser } = useContext(UserContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { idProjet, getOneProjet } = useContext(ProjectContext);
 
@@ -23,12 +23,8 @@ export default function RetirerChefs() {
     setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    let formData = {
-      chef_id: iduser,
-    };
-
     axios
-      .put(`${url}/api/entreprises/projet/${idProjet}/chef-retire`, formData, {
+      .delete(`${url}/api/projets/role-utilisateurs/${idRoleuser}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -36,7 +32,6 @@ export default function RetirerChefs() {
       .then((response) => {
         getOneProjet(idProjet);
         setMessageSucces(response.data.message);
-        setShowSpinner(false);
         setShowRetierChefs(false);
         setTimeout(() => {
           setMessageSucces("");

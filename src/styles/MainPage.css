@@ -42,7 +42,9 @@
 .iconeResponsive{
   width: 2vw;
   height: 3vh;
-
+  width: 1vw;
+  height: 2vh;
+  cursor: pointer;
 }
 
 

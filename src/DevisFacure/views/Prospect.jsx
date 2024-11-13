@@ -7,6 +7,8 @@ import {
   faTrash, faEdit,
   faEllipsisV,
   faPlusCircle
+=======
+  faEllipsisV
 } from "@fortawesome/free-solid-svg-icons";
 import { FaBuilding, FaUser } from 'react-icons/fa';
 import { Link } from "react-router-dom";
@@ -35,6 +37,11 @@ function ProspectSCT() {
   const [prospectToEdit, setProspectToEdit] = useState({});
   const [type_client_edit, setTypeClientEdit] = useState(""); 
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+=======
+  const [prospectToEdit, setProspectToEdit] = useState({});
+  const [type_client_edit, setTypeClientEdit] = useState(""); 
+  const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+
 
   const handleDelete = async (prospectId) => {
     // Demander confirmation avant de supprimer
@@ -53,6 +60,13 @@ function ProspectSCT() {
   
     if (!confirmed.isConfirmed) {
       return; // Si l'utilisateur annule, ne rien faire
+    }
+
+    try {
+      const response = await axios.delete(`${FULL_URL}gest/fact/prospects/${prospectId}`);
+      console.log('Données supprimées :', response.data);
+      setProspects(prospects.filter((prospect) => prospect.id !== prospectId));
+      Swal.fire('Supprimé!', 'Le prospect a été supprimé.', 'success');
     }
 
     try {
@@ -104,7 +118,57 @@ function ProspectSCT() {
         setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
       };
   
+        // Fonction pour récupérer les données depuis l'API
+  const fetchDataAndStore = async () => {
+    try {
+      const response = await axios.get("https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects"); // Remplace FULL_URL par l'URL de l'API pour récupérer les données
+      if (response.status === 200 && response.data) {
+        setProspects(response.data); // Mettre à jour l'état avec les données récupérées
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression des données :', error);
+      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+    }
+  };
+    
+     // Charger tous les prospects une seule fois
+      useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await axios.get(`${FULL_URL}gest/fact/entreprises/1/prospects`);
+            if (response.status === 200) {
+              setProspects(response.data);
+            }
+          } catch (error) {
+            console.error("Erreur lors de la récupération des données:", error);
+          }
+        };
+        fetchData();
+      }, []);
+  
+      // Découper les prospects à afficher pour la page actuelle
+      const currentProspects = prospects.slice(
+        (page - 1) * itemsPerPage,
+        page * itemsPerPage
+      );
 
+      // Gestion de la navigation entre pages
+      const handleNext = () => {
+        if (page < Math.ceil(prospects.length / itemsPerPage)) {
+          setPage(page + 1);
+        }
+      };
+
+      const handlePrev = () => {
+        if (page > 1) {
+          setPage(page - 1);
+        }
+      };
+
+      const toggleActions = (id) => {
+        setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
+      };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(""); // Réinitialiser le message d'erreur
@@ -132,7 +196,7 @@ function ProspectSCT() {
     console.log("Données du formulaire : ", formData);
 
     try {
-      const response = await axios.post(FULL_URL, formData);
+      const response = await axios.post('https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects', formData);
       console.log("Réponse de l'API:", response.data);
       setErrorMessage("");
 
@@ -177,7 +241,6 @@ function ProspectSCT() {
     }
   };
 
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const editedData = {
@@ -202,8 +265,10 @@ function ProspectSCT() {
     try {
       const response = await axios.put(`${FULL_URL}gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, editedData);
       console.log("Réponse de mise à jour :", response.data);
-      setSecondModalOpen(false);
       fetchDataAndStore();
+
+      setSecondModalOpen(false);
+      
       setTimeout(() => {
         alert("Modification de client avec succès !");
       }, 500);
@@ -281,6 +346,7 @@ function ProspectSCT() {
                       <FaUser title={prospect.type} className="inline-block mr-2" />
                     )}
                   </td>
+                  <td className="border-y py-2 px-4">{prospect.type}</td>
                   <td className="border-y px-4">{prospect.nom_societe}</td>
                   <td className="border-y px-4">{prospect.nom}</td>
                   <td className="border-y px-4">{prospect.email}</td>

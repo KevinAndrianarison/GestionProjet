@@ -23,6 +23,9 @@ import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
 import Historique from "../DevisFacure/views/Historique";
+import ProspectDetail from "../DevisFacure/views/Prospect";
+import EditProspect from "../DevisFacure/views/Prospect";
+import EditUser from "../DevisFacure/views/ModifierClient";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
 import GestionUserPage from "./GestionUserPage";
@@ -128,11 +131,23 @@ export default function MainPage() {
             <p className="title">Softiceo</p>
           </div>
           <div className="input cursor-pointer text-gray-500 flex flex-wrap items-center">
+    <>
+      <div className="flex justify-between w-full border-b-4 border-blue-500 py-1 flex-wrap">
+        <div className="flex items-center">
+          <div
+            className="logos w-20 h-16 cursor-pointer"
+            onClick={() => navigate(`${entity}/AllProject`)}
+          ></div>
+          <p className="title">Softiceo</p>
+        </div>
+        {(showAdmin || showUser) && (
+          <div className="mb-1 input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center">
             <div
               onClick={switchToGestProj}
               className={
                 statusNavBar === 1
                   ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                   : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
               }
             >
@@ -144,6 +159,7 @@ export default function MainPage() {
               className={
                 statusNavBar === 2
                   ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                   : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
               }
             >
@@ -155,6 +171,7 @@ export default function MainPage() {
               className={
                 statusNavBar === 3
                   ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                   : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
               }
             >
@@ -166,6 +183,7 @@ export default function MainPage() {
               className={
                 statusNavBar === 4
                   ? "bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
+                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
                   : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
               }
             >
@@ -193,6 +211,22 @@ export default function MainPage() {
                   </Tippy>
                 </NavLink>
                 <Tippy content="Créer un projet ">
+        )}
+
+        <div className="text-xs flex items-center text-gray-700">
+          {(showAdmin || showUser) && (
+            <>
+              <div className="flex mr-5 items-center">
+                <div
+                  style={{
+                    backgroundImage: `url(${url}/storage/${user.photo_profile})`,
+                  }}
+                  className="mr-1 bg-cover bg-center rounded-3xl w-14 h-12"
+                ></div>
+                <p className="input text-black font-bold">{user.nom}</p>
+              </div>
+              <NavLink to={`${entity}/Settings`}>
+                <Tippy content="Paramètres">
                   <FontAwesomeIcon
                     onClick={createProject}
                     icon={faPlusCircle}
@@ -207,6 +241,40 @@ export default function MainPage() {
               </>
             )}
           </div>
+              </NavLink>
+            </>
+          )}
+          <FontAwesomeIcon
+            onClick={logout}
+            icon={faSignOutAlt}
+            className="mr-5 iconeResponsive"
+          />
+        </div>
+      </div>
+      <div className="mains">
+        <div className="header">
+          {(showAdmin || showUser) && (
+            <div className="titles mt-2 flex items-center">
+              {TitreNavBar}
+              {((statusNavBar === 1 && user.grade === "chef") ||
+                (statusNavBar === 1 && user.role === "admin")) && (
+                <Tippy content="Créer un projet ">
+                  <FontAwesomeIcon
+                    onClick={createProject}
+                    icon={faPlusCircle}
+                    className="cursor-pointer ml-5 focus:outline-none iconeResponsive"
+                  />
+                </Tippy>
+              )}
+            </div>
+          )}
+
+          {(showAdmin || showUser) && (
+            <div
+              className="description  mt-2"
+              dangerouslySetInnerHTML={{ __html: DescrNavBar }}
+            ></div>
+          )}
         </div>
 
         <div className="titles mt-2">{TitreNavBar}</div>
@@ -357,5 +425,6 @@ export default function MainPage() {
         </Routes>
       </div>
     </div>
+    </>
   );
 }
