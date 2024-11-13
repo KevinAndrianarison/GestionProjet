@@ -5,8 +5,12 @@ import Geonames from "../contextes/geonames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash, faEdit,
+<<<<<<< HEAD
   faEllipsisV,
   faPlusCircle
+=======
+  faEllipsisV
+>>>>>>> 063d17e5374994981185e036ec4d038d8d56913b
 } from "@fortawesome/free-solid-svg-icons";
 import { FaBuilding, FaUser } from 'react-icons/fa';
 import { Link } from "react-router-dom";
@@ -31,10 +35,10 @@ function ProspectSCT() {
   const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
-  const [selectedProspectId, setSelectedProspectId] = useState(null);
   const [prospectToEdit, setProspectToEdit] = useState({});
   const [type_client_edit, setTypeClientEdit] = useState(""); 
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+
 
   const handleDelete = async (prospectId) => {
     // Demander confirmation avant de supprimer
@@ -104,6 +108,17 @@ function ProspectSCT() {
         setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
       };
   
+        // Fonction pour récupérer les données depuis l'API
+  const fetchDataAndStore = async () => {
+    try {
+      const response = await axios.get("https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects"); // Remplace FULL_URL par l'URL de l'API pour récupérer les données
+      if (response.status === 200 && response.data) {
+        setProspects(response.data); // Mettre à jour l'état avec les données récupérées
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données:", error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,7 +147,7 @@ function ProspectSCT() {
     console.log("Données du formulaire : ", formData);
 
     try {
-      const response = await axios.post(FULL_URL, formData);
+      const response = await axios.post('https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects', formData);
       console.log("Réponse de l'API:", response.data);
       setErrorMessage("");
 
@@ -153,9 +168,14 @@ function ProspectSCT() {
       setProspects([...prospects, response.data]);
 
       setFirstModalOpen(false);
-      setTimeout(() => {
-        alert("Ajout de client avec succès !");
-      }, 500);
+    // Utiliser SweetAlert2 pour afficher une alerte de succès
+    Swal.fire({
+      title: 'Succès!',
+      text: 'Ajout de client avec succès!',
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
       setErrorMessage("Une erreur s'est produite. Veuillez réessayer.");
@@ -163,7 +183,6 @@ function ProspectSCT() {
   };
 
   const handleEditClick = async (id) => {
-    setSelectedProspectId(id);
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
     try {
       const response = await axios.get(`${FULL_URL}gest/fact/prospects/${id}`);
@@ -176,6 +195,7 @@ function ProspectSCT() {
       console.error("Erreur lors de la récupération des données du prospect:", error);
     }
   };
+
 
 
   const handleFormSubmit = async (e) => {
@@ -202,11 +222,17 @@ function ProspectSCT() {
     try {
       const response = await axios.put(`${FULL_URL}gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, editedData);
       console.log("Réponse de mise à jour :", response.data);
-      setSecondModalOpen(false);
       fetchDataAndStore();
-      setTimeout(() => {
-        alert("Modification de client avec succès !");
-      }, 500);
+
+      setSecondModalOpen(false);
+      
+      Swal.fire({
+        title: 'Succès!',
+        text: 'Modification de client avec succès!',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
     } catch (error) {
       console.error("Erreur lors de la mise à jour du prospect:", error);
     }
@@ -323,6 +349,7 @@ function ProspectSCT() {
         <div className="p-6">
         <div >
 
+<<<<<<< HEAD
       <Modal isOpen={isFirstModalOpen} onClose={() => setFirstModalOpen(false)}>
         
           <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
@@ -331,6 +358,16 @@ function ProspectSCT() {
             <h2 className="text-xl font-bold"><FontAwesomeIcon icon={faPlusCircle} className="mr-2" />Nouveau prospect</h2>
               </div>
             <div className="w-full md:w-5/12 sm:w-5/12 ml-auto">
+=======
+      <Modal 
+      isOpen={isFirstModalOpen} 
+      onClose={() => {
+        setFirstModalOpen(false);
+        setErrorMessage("")}}>
+        <h2 className="text-xl ">Nouveau prospect</h2>
+    <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
+        <div className="sm:col-span-2">
+>>>>>>> 063d17e5374994981185e036ec4d038d8d56913b
             <label className="block text-sm font-normal leading-6 text-gray-900">
                 <select
                   onChange={(e) => setTypeClient(e.target.value)} 
@@ -341,10 +378,19 @@ function ProspectSCT() {
                 </select>
               </label>
             </div>
-          </div>
-          <hr></hr>
-          <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
 
+            <div>
+            {errorMessage && (
+                <span className="text-red-600 text-sm">{errorMessage}</span>
+              )}              
+            </div>
+
+          </div>
+<<<<<<< HEAD
+          <hr></hr>
+=======
+>>>>>>> 063d17e5374994981185e036ec4d038d8d56913b
+          <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             {type_client === "societe" && (
               <div className="sm:col-span-1">
                 <label className="block text-sm font-medium leading-6 text-gray-900">
@@ -381,9 +427,7 @@ function ProspectSCT() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
-              {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}
+
             </div>
 
             <div className="sm:col-span-1">
@@ -453,6 +497,7 @@ function ProspectSCT() {
               </div>
             )}
             <br />
+
             <div className="sm:col-span-1 py-2">
             <button 
                 type="submit"
@@ -460,6 +505,7 @@ function ProspectSCT() {
 >
                 Enregistrer
               </button>
+
             </div>
 
         </form>            
@@ -467,7 +513,11 @@ function ProspectSCT() {
     </Modal>
 
 
-      <Modal isOpen={isSecondModalOpen} onClose={() => setSecondModalOpen(false)}>
+      <Modal 
+      isOpen={isSecondModalOpen}
+      onClose={() => {
+        setSecondModalOpen(false); 
+        setErrorMessage("");  }}>
   <h2 className="text-xl">Modifier le prospect</h2>
   <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
     <div className="sm:col-span-2">
@@ -497,11 +547,14 @@ function ProspectSCT() {
                 Particulier
               </label>
             </div>
+            <div>
+            {errorMessage && (
+                <span className="text-red-600 text-sm">{errorMessage}</span>
+              )}              
+            </div>
           </div>
-
       <form onSubmit={handleFormSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
       {type_client_edit  === "societe" && (
-
         <div className="sm:col-span-1">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Dénomination de la société
@@ -543,9 +596,7 @@ function ProspectSCT() {
                 }                
                 className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
               />
-              {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}
+
             </div>
 
             <div className="sm:col-span-1">
