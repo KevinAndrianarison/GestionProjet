@@ -17,6 +17,7 @@ import RetirerChefs from "./component/RetirerChefs";
 import DetailsProject from "./component/DetailsProjet";
 import DeleteEntity from "./component/DeleteEntity";
 import DeleteTask from "./component/DeleteTask";
+import DeleteEtape from "./component/DeleteEtape";
 import SetTask from "./component/SetTask";
 import Task from "./component/Task";
 import { UserContext } from "./contexte/useUser";
@@ -45,6 +46,7 @@ function App() {
     showTask,
     showDeletetask,
     showSetTask,
+    showDeleteEtape,
   } = useContext(ShowContext);
   const { getAllUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -72,7 +74,6 @@ function App() {
         setUser(true);
         setShowMainPage(true);
       }
-      getAllUser();
     } else {
       setShowMainPage(false);
       setShowLoginPage(true);
@@ -98,7 +99,7 @@ function App() {
       {showTask && <Task />}
       {showDeletetask && <DeleteTask />}
       {showSetTask && <SetTask />}
-
+      {showDeleteEtape && <DeleteEtape />}
       <AlertComponent />
     </div>
   );

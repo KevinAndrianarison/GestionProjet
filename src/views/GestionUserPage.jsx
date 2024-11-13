@@ -5,6 +5,7 @@ import {
   faList,
   faGrip,
   faEllipsis,
+  faRotate,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ShowContext } from "../contexte/useShow";
@@ -132,7 +133,7 @@ export default function GestionUserPage() {
             />
           </div>
           {showMessageErrorEmail && (
-            <p className="errEmail">Adresse email invalide</p>
+            <p className="errEmail text-xs">Adresse email invalide</p>
           )}
         </div>
 
@@ -190,7 +191,7 @@ export default function GestionUserPage() {
                     <div className="infosuser">
                       <div>
                         <h1>{list.nom}</h1>
-                        <p className="poste">{list.poste}</p>
+                        <p className="poste">{list.grade}</p>
                       </div>
                       <div className="adresse">{list.telephone}</div>
                       <div className="email">
@@ -214,6 +215,49 @@ export default function GestionUserPage() {
                             <FontAwesomeIcon icon={faBan} className="text-yellow-500 mr-2" />
                             Bloquer
                           </li> */}
+                          {(list.grade === "membre" ||
+                            list.grade === "invite") && (
+                            <li
+                              onClick={() => {
+                                setgradeChef(list.id);
+                              }}
+                              className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                            >
+                              <FontAwesomeIcon
+                                icon={faRotate}
+                                className="red-icon mr-2 text-gray-500"
+                              />
+                              Changer le grade en «<b>Chef</b>»
+                            </li>
+                          )}
+                          {(list.grade === "invite" ||
+                            list.grade === "chef") && (
+                            <li
+                              onClick={() => {
+                                setgradeMembre(list.id);
+                              }}
+                              className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                            >
+                              <FontAwesomeIcon
+                                icon={faRotate}
+                                className="red-icon mr-2 text-gray-500"
+                              />
+                              Changer le grade en «<b>Membre</b>»
+                            </li>
+                          )}
+                          {(list.grade === "chef" ||
+                            list.grade === "membre") && (
+                            <li
+                              onClick={() => setgradeInvite(list.id)}
+                              className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                            >
+                              <FontAwesomeIcon
+                                icon={faRotate}
+                                className="red-icon mr-2 text-gray-500"
+                              />
+                              Changer le grade en «<b>Invité</b>»
+                            </li>
+                          )}
                           <li
                             onClick={() => {
                               deleteuser(list.id);
@@ -262,11 +306,54 @@ export default function GestionUserPage() {
                           />
                         </Tippy>
                         {activeDropdown === index && (
-                          <ul className="border dropdown-menu absolute z-10 right-0 py-1 w-32 bg-white shadow-lg rounded-md">
+                          <ul className="border dropdown-menu absolute z-10 right-0 py-1 w-60 bg-white shadow-lg rounded-md">
                             {/* <li className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200">
                           <FontAwesomeIcon icon={faBan} className=" text-yellow-500 mr-2" />
                           Bloquer
                         </li> */}
+                            {(list.grade === "membre" ||
+                              list.grade === "invite") && (
+                              <li
+                                onClick={() => {
+                                  setgradeChef(list.id);
+                                }}
+                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faRotate}
+                                  className="red-icon mr-2 text-gray-500"
+                                />
+                                Changer le grade en «<b>Chef</b>»
+                              </li>
+                            )}
+                            {(list.grade === "invite" ||
+                              list.grade === "chef") && (
+                              <li
+                                onClick={() => {
+                                  setgradeMembre(list.id);
+                                }}
+                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faRotate}
+                                  className="red-icon mr-2 text-gray-500"
+                                />
+                                Changer le grade en «<b>Membre</b>»
+                              </li>
+                            )}
+                            {(list.grade === "chef" ||
+                              list.grade === "membre") && (
+                              <li
+                                onClick={() => setgradeInvite(list.id)}
+                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faRotate}
+                                  className="red-icon mr-2 text-gray-500"
+                                />
+                                Changer le grade en «<b>Invité</b>»
+                              </li>
+                            )}
                             <li
                               onClick={() => {
                                 deleteuser(list.id);

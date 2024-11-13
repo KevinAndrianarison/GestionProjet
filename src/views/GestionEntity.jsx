@@ -83,14 +83,14 @@ export function GestionEntity() {
   return (
     <div className="mainSuperAdmin">
       <div>
-        <h1 className="text-3xl font-bold text-left">
+        <h1 className="text-lg font-bold text-left">
           <FontAwesomeIcon icon={faBarsProgress} className="mr-4" />
           Gestion des sociétés
         </h1>
 
         <div className="flexsuper">
           <div className="left p-6 rounded-lg border shadow-sm mt-10">
-            <h2 className="text-xl font-semibold  mb-4">
+            <h2 className="text-sm font-semibold  mb-4">
               <FontAwesomeIcon icon={faPlus} className="mr-2" />
               Ajouter une société
             </h2>
@@ -130,7 +130,7 @@ export function GestionEntity() {
                   placeholder="admin@example.com"
                 />
                 {showMessageErrorEmail && (
-                  <p className="errEmail">Adresse email invalide</p>
+                  <p className="errEmail tex">Adresse email invalide</p>
                 )}
               </div>
 
@@ -148,19 +148,19 @@ export function GestionEntity() {
           </div>
 
           <div className="right mt-10 p-6 border rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">
+            <h2 className="text-sm font-semibold mb-4">
               <FontAwesomeIcon icon={faListUl} className="mr-2" />
               Liste des sociétés
             </h2>
-            <div className="pl-5 listeSociete pt-2 border pb-2  text-sm font-bold">
+            <div className="pl-5 listeSociete pt-2 border pb-2  text-xs font-bold">
               <li className="nomSociete">Société</li>
               <li className="nomAdmin">Admin</li>
               <li className="AdresseEmail">Email</li>
-              <li className="trash mr-3"></li>
+              <li className="trash mr-2"></li>
             </div>
 
             {ListeSociete.length !== 0 && (
-              <div className="contentListSociete text-sm">
+              <div className="contentListSociete text-xs">
                 {ListeSociete.map((list) => (
                   <div
                     key={list.id}
@@ -172,14 +172,14 @@ export function GestionEntity() {
                       {list.administrateurs[0].email}
                     </li>
                     <li
-                      className="trash"
+                      className="trash mr-2"
                       onClick={() => {
                         deleteEntity(list.nom, list.id);
                       }}
                     >
                       <FontAwesomeIcon
                         icon={faTrash}
-                        className="faTrash mr-2"
+                        className="text-red-500"
                       />
                     </li>
                   </div>
