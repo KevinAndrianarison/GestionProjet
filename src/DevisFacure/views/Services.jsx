@@ -76,7 +76,7 @@ function Service() {
     setIsModalOpen(false);
             // Utiliser SweetAlert2 pour afficher une alerte de succès
             Swal.fire({
-              title: 'Succès!',
+              title: 'Succès !',
               text: 'Ajout de service avec succès!',
               icon: 'success',
               confirmButtonText: 'OK'
