@@ -10,7 +10,6 @@ export const ProjectContext = createContext({
   ListeProjectWhenMembres: [],
   ListMembres: [],
   ListChefs: [],
-  ListStatus: [],
   ListChefAndMembres: [],
   oneProject: {},
   nomProjet: "",
@@ -34,7 +33,6 @@ export function ProjectContextProvider({ children }) {
   const [categorie, setCategorie] = useState("");
   const [idProjet, setIdProjet] = useState({});
   const [ListMembres, setListMembres] = useState([]);
-  const [ListStatus, setListStatus] = useState([]);
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
@@ -49,12 +47,14 @@ export function ProjectContextProvider({ children }) {
     let token = JSON.parse(tokenString);
 
     axios
-      .get(`${url}/api/projets`, {
+      .get(`${url}/api/entreprises/${user.gest_com_entreprise_id}/projets`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
+        setShowSpinner(false);
+        setListeProject(response.data.data.reverse());
         setShowListProjet(true);
         setListeProject(response.data);
       })
@@ -169,6 +169,9 @@ export function ProjectContextProvider({ children }) {
         setDescription(response.data.description);
         setIdProjet(response.data.id);
         setShowDetails(true);
+        setListMembres(response.data.data.membres);
+
+        setListChefs(response.data.data.chefs);
         setListMembres(response.data.membres);
         setListChefs(response.data.utilisateur_roles);
         

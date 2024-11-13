@@ -33,7 +33,7 @@ export default function GestionPlanning() {
           <p className=" h-[75%] flex justify-center items-center text-3xl font-bold">
             3
           </p>
-          <p className="text-blue-500  h-[20%] text-center">
+          <p className="text-blue-500  h-[20%]">
             (Nombre jours de retard par rapportà la date previsionelle)
           </p>
         </div>

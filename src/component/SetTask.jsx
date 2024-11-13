@@ -143,7 +143,7 @@ export default function SetTask() {
     <>
       <div className="showModals" onClick={closeSetTask}>
         <div
-          className="formModalCreatePosts text-xs"
+          className="formModalCreatePosts"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="headCreateTask pb-4">

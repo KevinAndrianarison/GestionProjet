@@ -184,7 +184,7 @@ export default function Task() {
             onChange={(e) => {
               setTitreTask(e.target.value);
             }}
-            className="input text-xs pl-3 pr-3 block tailleInputcreateTask  mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+            className="input pl-3 pr-3 block tailleInputcreateTask  mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
           />
 
           <textarea
@@ -192,23 +192,63 @@ export default function Task() {
             className="shadow-sm hidden input pl-3 pr-3 block tailleInputcreateTask  mt-2  min-h-[50px] rounded-md border-0 py-1.5 text-gray-900  ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
           ></textarea>
 
-          <div className="text-xs">
-            <div className="hidden section mt-5">
-              <div className="dateInputs w-full flex justify-between flex-wrap">
-                <div className="inputGroup w-60 mb-5">
-                  <label className="input flex items-center font-medium text-gray-700 mb-1">
-                    <FontAwesomeIcon icon={faClock} className="w-4 h-4 mr-2" />
-                    Date limite
-                  </label>
-                  <input
-                    type="date"
-                    value={dateFin}
-                    onChange={(e) => setDateFin(e.target.value)}
-                    className="input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                  />
-                </div>
+          <div className="hidden section mt-5">
+            <div className="dateInputs w-full flex justify-between flex-wrap">
+              <div className="inputGroup w-60 mb-5">
+                <label className="input flex items-center font-medium text-gray-700 mb-1">
+                  <FontAwesomeIcon icon={faClock} className="w-4 h-4 mr-2" />
+                  Date limite
+                </label>
+                <input
+                  type="date"
+                  value={dateFin}
+                  onChange={(e) => setDateFin(e.target.value)}
+                  className="input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                />
               </div>
             </div>
+          </div>
+          <div className="hidden label mt-2">Description :</div>
+          <div className=" editor mt-2">
+            <Editor
+              apiKey="grqm2ym9jtrry4atbeq5xsrd1rf2fe5jpsu3qwpvl7w9s7va"
+              onInit={(_evt, editor) => (editorRef.current = editor)}
+              initialValue=""
+              init={{
+                height: 200,
+                min_height: 200,
+                menubar: false,
+                branding: false,
+                plugins: "textcolor",
+                toolbar: "bold italic forecolor",
+                content_style:
+                  "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+              }}
+            />
+          </div>
+          <div className="flex items-start flex-col">
+            <label
+              htmlFor="file-upload"
+              className="input mt-2 cursor-pointer text-gray-400 px-4 py-2 rounded-md border-dashed border-2  border-gray-300 transition duration-300 mr-5"
+            >
+              📎 Importer un fichier
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              accept=".jpg,.jpeg,.png"
+            />
+          </div>
+          <div className="mt-4">
+            <h1 className="input text-black ">
+              <FontAwesomeIcon icon={faSquareCheck} className="mr-2" /> Nom de
+              la liste de contrôle
+            </h1>
+            <p className="ml-5 input mt-2 text-black">
+              <input type="checkbox" /> Element 1
+            </p>
+            <div className="ml-5 input mt-2 text-black">
             <div className="hidden label mt-2">Description :</div>
             <div className=" editor mt-2">
               <Editor
@@ -235,12 +275,65 @@ export default function Task() {
                 📎 Importer un fichier
               </label>
               <input
-                id="file-upload"
-                type="file"
-                className="hidden"
-                accept=".jpg,.jpeg,.png"
+                type="text"
+                placeholder="Ajouter un élément "
+                className="addElement px-3 -md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
               />
+              <div className="flex mt-1 w-60">
+                <button className="border bg-blue-400  px-5 py-1 rounded-lg mr-2">
+                  Ajouter
+                </button>
+                <button className=" px-5 py-1 hover:bg-gray-300 rounded-lg">
+                  Annuler
+                </button>
+              </div>
+              <button className=" px-5 py-2 bg-gray-200 mt-2 hover:bg-gray-300 rounded-lg">
+                Ajouter un élément
+              </button>
             </div>
+            <button className=" py-2  mt-2  input text-black  rounded-lg">
+              {" "}
+              <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une
+              liste de contrôle
+            </button>
+          </div>
+          <div className="section mt-2 flex items-center">
+            <div className="relative w-full">
+              <div className="label">Responsable(s) :</div>
+              <div className="flex mt-2 items-center ">
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  className="input pl-3 pr-10 block w-72 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                  value={selectedMember ? selectedMember.email : searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <FontAwesomeIcon
+                  icon={faXmark}
+                  className="relative right-5 text-gray-400 cursor-pointer transition duration-200 hover:text-[rgba(0, 184, 148,1.0)] hover:scale-125"
+                  onClick={() => handleRemoveMember()}
+                />
+              </div>
+
+              {isDropdownOpen && (
+                <div className="absolute mt-1 w-full rounded-md bg-white shadow-lg z-10">
+                  {filteredOptions.length > 0 ? (
+                    filteredOptions.map((user, index) => (
+                      <div
+                        key={index}
+                        className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-200"
+                        onClick={() => handleOptionSelect(user)}
+                      >
+                        {user.email}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-2 text-sm text-gray-500">
+                      Aucune option disponible
+                    </div>
+                  )}
+                </div>
+              )}
 
             {showChecklistModal && (
               <div
@@ -425,6 +518,22 @@ export default function Task() {
                 Enregistrer et créer une nouvelle tâche
               </button>
             </div>
+          </div>
+          <div className="mt-5 w-full flex flex-wrap justify-between">
+            <button
+              disabled={!titreTask || !dateFin || !selectedMember}
+              onClick={createTask}
+              className="input px-3 py-2 border bg-gray-400 rounded text-blue-800 font-bold"
+            >
+              Enregistrer la tâche
+            </button>
+            <button
+              disabled={!titreTask || !dateFin || !selectedMember}
+              onClick={createTask}
+              className="input px-3 py-2 border  bg-gray-400 rounded text-blue-800 font-bold"
+            >
+              Enregistrer et créer une nouvelle tâche
+            </button>
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ function MyEditor() {
 
   const handleEditorChange = (event, editor) => {
     const data = editor.getData();
+    console.log(data);
     setEditorData(data);
   };
 
