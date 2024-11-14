@@ -5,6 +5,7 @@ import axios from "axios";
 export const UserContext = createContext({
   ListeUser: [],
   iduser: "",
+  idRoleuser: "",
   Nomuser: "",
 });
 
@@ -12,7 +13,7 @@ export function UserContextProvider({ children }) {
   const [ListeUser, setListeUser] = useState([]);
   const [iduser, setIduser] = useState("");
   const [Nomuser, setNomuser] = useState("");
-
+  const [idRoleuser, setIdRoleuser] = useState("");
   const { url } = useContext(UrlContext);
 
   function getAllUser() {
@@ -28,7 +29,7 @@ export function UserContextProvider({ children }) {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {                
+      .then((response) => {
         if (response.data.utilisateurs.length !== 0) {
           setListeUser(response.data.utilisateurs);
         }
@@ -44,10 +45,12 @@ export function UserContextProvider({ children }) {
         ListeUser,
         iduser,
         Nomuser,
+        idRoleuser,
+        setNomuser,
         getAllUser,
         setListeUser,
         setIduser,
-        setNomuser,
+        setIdRoleuser,
       }}
     >
       {children}

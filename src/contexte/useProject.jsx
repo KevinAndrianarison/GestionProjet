@@ -10,6 +10,7 @@ export const ProjectContext = createContext({
   ListeProjectWhenMembres: [],
   ListMembres: [],
   ListChefs: [],
+  ListStatus: [],
   ListChefAndMembres: [],
   oneProject: {},
   nomProjet: "",
@@ -23,6 +24,7 @@ export function ProjectContextProvider({ children }) {
   const [ListeProject, setListeProject] = useState([]);
   const [idProject, setIdProject] = useState("");
   const [ListeProjectWhenChef, setListeProjectWhenChef] = useState([]);
+  const [ListeProjectWhenResp, setListeProjectWhenResp] = useState([]);
   const [ListeProjectWhenMembres, setListeProjectWhenMembres] = useState([]);
   const [oneProject, setOneProject] = useState({});
   const [nomProjet, setNomProjet] = useState({});
@@ -32,57 +34,55 @@ export function ProjectContextProvider({ children }) {
   const [categorie, setCategorie] = useState("");
   const [idProjet, setIdProjet] = useState({});
   const [ListMembres, setListMembres] = useState([]);
+  const [ListStatus, setListStatus] = useState([]);
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
-  const { setShowSpinner, setShowDetails } = useContext(ShowContext);
+  const { setShowSpinner, setShowDetails, setShowListProjet } = useContext(ShowContext);
 
   function getAllproject() {
     setListeProjectWhenMembres([]);
     setListeProjectWhenChef([]);
     setListeProject([]);
-
+    setListeProjectWhenResp([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
 
     axios
-      .get(`${url}/api/entreprises/${user.gest_com_entreprise_id}/projets`, {
+      .get(`${url}/api/projets`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setShowSpinner(false);
-        setListeProject(response.data.data.reverse());
+        setShowListProjet(true);
+        setListeProject(response.data);
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
+        setShowListProjet(true);
       });
   }
   function getProjectWhenChef() {
     setListeProject([]);
     setListeProjectWhenMembres([]);
     setListeProjectWhenChef([]);
+    setListeProjectWhenResp([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
     axios
-      .get(`${url}/api/entreprises/projets/${user.id}/projets-chefs`, {
+      .get(`${url}/api/projets/chef`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setShowSpinner(false);
-        setListeProjectWhenChef(response.data.data.reverse());
+        setShowListProjet(true);
+        setListeProjectWhenChef(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
-        setShowSpinner(false);
+        setShowListProjet(true);
       });
   }
 
@@ -90,19 +90,61 @@ export function ProjectContextProvider({ children }) {
     setListeProject([]);
     setListeProjectWhenChef([]);
     setListeProjectWhenMembres([]);
+    setListeProjectWhenResp([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    const userString = localStorage.getItem("user");
-    let user = JSON.parse(userString);
     axios
-      .get(`${url}/api/entreprises/projets/${user.id}/projets-membre`, {
+      .get(`${url}/api/projets/membre`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
+        setShowListProjet(true);
+        setListeProjectWhenMembres(response.data.reverse());
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowListProjet(true);
+      });
+  }
+
+  function getProjectWhenResp() {
+    setListeProject([]);
+    setListeProjectWhenChef([]);
+    setListeProjectWhenMembres([]);
+    setListeProjectWhenResp([]);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/resp`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setShowListProjet(true);
+        setListeProjectWhenResp(response.data.reverse());
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowListProjet(true);
+      });
+  }
+
+  function getAllStatus() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/statuts-projets`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListStatus(response.data);
         setShowSpinner(false);
-        setListeProjectWhenMembres(response.data.data.reverse());
       })
       .catch((err) => {
         console.error(err);
@@ -111,27 +153,30 @@ export function ProjectContextProvider({ children }) {
   }
 
   function getOneProjet(id) {
+    setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .get(`${url}/api/entreprise/projets/${id}`, {
+      .get(`${url}/api/projets/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setNomProjet(response.data.data.titre);
-        setDateDebut(response.data.data.date_debut);
-        setDateFin(response.data.data.date_fin);
-        setDescription(response.data.data.description);
-        setIdProjet(response.data.data.id);
+        setNomProjet(response.data.nom);
+        setDateDebut(response.data.date_debut);
+        setDateFin(response.data.date_fin);
+        setDescription(response.data.description);
+        setIdProjet(response.data.id);
         setShowDetails(true);
-        setListMembres(response.data.data.membres);
-
-        setListChefs(response.data.data.chefs);
+        setListMembres(response.data.membres);
+        setListChefs(response.data.utilisateur_roles);
+        
+        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
   return (
@@ -151,7 +196,11 @@ export function ProjectContextProvider({ children }) {
         ListChefs,
         ListChefAndMembres,
         categorie,
+        ListStatus,
+        ListeProjectWhenResp,
         setCategorie,
+        setListeProjectWhenResp,
+        getProjectWhenResp,
         setListeProject,
         setOneProject,
         getAllproject,
@@ -168,6 +217,9 @@ export function ProjectContextProvider({ children }) {
         setListChefAndMembres,
         setListeProjectWhenMembres,
         setListeProjectWhenChef,
+        setListStatus,
+        setIdProjet,
+        getAllStatus,
       }}
     >
       {children}

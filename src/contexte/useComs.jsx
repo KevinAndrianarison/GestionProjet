@@ -13,7 +13,7 @@ export function ComsContextProvider({ children }) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .get(`${url}/api/commentaires/${id}/projet`, {
+      .get(`${url}/api/projets/commentaires/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

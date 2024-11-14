@@ -1,39 +1,37 @@
 import "../styles/Modal.css";
 import { ShowContext } from "../contexte/useShow";
 import { useContext } from "react";
-import { ProjectContext } from "../contexte/useProject";
 import { MessageContext } from "../contexte/useMessage";
 import { UrlContext } from "../contexte/useUrl";
-import { TaskContext } from "../contexte/useTask";
+import { EtapeContext } from "../contexte/useEtape";
 
 import axios from "axios";
 
-export default function DeleteTask() {
-  const { idProject } = useContext(ProjectContext);
+export default function Deleteetape() {
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { setShowDeletetask, setShowSpinner } = useContext(ShowContext);
-  const { idTask, getAllTask } = useContext(TaskContext);
+  const { setShowDeleteEtape, setShowSpinner } = useContext(ShowContext);
+  const { getAlletapeByProjets, idEtape } = useContext(EtapeContext);
 
-  function closeDelTask() {
-    setShowDeletetask(false);
+  function closeDeletape() {
+    setShowDeleteEtape(false);
   }
 
-  function deleteTask() {
+  function deleteEtape() {
     setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .delete(`${url}/api/projets/taches/${idTask}`, {
+      .delete(`${url}/api/projets/etapes/${idEtape}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        getAllTask(idProject);
+        getAlletapeByProjets();
         setMessageSucces(response.data.message);
         setShowSpinner(false);
-        setShowDeletetask(false);
+        setShowDeleteEtape(false);
         setTimeout(() => {
           setMessageSucces("");
         }, 5000);
@@ -46,16 +44,16 @@ export default function DeleteTask() {
 
   return (
     <>
-      <div className="showModal" onClick={() => setShowDeletetask(false)}>
+      <div className="showModal" onClick={() => setShowDeleteEtape(false)}>
         <div className="formModal" onClick={(e) => e.stopPropagation()}>
           <h6 className="modal">
-            Voulez-vous vraiment supprimer cette tâche ?
+            Voulez-vous vraiment supprimer cette étape ?
           </h6>
           <div className="valider">
-            <button onClick={deleteTask} type="button" className="SUPPR mt-5">
+            <button onClick={deleteEtape} type="button" className="SUPPR mt-5">
               OUI
             </button>
-            <button type="button" onClick={closeDelTask} className="NON mt-5">
+            <button type="button" onClick={closeDeletape} className="NON mt-5">
               NON
             </button>
           </div>
