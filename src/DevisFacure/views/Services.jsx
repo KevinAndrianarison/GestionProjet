@@ -154,10 +154,6 @@ function Service() {
   return (
     <div>
           <div>
-      <button onClick={() => setIsModalTacheOpen(true)} className="bg-blue-500 p-2 rounded text-white">
-        Ajouter une tâche
-      </button>
-
       <ModalTache isOpen={isModalTacheOpen} onClose={() => setIsModalTacheOpen(false)} />
     </div>
           <div className="">
@@ -209,7 +205,6 @@ function Service() {
       <table className="min-w-full">
           <thead>
             <tr>
-              <th className="p-4 text-left text-sm font-medium leading-6">N°</th>
               <th className="p-4 text-left text-sm font-medium leading-6">Designation</th>
               <th className="p-4 text-left text-sm font-medium leading-6">Description</th>
               <th className="p-4 text-left text-sm font-medium leading-6">Tâche</th>
@@ -218,10 +213,9 @@ function Service() {
           <tbody>
             {currentProspects.map((service, index) => (
               <tr key={index}>
-                <td className="border-y p-4">{service.numero_service}</td>
                 <td className="border-y p-4">{service.designation}</td>
                 <td className="border-y p-4">{service.description}</td>
-                <td className="border-y p-4">{service.nombre_tâche}2 <button>+</button></td>
+                <td className="border-y p-4">{service.nombre_tâche}<button onClick={() => setIsModalTacheOpen(true)}>+</button></td>
                  <td className="border-y p-4">
                   <div className="relative">
                     <button  onClick={() => setIsOptionsOpen(isOptionsOpen === index ? null : index)}>
@@ -260,11 +254,11 @@ function Service() {
         <Modal isOpen={isModalOpen} onClose={() => {setIsModalOpen(false); setErrorMessage("");}}>
         <h2 className="text-xl">Ajouter un service</h2>
         <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
-        <div className="sm:col-span-2">
+        <div className="">
        
         
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
           
           <div className="mb-4">
           <label className="block text-sm font-medium">Désignation</label>
@@ -302,7 +296,7 @@ function Service() {
       <div className="sm:col-span-2">
 
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-        <form onSubmit={handleEditSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+        <form onSubmit={handleEditSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
         <div className="mb-4">
         <label className="block text-sm font-medium">Désignation</label>
         <input
