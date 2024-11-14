@@ -24,6 +24,7 @@ export function EtapeContextProvider({ children }) {
       })
       .then((response) => {
         setListEtape(response.data.reverse());
+        
       })
       .catch((err) => {
         console.error(err);

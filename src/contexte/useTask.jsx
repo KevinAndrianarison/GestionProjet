@@ -6,6 +6,7 @@ import { ShowContext } from "../contexte/useShow";
 
 export const TaskContext = createContext({
   ListTask: [],
+  ListStatusTask: [],
   idTask: "",
   titreTask: "",
   dateDebut: "",
@@ -15,6 +16,7 @@ export const TaskContext = createContext({
 });
 export function TaskContextProvider({ children }) {
   const [ListTask, setListTask] = useState([]);
+  const [ListStatusTask, setListStatusTask] = useState([]);
   const [idTask, setIdTask] = useState("");
   const [titreTask, setTitreTask] = useState("");
   const [dateDebut, setDateDebut] = useState("");
@@ -23,22 +25,22 @@ export function TaskContextProvider({ children }) {
   const [responsable, setResponsable] = useState({});
 
   const { idProject, setIdProject } = useContext(ProjectContext);
-
   const { url } = useContext(UrlContext);
-  const { setShowSetTask } = useContext(ShowContext);
+  const { setShowSetTask, setShowTask, setShowSpinner } =
+    useContext(ShowContext);
 
   function getAllTask() {
-    setListTask([]);
+    // setListTask([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .get(`${url}/api/projets/${idProject}/taches`, {
+      .get(`${url}/api/projets/taches/${idProject}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setListTask(response.data);
+        setListTask(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
@@ -50,16 +52,37 @@ export function TaskContextProvider({ children }) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .get(`${url}/api/projets/${id}/taches`, {
+      .get(`${url}/api/projets/taches/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setListTask(response.data);
+        setListTask(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
+      });
+  }
+
+  function getAllStatusTask() {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/statuts-taches`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListStatusTask(response.data);
+        setShowTask(true);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowTask(false);
       });
   }
 
@@ -96,6 +119,7 @@ export function TaskContextProvider({ children }) {
         dateFin,
         description,
         responsable,
+        ListStatusTask,
         setListTask,
         setResponsable,
         getAllTask,
@@ -105,7 +129,9 @@ export function TaskContextProvider({ children }) {
         setDateDebut,
         setDateFin,
         setDescription,
-        getAllTaskFirst
+        getAllTaskFirst,
+        setListStatusTask,
+        getAllStatusTask,
       }}
     >
       {children}

@@ -10,7 +10,6 @@ import { EtapeContext } from "../contexte/useEtape";
 import axios from "axios";
 
 export default function SousProjet() {
-  return <p>Sous-projet</p>;
   const { setShowSpinner, setShowDeleteEtape } = useContext(ShowContext);
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
@@ -230,6 +229,11 @@ export default function SousProjet() {
               </div>
             </div>
           ))}
+          {listEtape.length === 0 && (
+            <p className=" text-gray-500 text-center mt-5">
+              Aucune étape trouvée...
+            </p>
+          )}
         </div>
       </div>
 
