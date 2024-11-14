@@ -31,7 +31,6 @@ function Service() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-<<<<<<< HEAD
     const newService = { designation, description};
     setErrorMessage("");
 
@@ -93,7 +92,6 @@ function Service() {
     const resetFields = () => {
       setDesignation("");
       setDescription("");
-=======
     const newService = {
       type_service,
       nom_produit,
@@ -103,7 +101,6 @@ function Service() {
       prix_hors_tva,
       tva,
       prix_ttc,
->>>>>>> 65050c4e105915a1b55b5a449e2a52641005b844
     };
 
     setErrorMessage(""); // Réinitialiser le message d'erreur
