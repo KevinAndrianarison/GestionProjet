@@ -81,7 +81,7 @@ export default function AllprojectPage() {
       <div className="myprojectPage pb-5" onClick={closeDropdown}>
         <div>
           <h1 className="titreMyproject mr-5">
-            <FontAwesomeIcon icon={faAnglesRight} className="w-8 h-5" />
+            <FontAwesomeIcon icon={faAnglesRight} className="w-6 h-4" />
             Les projets
           </h1>
           <div className="flex flex-wrap items-end mt-2">
@@ -110,33 +110,6 @@ export default function AllprojectPage() {
             </select>
           </div>
         </div>
-        <div className="contentMyproject   mt-2">
-          <div className="headMyProject">
-            <li className="pl-5 Titres">Titre</li>
-            <li className="Priorite mr-3">Description</li>
-          </div>
-          {ListeProject.length !== 0 && (
-            <div className="LISTES">
-              {ListeProject.map((list, index) => (
-                <div
-                  key={list.id}
-                  className="BodyProject "
-                  onClick={() => {
-                    setListChefAndMembres([...list.chefs, ...list.membres]);
-                    setIdProject(list.id);
-                    getOneProjet(list.id);
-                    getAllTaskFirst(list.id);
-                    getAllComs(list.id);
-                  }}
-                >
-                  <li className="pl-5 Titres">{list.titre}</li>
-
-                  <li
-                    className="Priorite  mr-2"
-                    dangerouslySetInnerHTML={{ __html: list.description }}
-                  ></li>
-                </div>
-              ))}
         {!showListProjet && (
           <div className="contentMyproject  border-0 mt-2">
             <div className="flex flex-col space-y-3">
@@ -168,7 +141,7 @@ export default function AllprojectPage() {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
                       getOneProjet(list.id);
-                      // getAllTaskFirst(list.id);
+                      getAllTaskFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
@@ -215,7 +188,7 @@ export default function AllprojectPage() {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
                       getOneProjet(list.id);
-                      // getAllTaskFirst(list.id);
+                      getAllTaskFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
@@ -261,7 +234,7 @@ export default function AllprojectPage() {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
                       getOneProjet(list.id);
-                      // getAllTaskFirst(list.id);
+                      getAllTaskFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
@@ -306,7 +279,7 @@ export default function AllprojectPage() {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
                       getOneProjet(list.id);
-                      // getAllTaskFirst(list.id);
+                      getAllTaskFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >

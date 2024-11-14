@@ -24,7 +24,7 @@ export default function DeleteTask() {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .delete(`${url}/api/projets/${idProject}/taches/${idTask}`, {
+      .delete(`${url}/api/projets/taches/${idTask}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
