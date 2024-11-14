@@ -57,11 +57,9 @@ function Service() {
     localStorage.setItem("services", JSON.stringify(updatedServices));
     setServices(updatedServices);
 
-    // Réinitialiser les champs et fermer le modal
     resetFields();
 
     setIsModalOpen(false);
-            // Utiliser SweetAlert2 pour afficher une alerte de succès
             Swal.fire({
               title: 'Succès!',
               text: 'Ajout de service avec succès!',
