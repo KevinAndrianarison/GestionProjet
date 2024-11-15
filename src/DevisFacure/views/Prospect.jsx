@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FULL_URL } from "../contextes/ApiUrls";
 import { BASE_URL } from "../contextes/ApiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -56,7 +55,7 @@ function ProspectSCT() {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     try {
-      const response = await axios.delete(`${BASE_URL}/${prospectId}`, {
+      const response = await axios.delete(`${BASE_URL}clients/${prospectId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -77,7 +76,7 @@ function ProspectSCT() {
           const tokenString = localStorage.getItem("token");
           let token = JSON.parse(tokenString);
           try {
-            const response = await axios.get(`${BASE_URL}`, {
+            const response = await axios.get(`${BASE_URL}clients`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -122,7 +121,7 @@ function ProspectSCT() {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     try {
-      const response = await axios.get(`${BASE_URL}/${id}`, {
+      const response = await axios.get(`${BASE_URL}clients/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -170,17 +169,11 @@ function ProspectSCT() {
     };
     console.log("Données du formulaire : ", formData);
   
-    // Récupérer le token depuis localStorage
     const tokenString = localStorage.getItem("token");
-    if (!tokenString) {
-      console.error("Token manquant dans localStorage");
-      setErrorMessage("Une erreur s'est produite. Veuillez vous reconnecter.");
-      return;
-    }
     const token = JSON.parse(tokenString);
   
     try {
-      const response = await axios.post(`${BASE_URL}`, formData, {
+      const response = await axios.post(`${BASE_URL}clients`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -256,7 +249,7 @@ function ProspectSCT() {
     let token = JSON.parse(tokenString);
 
     try {
-      const response = await axios.put(`${BASE_URL}/${prospectToEdit.id}`, editedData, {
+      const response = await axios.put(`${BASE_URL}clients/${prospectToEdit.id}`, editedData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
