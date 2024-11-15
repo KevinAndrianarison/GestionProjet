@@ -15,7 +15,7 @@ const Modal = ({ isOpen, onClose, children }) => {
     id="modal-background"
      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-        <button onClick={onClose} className="text-red-500 text-right">
+        <button onClick={onClose} className="text-red-500 text-right text-3xl">
           &times;
         </button>
         {children}
