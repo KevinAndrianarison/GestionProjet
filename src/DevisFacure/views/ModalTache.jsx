@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import PropTypes from 'prop-types';
 
 const ModalTache = ({ isOpen, onClose }) => {
   const [nom_tache, setNomTache] = useState('');
@@ -146,5 +147,10 @@ const ModalTache = ({ isOpen, onClose }) => {
     </div>
   );
 };
-
+// Validation des props avec prop-types
+ModalTache.propTypes = {
+  isOpen: PropTypes.bool.isRequired, // La prop isOpen doit être un booléen et est requise
+  onClose: PropTypes.func.isRequired, // La prop onClose doit être une fonction et est requise
+  children: PropTypes.node, // La prop children peut être n'importe quel élément React
+};
 export default ModalTache;
