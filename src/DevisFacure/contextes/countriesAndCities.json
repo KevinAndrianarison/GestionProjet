@@ -1,0 +1,82 @@
+[
+    {
+      "pays": "France", "villes": [ "Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Nîmes", "Villeurbanne", "Saint-Denis", "Aix-en-Provence", "Le Mans", "Clermont-Ferrand", "Brest", "Limoges", "Tours", "Amiens", "Metz", "Perpignan", "Besançon", "Orléans", "Mulhouse", "Rouen", "Caen", "Boulogne-Billancourt", "Nancy", "Argenteuil", "Saint-Paul", "Montreuil", "Roubaix", "Dunkerque", "Tourcoing", "Avignon", "Fort-de-France", "Poitiers", "Nanterre", "Versailles", "Courbevoie", "Créteil", "Colombes", "Saint-Pierre"
+      ]
+    },
+    {
+      "pays": "Allemagne",
+      "villes": [
+        "Berlin",
+        "Hambourg",
+        "Munich",
+        "Cologne",
+        "Francfort",
+        "Stuttgart",
+        "Düsseldorf",
+        "Dortmund",
+        "Essen",
+        "Leipzig",
+        "Brême",
+        "Dresde",
+        "Hanovre",
+        "Nuremberg",
+        "Duisbourg",
+        "Bochum",
+        "Wuppertal",
+        "Bielefeld",
+        "Bonn",
+        "Mannheim"
+      ]
+    },
+    {
+      "pays": "Italie",
+      "villes": [
+        "Rome",
+        "Milan",
+        "Naples",
+        "Turin",
+        "Palerme",
+        "Gênes",
+        "Bologne",
+        "Florence",
+        "Catane",
+        "Bari",
+        "Vérone",
+        "Messine",
+        "Padoue",
+        "Trieste",
+        "Tarente",
+        "Brescia",
+        "Prato",
+        "Parme",
+        "Modène",
+        "Reggio d'Émilie"
+      ]
+    },
+    {
+      "pays": "Espagne",
+      "villes": [
+        "Madrid",
+        "Barcelone",
+        "Valence",
+        "Séville",
+        "Saragosse",
+        "Malaga",
+        "Murcie",
+        "Palma",
+        "Las Palmas de Gran Canaria",
+        "Bilbao",
+        "Alicante",
+        "Cordoue",
+        "Valladolid",
+        "Vigo",
+        "Gijón",
+        "Hospitalet de Llobregat",
+        "Vitoria-Gasteiz",
+        "A Coruña",
+        "Elche",
+        "Grenada"
+      ]
+    }
+  ]
+  
