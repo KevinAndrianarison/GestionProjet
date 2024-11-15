@@ -5,6 +5,9 @@ import { Link } from 'react-router-dom';
 import Modal from './Modal'; // Assurez-vous que le chemin d'importation est correct
 import Swal from 'sweetalert2';
 import ModalTache from './ModalTache';
+import { BASE_URL } from "../contextes/ApiUrls";
+import axios from "axios";
+
 
 function Service() {
   const [designation, setDesignation] = useState("");
@@ -18,16 +21,37 @@ function Service() {
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
   const [isModalTacheOpen, setIsModalTacheOpen] = useState(false);
+  const token = localStorage.getItem("authToken"); // Récupérer le token stocké
 
+    // Configurer axios pour inclure le token dans les requêtes
+    const axiosInstance = axios.create({
+      baseURL: BASE_URL,
+      headers: {
+        Authorization: `Bearer ${token}`, // Ajoute le token d'authentification
+      },
+    });
   
   useEffect(() => {
-    // Récupérer les services depuis le localStorage
-    const fetchServicesFromLocalStorage = () => {
-      const storedServices = JSON.parse(localStorage.getItem("services")) || [];
-      setServices(storedServices);
+    const fetchServices = async () => {
+      console.log(`Request URL: ${BASE_URL}services`);
+
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      try {
+        const response = await axios.get(`${BASE_URL}services`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setServices(response.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+      }
     };
 
-    fetchServicesFromLocalStorage();
+    fetchServices();
   }, []);
 
   const currentProspects = services.slice(
@@ -47,27 +71,32 @@ function Service() {
     }
   };
   
+  const formData = {
+    designation,
+    description
+  };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newService = { designation, description};
     setErrorMessage("");
 
-    const updatedServices = [...services, newService];
-    localStorage.setItem("services", JSON.stringify(updatedServices));
-    setServices(updatedServices);
-
-    resetFields();
-
-    setIsModalOpen(false);
-            Swal.fire({
-              title: 'Succès!',
-              text: 'Ajout de service avec succès!',
-              icon: 'success',
-              confirmButtonText: 'OK'
-            });
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+    try {
+      console.log(formData);
+      const response = await axios.post(`${BASE_URL}services`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      setServices(response.data);
+      console.log(response.status);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données:", error);
+    }
   };
-
+  
   useEffect(() => {
     if (isEditModalOpen && serviceToEdit) {
       setDesignation(serviceToEdit.designation || '');
@@ -85,27 +114,31 @@ function Service() {
     setIsEditModalOpen(true);
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    const updatedService = {designation, description};
 
-    const updatedServices = services.map((service) =>
-      service === serviceToEdit ? updatedService : service
-    );
-    localStorage.setItem("services", JSON.stringify(updatedServices));
+    try {
+      const response = await axiosInstance.put(`${BASE_URL}services/${serviceToEdit.id}`, formData);
 
-    setServices(updatedServices);
-    resetFields();
+      setServices(
+        services.map((service) =>
+          service.id === response.data.id ? response.data : service
+        )
+      );
+      resetFields();
+      setIsEditModalOpen(false);
 
-    setIsEditModalOpen(false);
-            // Utiliser SweetAlert2 pour afficher une alerte de succès
-            Swal.fire({
-              title: 'Succès!',
-              text: 'Modification de service avec succès!',
-              icon: 'success',
-              confirmButtonText: 'OK'
-            });
-  };
+      Swal.fire({
+        title: "Succès!",
+        text: "Modification de service avec succès!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+    } catch (error) {
+      setErrorMessage("Erreur lors de la modification du service.");
+      console.error("Erreur:", error);
+    }
+  }
 
     // Réinitialiser les champs lorsque le modal d'ajout est ouvert
     const resetFields = () => {
@@ -329,3 +362,4 @@ function Service() {
 }
 
 export default Service;
+

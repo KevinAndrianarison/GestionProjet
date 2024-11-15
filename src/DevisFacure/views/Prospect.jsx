@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FULL_URL } from "../contextes/ApiUrls";
+import { BASE_URL } from "../contextes/ApiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash, faEdit,
@@ -31,6 +31,7 @@ function ProspectSCT() {
   const [prospectToEdit, setProspectToEdit] = useState({});
   const [type_client_edit, setTypeClientEdit] = useState(""); 
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+  const [refresh, setRefresh] = useState(false);
 
 
   const handleDelete = async (prospectId) => {
@@ -51,11 +52,17 @@ function ProspectSCT() {
     if (!confirmed.isConfirmed) {
       return; // Si l'utilisateur annule, ne rien faire
     }
-
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
     try {
-      const response = await axios.delete(`${FULL_URL}gest/fact/prospects/${prospectId}`);
-      console.log('Données supprimées :', response.data);
-      setProspects(prospects.filter((prospect) => prospect.id !== prospectId));
+      const response = await axios.delete(`${BASE_URL}clients/${prospectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if(response){
+        setRefresh(!refresh);
+      }
       Swal.fire('Supprimé!', 'Le prospect a été supprimé.', 'success');
     } catch (error) {
       console.error('Erreur lors de la suppression des données :', error);
@@ -66,8 +73,14 @@ function ProspectSCT() {
      // Charger tous les prospects une seule fois
       useEffect(() => {
         const fetchData = async () => {
+          const tokenString = localStorage.getItem("token");
+          let token = JSON.parse(tokenString);
           try {
-            const response = await axios.get(`${FULL_URL}gest/fact/entreprises/1/prospects`);
+            const response = await axios.get(`${BASE_URL}clients`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
             if (response.status === 200) {
               setProspects(response.data);
             }
@@ -76,7 +89,7 @@ function ProspectSCT() {
           }
         };
         fetchData();
-      }, []);
+      }, [refresh]);
   
       // Découper les prospects à afficher pour la page actuelle
       const currentProspects = prospects.slice(
@@ -100,30 +113,47 @@ function ProspectSCT() {
       const toggleActions = (id) => {
         setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
       };
+
   
-        // Fonction pour récupérer les données depuis l'API
-  const fetchDataAndStore = async () => {
+
+  const handleEditClick = async (id) => {
+    setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
     try {
-      const response = await axios.get("https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects"); // Remplace FULL_URL par l'URL de l'API pour récupérer les données
-      if (response.status === 200 && response.data) {
-        setProspects(response.data); // Mettre à jour l'état avec les données récupérées
+      const response = await axios.get(`${BASE_URL}clients/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setProspectToEdit(response.data); // Mettre les données dans l'état
+        setTypeClientEdit(response.data.type); // Initialiser le type pour l'édition
+        setSecondModalOpen(true); // Ouvrir le modal
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des données:", error);
+      console.error("Erreur lors de la récupération des données du prospect:", error);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     setErrorMessage(""); // Réinitialiser le message d'erreur
+  
+    // Validation de l'email
     if (!email.includes("@") || !email.includes(".")) {
       setErrorMessage("Veuillez entrer une adresse e-mail valide.");
       return;
     }
-      if (type_client === "societe" && !nom_societe.trim()) {
-        setErrorMessage("Le nom de la société est requis pour le type 'société'.");
-        return; // Arrête la soumission si la condition n'est pas remplie
-      }
+  
+    // Validation pour le type "société"
+    if (type_client === "societe" && !nom_societe.trim()) {
+      setErrorMessage("Le nom de la société est requis pour le type 'société'.");
+      return; // Arrête la soumission si la condition n'est pas remplie
+    }
+  
+    // Données à envoyer
     const formData = {
       nom_societe,
       nom,
@@ -138,12 +168,26 @@ function ProspectSCT() {
       type: type_client,
     };
     console.log("Données du formulaire : ", formData);
-
+  
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+  
     try {
-      const response = await axios.post('https://bg.societe-manage.com/public/api/gest/fact/entreprises/1/prospects', formData);
-      console.log("Réponse de l'API:", response.data);
-      setErrorMessage("");
+      const response = await axios.post(`${BASE_URL}clients`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
+      console.log("Réponse du backend :", response);
+  
+      // Réinitialiser le message d'erreur
+      setErrorMessage("");
+  
+      // Déclencher un rafraîchissement
+      setRefresh(!refresh);
+  
       // Réinitialiser tous les champs après la soumission
       setNomSociete("");
       setNom("");
@@ -156,41 +200,31 @@ function ProspectSCT() {
       setPays("");
       setNumeroSiren("");
       setTypeClient("societe");
-
-      // Mettre à jour l'état prospects pour inclure le nouveau prospect
+  
+      // Mettre à jour la liste des prospects
       setProspects([...prospects, response.data]);
-
+  
+      // Fermer le modal
       setFirstModalOpen(false);
-    // Utiliser SweetAlert2 pour afficher une alerte de succès
-    Swal.fire({
-      title: 'Succès!',
-      text: 'Ajout de client avec succès!',
-      icon: 'success',
-      confirmButtonText: 'OK'
-    });
-
+  
+      // Afficher une alerte de succès avec SweetAlert2
+      Swal.fire({
+        title: "Succès!",
+        text: "Ajout de client avec succès!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
-      setErrorMessage("Une erreur s'est produite. Veuillez réessayer.");
+  
+      // Afficher un message d'erreur spécifique selon le problème
+      const errorMessage =
+        error.response?.data?.message ||
+        "Une erreur s'est produite. Veuillez réessayer.";
+      setErrorMessage(errorMessage);
     }
   };
-
-  const handleEditClick = async (id) => {
-    setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
-    try {
-      const response = await axios.get(`${FULL_URL}gest/fact/prospects/${id}`);
-      if (response.status === 200) {
-        setProspectToEdit(response.data); // Mettre les données dans l'état
-        setTypeClientEdit(response.data.type); // Initialiser le type pour l'édition
-        setSecondModalOpen(true); // Ouvrir le modal
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération des données du prospect:", error);
-    }
-  };
-
-
-
+  
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const editedData = {
@@ -210,12 +244,18 @@ function ProspectSCT() {
       setErrorMessage("Le nom de la société est requis pour le type 'société'.");
       return; // Arrête la soumission si la condition n'est pas remplie
     }
-    console.log("Données envoyées pour la mise à jour :", editedData); // Vérification
-  
+
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
     try {
-      const response = await axios.put(`${FULL_URL}gest/fact/prospects/${prospectToEdit.id}/entreprises/1`, editedData);
+      const response = await axios.put(`${BASE_URL}clients/${prospectToEdit.id}`, editedData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("Réponse de mise à jour :", response.data);
-      fetchDataAndStore();
+      setRefresh(!refresh);
 
       setSecondModalOpen(false);
       
