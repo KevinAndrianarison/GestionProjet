@@ -8,7 +8,6 @@ import ModalTache from './ModalTache';
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 
-
 function Service() {
   const [designation, setDesignation] = useState("");
   const [description, setDescription] = useState("");
@@ -17,55 +16,38 @@ function Service() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState(null);
-  const [isOptionsOpen, setIsOptionsOpen] = useState(null); // Track which row's options are open
+  const [isOptionsOpen, setIsOptionsOpen] = useState(null);
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
   const [isModalTacheOpen, setIsModalTacheOpen] = useState(false);
 
-  
-  useEffect(() => {
-    const fetchServices = async () => {
-      console.log(`Request URL: ${BASE_URL}services`);
-  
-      const tokenString = localStorage.getItem("token");
-      let token = JSON.parse(tokenString);
-  
-      console.log("Token brut :", tokenString);
-      console.log("Token parsé :", token);
-  
-      try {
-        const response = await axios.get(`${BASE_URL}services`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        console.log("Réponse complète :", response);
-  
-        if (response.status === 200) {
-          console.log("Services récupérés :", response.data);
-          setServices(response.data);
-        }
-      } catch (error) {
-        if (error.response) {
-          console.error("Erreur réponse API :", error.response);
-          console.error("Statut :", error.response.status);
-          console.error("Détails :", error.response.data);
-        } else {
-          console.error("Erreur de connexion :", error.message);
-        }
+  const fetchServices = async () => {
+    console.log(`Request URL: ${BASE_URL}services`);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    try {
+      const response = await axios.get(`${BASE_URL}services`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setServices(response.data);
       }
-    };
-  
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchServices();
   }, []);
-  
 
   const currentProspects = services.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
-
+  
   const handleNext = () => {
     if (page < Math.ceil(services.length / itemsPerPage)) {
       setPage(page + 1);
@@ -84,15 +66,12 @@ function Service() {
   };
 
   
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-    console.log("Token récupéré :", token);
-
     try {
       console.log(formData);
       const response = await axios.post(`${BASE_URL}services`, formData, {
@@ -101,7 +80,16 @@ function Service() {
           'Content-Type': 'application/json',
         }
       });
-      setServices(response.data);
+      fetchServices();
+      setIsModalOpen(false);
+      Swal.fire({
+        title: "Succès!",
+        text: "Ajout de service avec succès!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      console.log(response.data);
+
       console.log(response.status);
     } catch (error) {
       console.error("Erreur lors de la récupération des données:", error);
@@ -135,12 +123,14 @@ function Service() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       setServices(
         services.map((service) =>
           service.id === response.data.id ? response.data : service
         )
       );
       resetFields();
+      fetchServices();
       setIsEditModalOpen(false);
 
       Swal.fire({
@@ -155,21 +145,19 @@ function Service() {
     }
   }
 
-    // Réinitialiser les champs lorsque le modal d'ajout est ouvert
     const resetFields = () => {
       setDesignation("");
       setDescription("");
     };
 
-  // Réinitialisation des champs à l'ouverture du modal d'ajout
   useEffect(() => {
     if (isModalOpen) {
       resetFields(); // Réinitialiser les champs lorsque le modal s'ouvre
     }
   }, [isModalOpen]); // Ce useEffect se déclenche chaque fois que isModalOpen change
 
-  const handleDeleteService = async (serviceToDelete) => {
-    // Utilisation de SweetAlert2 pour la confirmation
+  
+  const handleDeleteService = async (serviceId) => {
     const confirmed = await Swal.fire({
       title: 'Êtes-vous sûr ?',
       text: "Cette action est irréversible.",
@@ -177,26 +165,33 @@ function Service() {
       showCancelButton: true,
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
-      reverseButtons: true, // Pour inverser les boutons
+      reverseButtons: true,
     });
-
+  
     if (!confirmed.isConfirmed) {
-      return; // Si l'utilisateur annule, ne rien faire
+      return;
     }
-
-    // Filtrer les services pour supprimer celui sélectionné
-    const updatedServices = services.filter(service => service !== serviceToDelete);
-
-    // Mettre à jour le localStorage avec la nouvelle liste de services
-    localStorage.setItem('services', JSON.stringify(updatedServices));
-
-    // Mettre à jour l'état des services
-    setServices(updatedServices);
-
-    // Afficher un message de succès
-    Swal.fire('Supprimé!', 'Le service a été supprimé.', 'success');
+  
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+  
+    try {
+      const response = await axios.delete(`${BASE_URL}services/${serviceId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (response.status === 200) {
+        setServices(services.filter(service => service.id !== serviceId));
+        Swal.fire('Supprimé!', 'Le service a été supprimé.', 'success');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression des données :', error);
+      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+    }
   };
-
+  
   return (
     <div>
           <div>
@@ -246,7 +241,6 @@ function Service() {
           
       </div>
 
-      {/* Table d'affichage des services */}
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[500px]">
       <table className="min-w-full">
           <thead>
@@ -280,7 +274,7 @@ function Service() {
                         </button>
                         <button 
                     onClick={() => {
-                      handleDeleteService(service);
+                      handleDeleteService(service.id);
                       setIsOptionsOpen(null); // Ferme le menu après la suppression
                     }}                          
                     className="text-red-500 hover:text-red-700 flex items-center">
@@ -334,7 +328,6 @@ function Service() {
           </button>
         </div></form></div></div>
       </Modal>
-
 
           <Modal isOpen={isEditModalOpen} onClose={() => {setIsEditModalOpen(false); setServiceToEdit(null)}}>
       <h2 className="text-lg font-semibold mb-4">Modifier le service</h2>
