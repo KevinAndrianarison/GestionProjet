@@ -21,44 +21,51 @@ function Service() {
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
   const [isModalTacheOpen, setIsModalTacheOpen] = useState(false);
-  const token = localStorage.getItem("authToken"); // Récupérer le token stocké
 
-    // Configurer axios pour inclure le token dans les requêtes
-    const axiosInstance = axios.create({
-      baseURL: BASE_URL,
-      headers: {
-        Authorization: `Bearer ${token}`, // Ajoute le token d'authentification
-      },
-    });
   
   useEffect(() => {
     const fetchServices = async () => {
       console.log(`Request URL: ${BASE_URL}services`);
-
+  
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
+  
+      console.log("Token brut :", tokenString);
+      console.log("Token parsé :", token);
+  
       try {
         const response = await axios.get(`${BASE_URL}services`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+  
+        console.log("Réponse complète :", response);
+  
         if (response.status === 200) {
+          console.log("Services récupérés :", response.data);
           setServices(response.data);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des données:", error);
+        if (error.response) {
+          console.error("Erreur réponse API :", error.response);
+          console.error("Statut :", error.response.status);
+          console.error("Détails :", error.response.data);
+        } else {
+          console.error("Erreur de connexion :", error.message);
+        }
       }
     };
-
+  
     fetchServices();
   }, []);
+  
 
   const currentProspects = services.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
-  
+
   const handleNext = () => {
     if (page < Math.ceil(services.length / itemsPerPage)) {
       setPage(page + 1);
@@ -75,6 +82,8 @@ function Service() {
     designation,
     description
   };
+
+  
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +91,8 @@ function Service() {
 
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
+    console.log("Token récupéré :", token);
+
     try {
       console.log(formData);
       const response = await axios.post(`${BASE_URL}services`, formData, {
@@ -116,10 +127,14 @@ function Service() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
     try {
-      const response = await axiosInstance.put(`${BASE_URL}services/${serviceToEdit.id}`, formData);
-
+      const response = await axios.put(`${BASE_URL}services/${serviceToEdit.id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setServices(
         services.map((service) =>
           service.id === response.data.id ? response.data : service
