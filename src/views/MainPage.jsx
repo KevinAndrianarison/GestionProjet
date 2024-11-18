@@ -37,6 +37,8 @@ import { useContext, useEffect, useState } from "react";
 import Tippy from "@tippyjs/react";
 import { useNavigate } from "react-router-dom";
 import { UrlContext } from "../contexte/useUrl";
+import Iconsofticeo from "../images/Iconsofticeo.png";
+import logosofticeo from "../images/logosofticeo.png";
 
 export default function MainPage() {
   const [statusNavBar, setStatusNavBar] = useState(1);
@@ -121,60 +123,131 @@ export default function MainPage() {
 
   return (
     <>
-      <div className="flex justify-between w-full border-b-4 border-blue-500 py-1 flex-wrap">
-        <div className="flex items-center">
-          <div
-            className="logos w-20 h-16 cursor-pointer"
-            onClick={() => navigate(`${entity}/AllProject`)}
-          ></div>
-          <p className="title">Softiceo</p>
+      <div className="flex justify-between w-full border-b-4 border-blue-500 py-0 flex-wrap">
+        <div className="flex items-center cursor-pointer" onClick={() => navigate(`${entity}/AllProject`)}>
+          <div className="w-20 block xl:hidden pl-4">
+            <img src={Iconsofticeo} alt="Sofiticeo" />
+          </div>
+          <div className="w-40 hidden xl:block pl-4">
+            <img src={logosofticeo} alt="Sofiticeo" />
+          </div>
         </div>
         {(showAdmin || showUser) && (
-          <div className="mb-1 input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center">
-            <div
-              onClick={switchToGestProj}
-              className={
+          <div
+          className="input text-xs cursor-pointer text-gray-500 flex flex-wrap items-center hidden xl:flex"
+        >
+          {/* Gestion de projet */}
+          <div
+            onClick={switchToGestProj}
+              className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-300 ${
                 statusNavBar === 1
-                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-              }
+                  ? "bg-blue-100 text-blue-500"
+                  : "hover:bg-blue-50 hover:text-blue-500"
+              }`}
             >
-              <FontAwesomeIcon icon={faDiagramProject} className="mr-2 " />{" "}
-              Gestion de projet
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                  statusNavBar === 1 ? "bg-blue-500" : "bg-gray-300"
+                } transition-transform transform ${
+                  statusNavBar === 1 ? "scale-110" : "scale-100"
+                }`}
+              >
+                <FontAwesomeIcon
+                  icon={faDiagramProject}
+                  className="text-white text-xl w-4"
+                />
+              </div>
+              <span
+                className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                  statusNavBar === 1 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                } group-hover:opacity-100 group-hover:max-w-xs`}
+              >
+                Gestion de projet
+              </span>
             </div>
+          
+            {/* Gestion de devis-facture */}
             <div
               onClick={switchToGestDevis}
-              className={
+              className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-300 ${
                 statusNavBar === 2
-                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-              }
+                  ? "bg-blue-100 text-blue-500"
+                  : "hover:bg-blue-50 hover:text-blue-500"
+              }`}
             >
-              <FontAwesomeIcon icon={faReceipt} className="mr-2 " /> Gestion de
-              devis-facture
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                  statusNavBar === 2 ? "bg-blue-500" : "bg-gray-300"
+                } transition-transform transform ${
+                  statusNavBar === 2 ? "scale-110" : "scale-100"
+                }`}
+              >
+                <FontAwesomeIcon icon={faReceipt} className="text-white text-xl w-4" />
+              </div>
+              <span
+                className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                  statusNavBar === 2 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                } group-hover:opacity-100 group-hover:max-w-xs`}
+              >
+                Gestion de devis-facture
+              </span>
             </div>
+          
+            {/* Gestion RH */}
             <div
               onClick={switchToGestRH}
-              className={
+              className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-300 ${
                 statusNavBar === 3
-                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-              }
+                  ? "bg-blue-100 text-blue-500"
+                  : "hover:bg-blue-50 hover:text-blue-500"
+              }`}
             >
-              <FontAwesomeIcon icon={faUsersGear} className="mr-2 " /> Gestion
-              RH
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                  statusNavBar === 3 ? "bg-blue-500" : "bg-gray-300"
+                } transition-transform transform ${
+                  statusNavBar === 3 ? "scale-110" : "scale-100"
+                }`}
+              >
+                <FontAwesomeIcon icon={faUsersGear} className="text-white text-xl w-4" />
+              </div>
+              <span
+                className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                  statusNavBar === 3 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                } group-hover:opacity-100 group-hover:max-w-xs`}
+              >
+                Gestion RH
+              </span>
             </div>
+          
+            {/* Gestion client */}
             <div
               onClick={switchToGestClient}
-              className={
+              className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-300 ${
                 statusNavBar === 4
-                  ? "ml-2 bg-blue-100 text-blue-500 mr-10 rounded px-3 py-2"
-                  : "mr-10  px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-500"
-              }
+                  ? "bg-blue-100 text-blue-500"
+                  : "hover:bg-blue-50 hover:text-blue-500"
+              }`}
             >
-              <FontAwesomeIcon icon={faStar} className="mr-2 " /> Gestion client
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                  statusNavBar === 4 ? "bg-blue-500" : "bg-gray-300"
+                } transition-transform transform ${
+                  statusNavBar === 4 ? "scale-110" : "scale-100"
+                }`}
+              >
+                <FontAwesomeIcon icon={faStar} className="text-white text-xl w-4" />
+              </div>
+              <span
+                className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                  statusNavBar === 4 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                } group-hover:opacity-100 group-hover:max-w-xs`}
+              >
+                Gestion client
+              </span>
             </div>
           </div>
+        
         )}
 
         <div className="text-xs flex items-center text-gray-700">
