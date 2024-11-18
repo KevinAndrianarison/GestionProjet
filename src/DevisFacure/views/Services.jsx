@@ -251,17 +251,17 @@ function Service() {
             </tr>
           </thead>
           <tbody>
-            {currentProspects.map((service, index) => (
-              <tr key={index}>
+            {currentProspects.map((service) => (
+              <tr key={service.id}>
                 <td className="border-y p-4">{service.designation}</td>
                 <td className="border-y p-4">{service.description}</td>
                 <td className="border-y p-4">{service.nombre_tâche}<button onClick={() => setIsModalTacheOpen(true)}>+</button></td>
                  <td className="border-y p-4">
                   <div className="relative">
-                    <button  onClick={() => setIsOptionsOpen(isOptionsOpen === index ? null : index)}>
+                    <button  onClick={() => setIsOptionsOpen(isOptionsOpen === service.id ? null : service.id)}>
                       <FontAwesomeIcon icon={faEllipsisV} />
                     </button>
-                    {isOptionsOpen === index && (
+                    {isOptionsOpen === service.id && (
                       <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-md z-10">
                         <button 
                     onClick={() => {
