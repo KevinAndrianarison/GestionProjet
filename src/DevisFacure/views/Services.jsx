@@ -19,7 +19,15 @@ function Service() {
   const [isOptionsOpen, setIsOptionsOpen] = useState(null);
   const [page, setPage] = useState(1); // Page actuelle
   const itemsPerPage = 4; // Nombre de prospects par page
+
+  const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [isModalTacheOpen, setIsModalTacheOpen] = useState(false);
+
+  const handleAddTaskClick = (id) => {
+    setSelectedServiceId(id);
+    setIsModalTacheOpen(true);
+  };
+  
 
   const fetchServices = async () => {
     console.log(`Request URL: ${BASE_URL}services`);
@@ -38,6 +46,12 @@ function Service() {
       console.error("Erreur lors de la récupération des données:", error);
     }
   };
+
+  useEffect(() => {
+    if (!isModalTacheOpen) {
+      setSelectedServiceId('');
+    };
+  }, [isModalTacheOpen]);
 
   useEffect(() => {
     fetchServices();
@@ -195,7 +209,8 @@ function Service() {
   return (
     <div>
           <div>
-      <ModalTache isOpen={isModalTacheOpen} onClose={() => setIsModalTacheOpen(false)} />
+      <ModalTache isOpen={isModalTacheOpen} onClose={() => setIsModalTacheOpen(false)}
+      selectedServiceId={selectedServiceId} />
     </div>
           <div className="">
         <div>
@@ -255,7 +270,7 @@ function Service() {
               <tr key={service.id}>
                 <td className="border-y p-4">{service.designation}</td>
                 <td className="border-y p-4">{service.description}</td>
-                <td className="border-y p-4">{service.nombre_tâche}<button onClick={() => setIsModalTacheOpen(true)}>+</button></td>
+                <td className="border-y p-4">{service.nombre_tâche}<button onClick={() => handleAddTaskClick(service.id)}>+</button></td>
                  <td className="border-y p-4">
                   <div className="relative">
                     <button  onClick={() => setIsOptionsOpen(isOptionsOpen === service.id ? null : service.id)}>

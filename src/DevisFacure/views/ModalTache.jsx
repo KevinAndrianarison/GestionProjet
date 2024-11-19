@@ -6,18 +6,19 @@ import PropTypes from 'prop-types';
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 
-const ModalTache = ({ isOpen, onClose }) => {
+const ModalTache = ({ isOpen, onClose, selectedServiceId }) => {
   const [nom_tache, setNomTache] = useState('');
-  const [editTache, setEditTache] = useState('');
+  const [editTache, setEditTache] = useState(null);
   const [taches, setTaches] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
 
+  // Récupérer les tâches
   const fetchTaches = async () => {
-    console.log(`Request URL: ${BASE_URL}services/taches`);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
+
     try {
-      const response = await axios.get(`${BASE_URL}services/taches`, {
+      const response = await axios.get(`${BASE_URL}services/detail-services/${selectedServiceId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -31,59 +32,66 @@ const ModalTache = ({ isOpen, onClose }) => {
   };
 
   useEffect(() => {
-    fetchTaches();
-  }, []);
+    if (selectedServiceId) {
+      fetchTaches();
+    }
+  }, [selectedServiceId]);
 
-  const formData = {
-    nom_tache,
-  };
-
+  // Ajouter une tâche
   const handleAddTask = async (e) => {
     e.preventDefault();
-
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
+
+    const formData = {
+      designation: nom_tache,
+      description: "",
+      gest_fact_service_id: selectedServiceId,
+    };
+
     try {
-      console.log(formData);
-      const response = await axios.post(`${BASE_URL}services/taches`, formData, {
+      await axios.post(`${BASE_URL}services/detail-services`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
       });
-      setTaches([...taches, response.data]); // Mise à jour locale
       fetchTaches();
       setNomTache('');
-      console.log(response.status);
     } catch (error) {
-      console.error("Erreur lors de la récupération des données:", error);
+      console.error("Erreur lors de l'ajout de la tâche :", error);
     }
   };
 
+  // Modifier une tâche
   const handleEditTask = async () => {
+    if (!editTache || !editTache.id) {
+      console.error("L'ID de la tâche est manquant !");
+      return;
+    }
+
     const tokenString = localStorage.getItem("token");
-    let token = JSON.parse(tokenString);
-    const formData = { ...editTache, nom_tache: editTache.nom_tache };
+    const token = JSON.parse(tokenString);
+
     try {
-      const response = await axios.put(`${BASE_URL}services/${editTache.id}`, formData, {
+      await axios.put(`${BASE_URL}services/detail-services/${editTache.id}`, editTache, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      setTaches(
-        taches.map((tache) =>
-          tache.id === response.data.id ? response.data : tache
+      setTaches((prev) =>
+        prev.map((tache) =>
+          tache.id === editTache.id ? { ...tache, designation: editTache.designation } : tache
         )
       );
       setEditIndex(null);
-      setEditTache('');
-      fetchTaches();
+      setEditTache(null);
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Erreur lors de la mise à jour de la tâche :", error);
     }
   };
 
+  // Supprimer une tâche
   const handleDeleteTask = async (taskId) => {
     const confirmed = await Swal.fire({
       title: 'Êtes-vous sûr ?',
@@ -98,16 +106,16 @@ const ModalTache = ({ isOpen, onClose }) => {
     if (!confirmed.isConfirmed) {
       return;
     }
-  
+
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
     try {
-      await axios.delete(`${BASE_URL}services/taches/${taskId}`, {
+      await axios.delete(`${BASE_URL}services/detail-services/${taskId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setTaches(taches.filter((tache) => tache.id !== taskId)); // Suppression locale
+      setTaches((prev) => prev.filter((tache) => tache.id !== taskId));
       Swal.fire('Supprimé!', 'La tâche a été supprimée.', 'success');
     } catch (error) {
       console.error("Erreur lors de la suppression de la tâche :", error);
@@ -135,21 +143,19 @@ const ModalTache = ({ isOpen, onClose }) => {
         >
           &times;
         </button>
-
         <div className="flex">
           <div className="w-1/2 border-r pr-4 py-2">
             <h2 className="text-xl mb-4">Liste des tâches</h2>
             <ul className="text-sm overflow-y-auto max-h-[35vh]">
-              {taches.map((item, index) => (
-                <li
-                  key={index}
-                  className="grid grid-cols-12 items-center p-2"
-                >
-                  {editIndex === index ? (
+              {taches.map((tache) => (
+                <li key={tache.id} className="grid grid-cols-12 items-center p-2">
+                  {editIndex === tache.id ? (
                     <input
                       type="text"
-                      value={editTache} 
-                      onChange={(e) => setEditTache(e.target.value)}
+                      value={editTache?.designation || ""}
+                      onChange={(e) =>
+                        setEditTache((prev) => ({ ...prev, designation: e.target.value }))
+                      }
                       onBlur={handleEditTask}
                       autoFocus
                       className="col-span-11"
@@ -157,14 +163,17 @@ const ModalTache = ({ isOpen, onClose }) => {
                   ) : (
                     <span
                       className="col-span-11 truncate cursor-pointer"
-                      onClick={() => handleEditTask(index)}
+                      onClick={() => {
+                        setEditTache(tache);
+                        setEditIndex(tache.id);
+                      }}
                     >
-                      {item}
+                      {tache.designation}
                     </span>
                   )}
 
                   <button
-                    onClick={() => handleDeleteTask(index)}
+                    onClick={() => handleDeleteTask(tache.id)}
                     className="w-2 col-span-1 text-right text-red-500 hover:text-red-700"
                   >
                     <FontAwesomeIcon icon={faTrash} className="mr-2" />
@@ -197,10 +206,11 @@ const ModalTache = ({ isOpen, onClose }) => {
     </div>
   );
 };
-// Validation des props avec prop-types
+
 ModalTache.propTypes = {
-  isOpen: PropTypes.bool.isRequired, // La prop isOpen doit être un booléen et est requise
-  onClose: PropTypes.func.isRequired, // La prop onClose doit être une fonction et est requise
-  children: PropTypes.node, // La prop children peut être n'importe quel élément React
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  selectedServiceId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
 };
+
 export default ModalTache;
