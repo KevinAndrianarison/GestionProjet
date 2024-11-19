@@ -56,6 +56,7 @@ const ModalTache = ({ isOpen, onClose, selectedServiceId }) => {
           'Content-Type': 'application/json',
         },
       });
+      console.log(formData);
       fetchTaches();
       setNomTache('');
     } catch (error) {
@@ -84,6 +85,7 @@ const ModalTache = ({ isOpen, onClose, selectedServiceId }) => {
           tache.id === editTache.id ? { ...tache, designation: editTache.designation } : tache
         )
       );
+      console.log(editTache);
       setEditIndex(null);
       setEditTache(null);
     } catch (error) {
@@ -127,7 +129,7 @@ const ModalTache = ({ isOpen, onClose, selectedServiceId }) => {
       onClose();
     }
   };
-
+  console.log(taches);
   return (
     <div
       className={`fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center ${
