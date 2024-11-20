@@ -756,10 +756,18 @@ export default function CreateProject() {
                           value={searchTerm}
                           onChange={handleSearchChange}
                         />
+                        <FontAwesomeIcon
+                          onClick={() => {
+                            setSearchTerm("");
+                            setIsDropdownOpenMembers(false);
+                          }}
+                          icon={faXmark}
+                          className=" h-3 w-3 relative text-gray-400 cursor-pointer right-5"
+                        />
                       </div>
 
                       {isDropdownOpenMembers && (
-                        <div className="absolute mt-1 w-full rounded-md bg-white shadow-lg z-10">
+                        <div className="absolute max-h-[100px] overflow-y-auto  mt-1 w-full rounded-md bg-white shadow-lg z-10">
                           {filteredOptions.length > 0 ? (
                             filteredOptions.map((user, index) => (
                               <div
@@ -780,7 +788,7 @@ export default function CreateProject() {
                     </div>
                   </div>
                   {selectedMembers.length > 0 && (
-                    <div className="">
+                    <div>
                       <div className="flex flex-wrap">
                         {selectedMembers.map((member, index) => (
                           <div
@@ -812,10 +820,18 @@ export default function CreateProject() {
                           value={searchTermResponsable}
                           onChange={handleSearchChangeResponsables}
                         />
+                        <FontAwesomeIcon
+                          onClick={() => {
+                            setSearchTermResponsable("");
+                            setIsDropdownOpenResponsable(false);
+                          }}
+                          icon={faXmark}
+                          className=" h-3 w-3 relative text-gray-400 cursor-pointer right-5"
+                        />
                       </div>
 
                       {isDropdownOpenResponsable && (
-                        <div className="absolute mt-1 w-full rounded-md bg-white shadow-lg z-10">
+                        <div className="absolute max-h-[100px] overflow-y-auto  mt-1 w-full rounded-md bg-white shadow-lg z-10">
                           {filteredOptionsResponsables.length > 0 ? (
                             filteredOptionsResponsables.map((user, index) => (
                               <div
@@ -872,10 +888,18 @@ export default function CreateProject() {
                           value={searchTermChef}
                           onChange={handleSearchChangeChefs}
                         />
+                        <FontAwesomeIcon
+                          onClick={() => {
+                            setSearchTermChef("");
+                            setIsDropdownOpenChef(false);
+                          }}
+                          icon={faXmark}
+                          className=" h-3 w-3 relative text-gray-400 cursor-pointer right-5"
+                        />
                       </div>
 
                       {isDropdownOpenChef && (
-                        <div className="absolute mt-1 w-full rounded-md bg-white shadow-lg z-10">
+                        <div className="absolute max-h-[100px] overflow-y-auto  mt-1 w-full rounded-md bg-white shadow-lg z-10">
                           {filteredOptionsChefs.length > 0 ? (
                             filteredOptionsChefs.map((user, index) => (
                               <div

@@ -85,7 +85,7 @@ export default function LoginComponent() {
     <>
       <div className="forms">
         <h1 className="titreLogin">Connectez vous !</h1>
-        <div className="inputs mt-16">
+        <div className="inputs mt-6">
           <input
             type="text"
             value={email}

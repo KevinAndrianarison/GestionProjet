@@ -23,8 +23,24 @@ export function EtapeContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setListEtape(response.data.reverse());
-        
+        setListEtape(response.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
+  function getAlletapeByProjetsFirst(id) {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/etapes/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListEtape(response.data);
       })
       .catch((err) => {
         console.error(err);
@@ -38,7 +54,8 @@ export function EtapeContextProvider({ children }) {
         idEtape,
         setListEtape,
         getAlletapeByProjets,
-        setIdEtape
+        getAlletapeByProjetsFirst,
+        setIdEtape,
       }}
     >
       {children}

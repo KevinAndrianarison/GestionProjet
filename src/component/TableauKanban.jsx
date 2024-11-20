@@ -1,8 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import styles from "../styles/Kanban.module.css";
-import { v4 as uuidv4 } from "uuid";
+import { UrlContext } from "../contexte/useUrl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TaskContext } from "../contexte/useTask";
+import { ShowContext } from "../contexte/useShow";
+import Tippy from "@tippyjs/react";
+import { ProjectContext } from "../contexte/useProject";
 
 import {
   faEllipsisVertical,
@@ -11,40 +14,44 @@ import {
   faEllipsis,
   faXmark,
   faTrash,
+  faThumbtack,
 } from "@fortawesome/free-solid-svg-icons";
-import { faMessage } from "@fortawesome/free-regular-svg-icons";
+import axios from "axios";
 
 export default function TableauKanban() {
-  const { ListTask } = useContext(TaskContext);
-  const [columns, setColumns] = useState({
-    todo: { name: "A faire", tasks: [] },
-    inProgress: { name: "En cours", tasks: [] },
-    done: { name: "Terminés", tasks: [] },
-  });
-  const [showTaskForm, setShowTaskForm] = useState({});
-  const [taskInput, setTaskInput] = useState("");
+  const {
+    ListTask,
+    getAllTask,
+    getAllStatusTaskKanban,
+    ListStatusTask,
+    setIdStatus,
+    setListTaskToMove,
+  } = useContext(TaskContext);
+  const { url } = useContext(UrlContext);
+  const { setShowSpinner, setShowDeleteStatus, setShowDeleteStatusTask } =
+    useContext(ShowContext);
+  const { idProjet } = useContext(ProjectContext);
+
   const [columnInput, setColumnInput] = useState("");
   const [showColumnForm, setShowColumnForm] = useState(false);
+  const [idTask, setIdTask] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeColumnDropdown, setActiveColumnDropdown] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalUsers, setModalUsers] = useState([]);
 
-  function addTask(columnId) {
-    if (!taskInput.trim()) return;
-    const newTask = { id: uuidv4(), title: taskInput };
-    setColumns((prevColumns) => ({
-      ...prevColumns,
-      [columnId]: {
-        ...prevColumns[columnId],
-        tasks: [...prevColumns[columnId].tasks, newTask],
-      },
-    }));
-    setShowTaskForm((prev) => ({ ...prev, [columnId]: false }));
-    setTaskInput("");
+  useEffect(() => {
+    getAllStatusTaskKanban();
+    getAllTask();
+  }, []);
+
+  function openModal(users) {
+    setModalUsers(users);
+    setShowModal(true);
   }
 
-  function toggleDropdown(taskId) {
-    setActiveDropdown((prev) => (prev === taskId ? null : taskId));
-    setActiveColumnDropdown(null);
+  function closeModal() {
+    setShowModal(false);
   }
 
   function toggleColumnDropdown(columnId) {
@@ -57,22 +64,29 @@ export default function TableauKanban() {
     setActiveColumnDropdown(null);
   }
 
-  function handleHideForm(columnId) {
-    setShowTaskForm((prev) => ({ ...prev, [columnId]: false }));
-    setTaskInput("");
-  }
-
-  function handleShowForm(columnId) {
-    setShowTaskForm((prev) => ({ ...prev, [columnId]: true }));
-  }
-
   function addColumn() {
-    if (!columnInput.trim()) return;
-    const columnId = uuidv4();
-    setColumns((prevColumns) => ({
-      ...prevColumns,
-      [columnId]: { name: columnInput, tasks: [] },
-    }));
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    let formData = {
+      valeur: columnInput,
+      gest_proj_projet_id: idProjet,
+    };
+
+    axios
+      .post(`${url}/api/projets/statuts-taches`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        getAllStatusTaskKanban();
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+
     setColumnInput("");
     setShowColumnForm(false);
   }
@@ -86,69 +100,75 @@ export default function TableauKanban() {
     setColumnInput("");
   }
 
-  function handleDragStart(e, taskId, sourceColumnId) {
-    e.dataTransfer.setData("taskId", taskId);
-    e.dataTransfer.setData("sourceColumnId", sourceColumnId);
+  function handleDragStart(taskId) {
+    setIdTask(taskId);
   }
 
-  function handleDrop(e, targetColumnId) {
-    const taskId = e.dataTransfer.getData("taskId");
-    const sourceColumnId = e.dataTransfer.getData("sourceColumnId");
-
-    if (sourceColumnId === targetColumnId) return;
-
-    const task = columns[sourceColumnId].tasks.find((t) => t.id === taskId);
-    setColumns((prevColumns) => ({
-      ...prevColumns,
-      [sourceColumnId]: {
-        ...prevColumns[sourceColumnId],
-        tasks: prevColumns[sourceColumnId].tasks.filter((t) => t.id !== taskId),
-      },
-      [targetColumnId]: {
-        ...prevColumns[targetColumnId],
-        tasks: [...prevColumns[targetColumnId].tasks, task],
-      },
-    }));
+  function handleDrop(targetColumnId) {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    let formData = {
+      gest_proj_statuts_tache_id: targetColumnId,
+    };
+    axios
+      .put(`${url}/api/projets/taches/${idTask}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        getAllTask();
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
   }
 
   function handleDeleteColumn(columnId) {
-    setColumns((prevColumns) => {
-      const newColumns = { ...prevColumns };
-      delete newColumns[columnId];
-      return newColumns;
-    });
-    closeDropdown();
+    setIdStatus(columnId);
+    const tasksInColumn = ListTask.filter(
+      (task) => task.statut.id === columnId
+    );
+    setListTaskToMove(tasksInColumn);
+    if (tasksInColumn.length === 0) {
+      setShowDeleteStatus(true);
+    }
+    if (tasksInColumn.length !== 0) {
+      setShowDeleteStatusTask(true);
+    }
   }
 
   return (
     <div
-      className=" flex flex-wrap bg-gray-100 min-h-[65vh] py-4"
+      className=" flex flex-wrap bg-gray-100 min-h-[65vh]"
       onClick={closeDropdown}
     >
-      <div className="  flex justify-center flex-wrap overflow-auto">
-        {Object.entries(columns).map(([columnId, column]) => (
+      <div className="overflow-x-hidden p-5 flex justify-center flex-wrap overflow-auto">
+        {ListStatusTask.map((status) => (
           <div
-            key={columnId}
+            key={status.id}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, columnId)}
-            className="ml-2"
+            onDrop={(e) => handleDrop(status.id)}
+            className="mx-2"
           >
-            <h2 className="px-3 py-1   flex items-center justify-between">
-              {column.name}
+            <h2 className="px-3 py-1 min-w-[200px] flex items-center justify-between">
+              {status.valeur}
               <div className="relative">
                 <FontAwesomeIcon
                   icon={faEllipsisVertical}
                   className="cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleColumnDropdown(columnId);
+                    toggleColumnDropdown(status.id);
                   }}
                 />
-                {activeColumnDropdown === columnId && (
-                  <ul className="border text-black font-light dropdown-menu absolute z-50 right-0 w-60 bg-white shadow-lg rounded-md">
+                {activeColumnDropdown === status.id && (
+                  <ul className="flex justify-end text-black font-light dropdown-menu absolute z-50 right-0 w-60 ">
                     <li
-                      className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
-                      onClick={() => handleDeleteColumn(columnId)}
+                      className="text-xs border dropdown-item flex items-center px-3 bg-white py-2 cursor-pointer"
+                      onClick={() => handleDeleteColumn(status.id)}
                     >
                       <FontAwesomeIcon
                         icon={faTrash}
@@ -161,112 +181,120 @@ export default function TableauKanban() {
               </div>
             </h2>
             <div className=" overflow-y-auto">
-              {ListTask.map((task) => (
-                <div
-                  key={task.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, task.id, columnId)}
-                  className="w-[250px] bg-white border shadow-lg p-3 rounded shadow-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDropdown(task.id);
-                  }}
-                >
-                  <p className="flex  justify-end cursor-pointer">
-                    <FontAwesomeIcon
-                      icon={faEllipsis}
-                      className="relative bottom-2"
-                    />
-                  </p>
-
-                  {activeDropdown === task.id && (
-                    <ul className="border dropdown-menu absolute z-50 right-1 w-32 bg-white shadow-lg rounded-md">
-                      <li className="dropdown-item flex items-center px-3 py-1 cursor-pointer hover:bg-gray-200">
+              {ListTask.map(
+                (task) =>
+                  task.statut.id === status.id && (
+                    <div
+                      key={task.id}
+                      draggable
+                      onDragStart={() => handleDragStart(task.id)}
+                      className="w-[250px] bg-white border shadow-lg p-3 rounded shadow-sm"
+                    >
+                      <div className="px-1 min-w-[200px] flex h-2 justify-end"></div>
+                      <h1 className=" text-xs font-bold">
                         <FontAwesomeIcon
-                          icon={faTrash}
-                          className="red-icon mr-2"
+                          icon={faThumbtack}
+                          className="mr-2 text-gray-500"
                         />
-                        Supprimer
-                      </li>
-                    </ul>
-                  )}
+                        {task.titre}
+                      </h1>
+                      <div
+                        className="text-xs"
+                        dangerouslySetInnerHTML={{ __html: task.description }}
+                      ></div>
 
-                  <p className="text-xs bg-yellow-500 w-14 py-1 text-center rounded-xl">
-                    Status
-                  </p>
-                  <p className="mt-2">{task.titre}</p>
-                  <div className="flex flex-wrap-reverse justify-between">
-                    <div className="flex mt-1 items-end">
-                      <p className="relative flex items-center justify-center text-xs bg-green-400 w-28 h-6 text-center rounded-xl">
-                        <FontAwesomeIcon icon={faClock} className="mr-2" />{" "}
-                        {task.date_fin}
-                      </p>
+                      <div className="flex flex-wrap-reverse justify-between items-center mt-1">
+                        <div className="flex  items-end">
+                          {task.date_limite && (
+                            <p className="mt-1 relative flex items-center justify-center text-xs bg-green-400 w-28 h-6 text-center rounded-xl">
+                              <FontAwesomeIcon
+                                icon={faClock}
+                                className="mr-2"
+                              />
+                              {task.date_limite}
+                            </p>
+                          )}
+                        </div>
+                        <Tippy content="Responsables">
+                          <div className="flex -space-x-1 overflow-hidden">
+                            {task.responsables.slice(0, 2).map((resp) => (
+                              <div
+                                key={resp.id}
+                                className="cursor-pointer inline-block bg-cover bg-center size-6 rounded-full ring-2 ring-white"
+                                style={{
+                                  backgroundImage: `url(${url}/storage/${resp.utilisateur.photo_profile})`,
+                                }}
+                                onClick={() => openModal(task.responsables)}
+                              ></div>
+                            ))}
+                            {task.responsables.length > 2 && (
+                              <div
+                                onClick={() => openModal(task.responsables)}
+                                className="inline-block bg-gray-300 size-6 rounded-full ring-2 ring-white flex items-center justify-center text-xs font-medium text-gray-600 cursor-pointer"
+                              >
+                                +{task.responsables.length - 2}
+                              </div>
+                            )}
+                          </div>
+                        </Tippy>
+                      </div>
                     </div>
-                    <div className="flex items-end text-gray-500">
-                      <p>
-                        <FontAwesomeIcon
-                          icon={faMessage}
-                          className="mr-1 cursor-pointer"
-                        />{" "}
-                        8
-                      </p>
-                    </div>
-                    <div className={styles.imgKanban}></div>
-                  </div>
-                </div>
-              ))}
+                  )
+              )}
             </div>
-            {showTaskForm[columnId] ? (
-              <div className="mt-2">
-                <input
-                  type="text"
-                  className="py-2 border border-2 rounded px-3 w-full focus:outline-none"
-                  placeholder="Ecrire ici..."
-                  value={taskInput}
-                  onChange={(e) => setTaskInput(e.target.value)}
-                />
-                <div className="  flex items-center mt-2">
-                  <button
-                    onClick={() => addTask(columnId)}
-                    className="px-3 py-1 bg-blue-500 rounded mr-2 border"
-                  >
-                    Ajouter une carte
-                  </button>
-                  <FontAwesomeIcon
-                    icon={faXmark}
-                    className="mr-1 cursor-pointer hover:bg-gray-300 py-1 px-1.5 rounded"
-                    onClick={() => handleHideForm(columnId)}
-                  />
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => handleShowForm(columnId)}
-                className=" hidden mt-2 text-gray-500 pr-3 py-1 text-left"
-              >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter une
-                carte
-              </button>
-            )}
           </div>
         ))}
       </div>
-      <div className=" mt-5 ml-4">
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white rounded-sm p-5 max-w-sm w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-3 right-3 text-gray-600 hover:text-black"
+              onClick={closeModal}
+            >
+              <FontAwesomeIcon icon={faXmark} size="lg" />
+            </button>
+            <h2 className="text-lg font-bold text-sm mb-4">
+              Liste des responsables
+            </h2>
+            <ul className="max-h-60 overflow-y-auto">
+              {modalUsers.map((user) => (
+                <li key={user.id} className="flex items-center mb-2">
+                  <div
+                    className="w-8 h-8 bg-cover bg-center rounded-full mr-3"
+                    style={{
+                      backgroundImage: `url(${url}/storage/${user.utilisateur.photo_profile})`,
+                    }}
+                  ></div>
+                  <span className="text-xs">{user.utilisateur.nom}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+      <div className=" mt-5 ml-4 text-xs">
         {showColumnForm ? (
           <div>
             <input
               type="text"
               className="py-2 border border-2 rounded px-3 w-full focus:outline-none"
-              placeholder="Nom de la nouvelle liste..."
+              placeholder="Nouveau statut..."
               value={columnInput}
               onChange={(e) => setColumnInput(e.target.value)}
             />
             <div className="flex items-center mt-2">
               <button
                 onClick={addColumn}
-                className="px-3 py-1 bg-blue-500 rounded mr-2 border"
+                className="px-10 py-1 bg-blue-500 rounded mr-2 border font-bold"
               >
-                Ajouter une liste
+                Valider
               </button>
               <FontAwesomeIcon
                 icon={faXmark}

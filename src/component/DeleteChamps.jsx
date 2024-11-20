@@ -1,41 +1,37 @@
 import "../styles/Modal.css";
 import { ShowContext } from "../contexte/useShow";
 import { useContext } from "react";
-import { ProjectContext } from "../contexte/useProject";
 import { MessageContext } from "../contexte/useMessage";
 import { UrlContext } from "../contexte/useUrl";
 import { TaskContext } from "../contexte/useTask";
-import { EtapeContext } from "../contexte/useEtape";
 
 import axios from "axios";
 
-export default function DeleteTask() {
-  const { idProject } = useContext(ProjectContext);
+export default function Deleteetape() {
   const { url } = useContext(UrlContext);
+  const { idInput, getAllChampsByProject } = useContext(TaskContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { setShowDeletetask, setShowSpinner } = useContext(ShowContext);
-  const { idTask } = useContext(TaskContext);
-  const { getAlletapeByProjets } = useContext(EtapeContext);
+  const { setShowDeletechamps, setShowSpinner } = useContext(ShowContext);
 
-  function closeDelTask() {
-    setShowDeletetask(false);
+  function closeDeleChamps() {
+    setShowDeletechamps(false);
   }
 
-  function deleteTask() {
+  function deleteChamps() {
     setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .delete(`${url}/api/projets/taches/${idTask}`, {
+      .delete(`${url}/api/projets/champs/${idInput}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        getAlletapeByProjets(idProject);
+        getAllChampsByProject();
         setMessageSucces(response.data.message);
         setShowSpinner(false);
-        setShowDeletetask(false);
+        setShowDeletechamps(false);
         setTimeout(() => {
           setMessageSucces("");
         }, 5000);
@@ -48,16 +44,18 @@ export default function DeleteTask() {
 
   return (
     <>
-      <div className="showModal" onClick={() => setShowDeletetask(false)}>
+      <div className="showModal" onClick={() => setShowDeletechamps(false)}>
         <div className="formModal" onClick={(e) => e.stopPropagation()}>
-          <h6 className="modal">
-            Voulez-vous vraiment supprimer cette tâche ?
-          </h6>
+          <h6 className="modal">Voulez-vous vraiment supprimer ce champs ?</h6>
           <div className="valider">
-            <button onClick={deleteTask} type="button" className="SUPPR mt-5">
+            <button onClick={deleteChamps} type="button" className="SUPPR mt-5">
               OUI
             </button>
-            <button type="button" onClick={closeDelTask} className="NON mt-5">
+            <button
+              type="button"
+              onClick={closeDeleChamps}
+              className="NON mt-5"
+            >
               NON
             </button>
           </div>

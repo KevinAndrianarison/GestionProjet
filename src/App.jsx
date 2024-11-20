@@ -17,7 +17,10 @@ import RetirerChefs from "./component/RetirerChefs";
 import DetailsProject from "./component/DetailsProjet";
 import DeleteEntity from "./component/DeleteEntity";
 import DeleteTask from "./component/DeleteTask";
+import DeleteStatusIfHaveTask from "./component/DeleteStatusIfHaveTask";
+import DeleteStatus from "./component/DeleteStatus";
 import DeleteEtape from "./component/DeleteEtape";
+import DeleteChamps from "./component/DeleteChamps";
 import SetTask from "./component/SetTask";
 import Task from "./component/Task";
 import { UserContext } from "./contexte/useUser";
@@ -47,6 +50,9 @@ function App() {
     showDeletetask,
     showSetTask,
     showDeleteEtape,
+    showDeleteStatus,
+    showDeleteStatusTask,
+    showDeletechamps
   } = useContext(ShowContext);
   const { getAllUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -100,6 +106,11 @@ function App() {
       {showDeletetask && <DeleteTask />}
       {showSetTask && <SetTask />}
       {showDeleteEtape && <DeleteEtape />}
+      {showDeleteStatus && <DeleteStatus />}
+      {showDeleteStatusTask && <DeleteStatusIfHaveTask />}
+      {showDeletechamps && <DeleteChamps />}
+
+
       <AlertComponent />
     </div>
   );

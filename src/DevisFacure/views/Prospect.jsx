@@ -27,7 +27,7 @@ function ProspectSCT() {
   const [errorMessage, setErrorMessage] = useState(""); // État pour le message d'erreur
   const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
   const [page, setPage] = useState(1); // Page actuelle
-  const itemsPerPage = 4; // Nombre de prospects par page
+  const itemsPerPage = 25; // Nombre de prospects par page
   const [prospectToEdit, setProspectToEdit] = useState({});
   const [type_client_edit, setTypeClientEdit] = useState(""); 
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);

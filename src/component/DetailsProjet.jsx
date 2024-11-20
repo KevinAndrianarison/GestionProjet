@@ -13,6 +13,7 @@ import {
   faCloudArrowDown,
   faCaretDown,
   faGear,
+  faThumbtack,
 } from "@fortawesome/free-solid-svg-icons";
 import { faFile } from "@fortawesome/free-regular-svg-icons";
 import styles from "../styles/Details.module.css";
@@ -31,6 +32,7 @@ import { ComsContext } from "../contexte/useComs";
 import TableauKanban from "./TableauKanban";
 import GestionPlanning from "./GestionPlanning";
 import LigneBudgetaire from "./LigneBudgetaire";
+import Spinner from "../component/Spinner";
 import SousProjet from "./SousProjet";
 import Calendrier from "./Calendrier";
 import Gantt from "./Gantt";
@@ -45,6 +47,7 @@ export default function DetailsProject() {
     setShowSetProject,
     setShowTask,
     setShowDeletetask,
+    setShowDeletechamps,
   } = useContext(ShowContext);
   const {
     categorie,
@@ -54,7 +57,6 @@ export default function DetailsProject() {
     setDateFin,
     dateFin,
     description,
-    ListMembres,
     getAllproject,
     getProjectWhenChef,
     getProjectWhenMembres,
@@ -62,6 +64,20 @@ export default function DetailsProject() {
     idProjet,
     getOneProjet,
   } = useContext(ProjectContext);
+  const { setMessageSucces, setMessageError } = useContext(MessageContext);
+  const { url } = useContext(UrlContext);
+  const { getAlletapeByProjets, listEtape } = useContext(EtapeContext);
+  const { setIduser, setNomuser, setIdRoleuser } = useContext(UserContext);
+  const { getAllComs, listeCommentaire } = useContext(ComsContext);
+  const {
+    ListTask,
+    setIdTask,
+    getOneTask,
+    getAllStatusTask,
+    getAllChampsByProject,
+    ListChamps,
+    setidInput,
+  } = useContext(TaskContext);
 
   const [showListemembre, setShowListemembre] = useState(false);
   const [coms, setComs] = useState("");
@@ -70,6 +86,7 @@ export default function DetailsProject() {
   const [nomFileUploaded, setNomFileUploaded] = useState("");
   const [file, setFile] = useState(null);
   const [verifyIfChef, setVerifyIfChef] = useState(false);
+  const [isSpinner, setIsSpinner] = useState(false);
   const [newFieldType, setNewFieldType] = useState("text");
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
   const [newFieldLabel, setNewFieldLabel] = useState("");
@@ -90,14 +107,6 @@ export default function DetailsProject() {
 
   const editorRef = useRef("");
   const fileInputRef = useRef(null);
-
-  const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { url } = useContext(UrlContext);
-  const { getAlletapeByProjets } = useContext(EtapeContext);
-  const { setIduser, setNomuser, setIdRoleuser } = useContext(UserContext);
-  const { getAllComs, listeCommentaire } = useContext(ComsContext);
-  const { ListTask, setIdTask, getOneTask, getAllStatusTask } =
-    useContext(TaskContext);
 
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
@@ -120,6 +129,10 @@ export default function DetailsProject() {
     setIsTask(false);
     setIsLigneBudg(false);
     setIsGestionPlanning(true);
+  }
+  function deleteChamps(id) {
+    setidInput(id);
+    setShowDeletechamps(true);
   }
 
   function showTask() {
@@ -214,10 +227,32 @@ export default function DetailsProject() {
   }
 
   function handleAddField() {
-    setInputFields([
-      ...inputFields,
-      { type: newFieldType, label: newFieldLabel },
-    ]);
+    let formData = {
+      label: newFieldLabel,
+      type: newFieldType,
+      gest_proj_projet_id: idProjet,
+    };
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .post(`${url}/api/projets/champs`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setMessageSucces(response.data.message);
+        getAllChampsByProject();
+        setShowSpinner(false);
+        setTimeout(() => {
+          setMessageSucces("");
+        }, 5000);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
     setNewFieldLabel("");
   }
 
@@ -262,15 +297,10 @@ export default function DetailsProject() {
     setShowRetierChefs(true);
   }
 
-  function removeInputField(index) {
-    const values = [...inputFields];
-    values.splice(index, 1);
-    setInputFields(values);
-  }
-
   function addInputField() {
     setIsOpen(false);
     setShowAddFieldModal(true);
+    getAllChampsByProject();
   }
 
   function setTask(id) {
@@ -281,7 +311,6 @@ export default function DetailsProject() {
   function addtask() {
     setIsOpen(false);
     getAllStatusTask();
-    getAlletapeByProjets();
   }
 
   function deleteTask(id) {
@@ -323,58 +352,60 @@ export default function DetailsProject() {
       });
   }
 
+  function fetchPUT(formData) {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .put(`${url}/api/projets/${idProjet}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        getOneProjet(idProjet);
+        if (response.data.projet.description) {
+          setIsdivDescription(true);
+        }
+        if (categorie === "Tous les projets") {
+          getAllproject();
+        }
+        if (categorie === "Mes projets") {
+          getProjectWhenChef();
+        }
+        if (categorie === "Les projets dont je fait partie") {
+          getProjectWhenMembres();
+        }
+        setIsSpinner(false);
+        if (nomProjet !== oldValueTitre) {
+          setOldValueTitre(nomProjet);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsSpinner(false);
+      });
+  }
+
   function modifierProjet() {
-    if (
-      nomProjet !== oldValueTitre
-      // ||
-      // editorRef.current.getContent() !== oldDescription
-    ) {
-      let formData = {
-        titre: nomProjet,
+    let formData;
+    if (editorRef.current) {
+      setIsSpinner(true);
+      formData = {
+        nom: nomProjet,
         date_debut: dateDebut,
         date_fin: dateFin,
         description: editorRef.current.getContent(),
       };
-
-      const tokenString = localStorage.getItem("token");
-      let token = JSON.parse(tokenString);
-      const userString = localStorage.getItem("user");
-      let user = JSON.parse(userString);
-      axios
-        .put(
-          `${url}/api/entreprises/projets/${user.id}/${idProjet}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .then((response) => {
-          getOneProjet(idProjet);
-          if (response.data.projet.description) {
-            setIsdivDescription(true);
-          }
-          if (categorie === "Tous les projets") {
-            getAllproject();
-          }
-          if (categorie === "Mes projets") {
-            getProjectWhenChef();
-          }
-          if (categorie === "Les projets dont je fait partie") {
-            getProjectWhenMembres();
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-
-      if (nomProjet !== oldValueTitre) {
-        setOldValueTitre(nomProjet);
-      }
-      // if (editorRef.current.getContent() !== oldDescription) {
-      //   setOldDescription(editorRef.current.getContent());
-      // }
+      fetchPUT(formData);
+    }
+    if (nomProjet !== oldValueTitre) {
+      formData = {
+        nom: nomProjet,
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        description: description,
+      };
+      fetchPUT(formData);
     }
   }
 
@@ -415,7 +446,7 @@ export default function DetailsProject() {
           <div className="mx-auto">
             <div className="grid grid-cols-12">
               <div className="col-span-10">
-                <h1 className={styles.titreProjet}>
+                <h1 className="font-bold flex items-center">
                   {isInputTitre && (
                     <>
                       <FontAwesomeIcon icon={faFile} className="mr-2" />
@@ -425,27 +456,20 @@ export default function DetailsProject() {
                         value={nomProjet}
                         onInput={(e) => {
                           if (e.target.value) {
-                            e.target.classList.add(
-                              "ring-2",
-                              "ring-inset",
-                              "ring-[rgba(0, 184, 148, 1.0)]"
-                            );
+                            e.target.classList.add("ring-2", "ring-inset");
                           } else {
-                            e.target.classList.remove(
-                              "ring-2",
-                              "ring-inset",
-                              "ring-[rgba(0, 184, 148, 1.0)]"
-                            );
+                            e.target.classList.remove("ring-2", "ring-inset");
                           }
                         }}
                         onChange={(e) => setNomProjet(e.target.value)}
                         disabled={categorie !== "Mes projets" && !verifyIfChef}
                       />
+
+                      {isSpinner && <Spinner />}
                     </>
                   )}
                   {isdivTitre && (
                     <p
-                      className={styles.titreProjetP}
                       onClick={(e) => {
                         setIsdivTitre(false);
                         setIsInputTitre(true);
@@ -769,7 +793,7 @@ export default function DetailsProject() {
           </div>
           {isTask && (
             <div className="overflow-x-auto shadow-lg text-xs">
-              <div className="mt-1 flex  items-center min-w-max  border py-2 px-2">
+              <div className=" flex  items-center min-w-max  border py-2 px-2">
                 <li className={styles.options}>
                   <input type="checkbox" className="w-5 mr-2" />
                   <div
@@ -810,41 +834,63 @@ export default function DetailsProject() {
                 <li className="ml-4 w-5"></li>
                 <li className="ml-4 w-5 "></li>
               </div>
-
-              {/* className="min-h-[55vh] max-h-[55vh] border min-w-max overflow-y-auto " */}
-
               <div className="min-h-[55vh] max-h-[55vh] border min-w-max overflow-y-auto ">
-                {ListTask.map((list) => (
-                  <div key={list.id}>
-                    <div className=" py-2 flex  min-w-max border px-2">
-                      <li className={styles.options}>
-                        <input type="checkbox" className="w-5 mr-2" />
-                        <p className="w-5"></p>
-                      </li>
-                      <h1 className={styles.designation}>{list.titre}</h1>
-                      <h1 className={styles.status}>{list.avancement || ""}</h1>
-                      <h1 className={styles.limite}>{list.date_limite}</h1>
-                      <h1 className={styles.par}> Steeve</h1>
-                      <h1 className={styles.responsable}>Responsable 01</h1>
-                      {(categorie === "Mes projets" || verifyIfChef) && (
-                        <Tippy content="Modifier">
-                          <FontAwesomeIcon
-                            icon={faSliders}
-                            onClick={() => setTask(list.id)}
-                            className=" cursor-pointer focus:outline-none w-5 ml-4 "
-                          />
-                        </Tippy>
-                      )}
-                      {(categorie === "Mes projets" || verifyIfChef) && (
-                        <FontAwesomeIcon
-                          icon={faTrash}
-                          onClick={() => deleteTask(list.id)}
-                          className="text-red-500 cursor-pointer w-5  ml-4 "
-                        />
-                      )}
+                {listEtape.map((etape) => (
+                  <div key={etape.id}>
+                    <div className="pl-2 py-1 bg-gray-200 text-sm font-bold flex items-center">
+                      <FontAwesomeIcon icon={faThumbtack} className=" mr-2" />
+                      {etape.nom}
                     </div>
+                    {etape.taches.map((list) => (
+                      <div key={list.id}>
+                        <div className=" py-2 flex  min-w-max border px-2">
+                          <li className={styles.options}>
+                            <input type="checkbox" className="w-5 mr-2" />
+                            <p className="w-5"></p>
+                          </li>
+                          <h1 className={styles.designation}>{list.titre}</h1>
+                          <h1 className={styles.status}>
+                            {list.avancement || ""}
+                          </h1>
+                          <h1 className={styles.limite}>{list.date_limite}</h1>
+                          <h1 className={styles.par}> Steeve</h1>
+                          <h1 className={styles.responsables}>
+                            {list.responsables.map((res) => (
+                              <span key={res.id}>{res.utilisateur.nom},</span>
+                            ))}
+                          </h1>
+                          {(categorie === "Mes projets" || verifyIfChef) && (
+                            <Tippy content="Modifier">
+                              <FontAwesomeIcon
+                                icon={faSliders}
+                                onClick={() => setTask(list.id)}
+                                className=" cursor-pointer focus:outline-none w-5 ml-4 "
+                              />
+                            </Tippy>
+                          )}
+                          {(categorie === "Mes projets" || verifyIfChef) && (
+                            <FontAwesomeIcon
+                              icon={faTrash}
+                              onClick={() => deleteTask(list.id)}
+                              className="text-red-500 cursor-pointer w-5  ml-4 "
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {etape.taches.length === 0 && (
+                      <p className=" text-center py-2 text-gray-500">
+                        Aucune tâche trouvé...
+                      </p>
+                    )}
                   </div>
                 ))}
+
+                {listEtape.length === 0 && (
+                  <p className=" text-center mt-5 text-gray-500">
+                    Aucune étape trouvé...
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -875,7 +921,7 @@ export default function DetailsProject() {
                 }}
               >
                 <div
-                  className="modal-content"
+                  className="modal-content max-h-[80vh] overflow-y-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <h2 className="modal-title text-left font-bold">
@@ -925,57 +971,33 @@ export default function DetailsProject() {
                     <button
                       onClick={() => {
                         setShowAddFieldModal(false);
-                        setInputFields([]);
                       }}
                       className=" bg-yellow-500 text-white px-4 py-2 rounded-sm"
                     >
-                      Annuler
+                      Retour
                     </button>
                   </div>
-                  {(categorie === "Mes projets" || verifyIfChef) && (
-                    <div className="section mt-5 text-xs">
-                      {inputFields.length !== 0 && (
-                        <div className="label">Liste des champs :</div>
-                      )}
-                      <div className=" w-full  sections">
-                        {inputFields.map((input, index) => (
-                          <div key={index} className="w-full relative mt-1">
-                            {input.label && (
-                              <label className="input text-black font-bold input-label">
-                                {input.label} :
-                              </label>
-                            )}
-                            {!input.label && (
-                              <label className="input text-black font-bold input-label">
-                                &nbsp;
-                              </label>
-                            )}
-
-                            <input
-                              type={input.type}
-                              className="input pl-3 w-full pr-10 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                              placeholder={input.label}
-                            />
-                            <FontAwesomeIcon
-                              icon={faTrash}
-                              onClick={() => removeInputField(index)}
-                              className="faTrashIcon absolute right-3 top-1/2 mt-3 transform -translate-y-1/2 text-red-500 cursor-pointer"
-                            />
-                          </div>
-                        ))}
+                  <div className=" text-xs">
+                    {ListChamps.map((item, index) => (
+                      <div key={index} className=" mt-4 flex flex-col">
+                        <label className="font-bold" htmlFor={`input-${index}`}>
+                          {item.label} :
+                        </label>
+                        <div className="flex items-center">
+                          <input
+                            type={item.type}
+                            disabled
+                            className="input w-full pl-2 pr-2 block mt-1 mr-2  rounded-sm border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                          />
+                          <FontAwesomeIcon
+                            icon={faTrash}
+                            onClick={() => deleteChamps(item.id)}
+                            className=" mr-2 px-1 text-red-500 cursor-pointer"
+                          />
+                        </div>
                       </div>
-                      <div className="flex justify-between w-full flex-wrap">
-                        {inputFields.length !== 0 && (
-                          <button
-                            className="addInputField mt-3 px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200"
-                            onClick={addInputField}
-                          >
-                            Enregistrer les nouveaux données
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

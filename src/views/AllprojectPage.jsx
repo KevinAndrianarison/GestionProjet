@@ -3,6 +3,7 @@ import { ShowContext } from "../contexte/useShow";
 import { useContext, useEffect, useState } from "react";
 import { TaskContext } from "../contexte/useTask";
 import { ComsContext } from "../contexte/useComs";
+import { EtapeContext } from "../contexte/useEtape";
 import { faAnglesRight, faSort } from "@fortawesome/free-solid-svg-icons";
 import { ProjectContext } from "../contexte/useProject";
 import { faTrash, faSliders } from "@fortawesome/free-solid-svg-icons";
@@ -36,9 +37,9 @@ export default function AllprojectPage() {
     getProjectWhenResp,
     ListeProjectWhenResp,
   } = useContext(ProjectContext);
-
   const { getAllTaskFirst } = useContext(TaskContext);
   const { getAllComs } = useContext(ComsContext);
+  const { getAlletapeByProjetsFirst } = useContext(EtapeContext);
 
   useEffect(() => {
     if (categorie === "Tous les projets") {
@@ -126,7 +127,7 @@ export default function AllprojectPage() {
         {showListProjet && (
           <div className="contentMyproject   mt-2">
             <div className="headMyProject">
-              <li className="pl-5 Titres">Titre</li>
+              <li className="pl-5 Titres ">Titre</li>
               <li className="Priorite pl-3">Description</li>
               <li className="w-5"></li>
               <li className="w-5"></li>
@@ -140,8 +141,9 @@ export default function AllprojectPage() {
                     onClick={() => {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
+                      setShowSpinner(true);
                       getOneProjet(list.id);
-                      getAllTaskFirst(list.id);
+                      getAlletapeByProjetsFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
@@ -155,7 +157,7 @@ export default function AllprojectPage() {
                       <Tippy content="Modifier">
                         <FontAwesomeIcon
                           icon={faSliders}
-                          className="text-gray-600 w-5 focus:outline-none"
+                          className="text-gray-600 w-5 focus:outline-none hidden"
                         />
                       </Tippy>
                     </li>
@@ -187,21 +189,22 @@ export default function AllprojectPage() {
                     onClick={() => {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
+                      setShowSpinner(true);
                       getOneProjet(list.id);
-                      getAllTaskFirst(list.id);
+                      getAlletapeByProjetsFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
-                    <li className="pl-5 Titres">{list.nom}</li>
+                    <li className="pl-5 Titres truncate">{list.nom}</li>
                     <li
-                      className="Priorite"
+                      className="Priorite  mr-2 pl-3 truncate"
                       dangerouslySetInnerHTML={{ __html: list.description }}
                     ></li>
                     <li>
                       <Tippy content="Modifier">
                         <FontAwesomeIcon
                           icon={faSliders}
-                          className="text-gray-600 w-5 focus:outline-none"
+                          className="text-gray-600 w-5 focus:outline-none hidden"
                         />
                       </Tippy>
                     </li>
@@ -233,21 +236,22 @@ export default function AllprojectPage() {
                     onClick={() => {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
+                      setShowSpinner(true);
                       getOneProjet(list.id);
-                      getAllTaskFirst(list.id);
+                      getAlletapeByProjetsFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
-                    <li className="pl-5 Titres">{list.nom}</li>
+                    <li className="pl-5 Titres truncate">{list.nom}</li>
                     <li
-                      className="Priorite"
+                      className="Priorite  mr-2 pl-3 truncate"
                       dangerouslySetInnerHTML={{ __html: list.description }}
                     ></li>
                     <li>
                       <Tippy content="Modifier">
                         <FontAwesomeIcon
                           icon={faSliders}
-                          className="text-gray-600 w-5 focus:outline-none"
+                          className="text-gray-600 w-5 focus:outline-none hidden"
                         />
                       </Tippy>
                     </li>
@@ -278,21 +282,22 @@ export default function AllprojectPage() {
                     onClick={() => {
                       setListChefAndMembres(list.utilisateur_roles.chefs);
                       setIdProject(list.id);
+                      setShowSpinner(true);
                       getOneProjet(list.id);
-                      getAllTaskFirst(list.id);
+                      getAlletapeByProjetsFirst(list.id);
                       getAllComs(list.id);
                     }}
                   >
-                    <li className="pl-5 Titres">{list.nom}</li>
+                    <li className="pl-5 Titres truncate">{list.nom}</li>
                     <li
-                      className="Priorite"
+                      className="Priorite  mr-2 pl-3 truncate"
                       dangerouslySetInnerHTML={{ __html: list.description }}
                     ></li>
                     <li>
                       <Tippy content="Modifier">
                         <FontAwesomeIcon
                           icon={faSliders}
-                          className="text-gray-600 w-5 focus:outline-none"
+                          className="text-gray-600 w-5 focus:outline-none hidden"
                         />
                       </Tippy>
                     </li>

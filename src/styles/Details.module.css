@@ -62,7 +62,6 @@
 
 .left {
   width: 100%;
-
 }
 .closeButton {
   background: none;
@@ -97,7 +96,6 @@
   align-items: center;
 }
 
-
 .iconContainer {
   display: flex;
   justify-content: flex-end;
@@ -130,28 +128,37 @@
 }
 
 .designation {
-  width: 30vh;
+  width: 400px;
   margin-left: 10px;
 }
 
 .status {
-  width: 20vh;
+  width: 175px;
   margin-left: 10px;
 }
 
 .limite {
-  width: 30vh;
+  width: 175px;
   margin-left: 10px;
 }
 
 .par {
-  width: 30vh;
+  width: 400px;
   margin-left: 10px;
 }
 
 .responsable {
-  width: 30vh;
+  width: 400px;
   margin-left: 10px;
+}
+
+.responsables {
+  width: 400px;
+  margin-left: 10px;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
 }
 
 @media screen and (max-width: 1024px) {

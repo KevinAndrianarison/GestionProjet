@@ -115,3 +115,16 @@ p {
   color: var(--color-secondary);
   font-weight: bold;
 }
+
+.input:-webkit-autofill {
+  -webkit-text-fill-color: white !important;
+  background-color: transparent !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  border-bottom-color: rgba(255, 255, 255, 0.849) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.input:autofill {
+  color: white !important;
+  background-color: transparent !important;
+}

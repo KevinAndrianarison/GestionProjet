@@ -6,23 +6,33 @@ import { ShowContext } from "../contexte/useShow";
 
 export const TaskContext = createContext({
   ListTask: [],
+  ListChamps: [],
+  ListChampsWithoutValue: [],
+  ListResp: [],
   ListStatusTask: [],
+  ListTaskToMove: [],
   idTask: "",
+  idInput: "",
   titreTask: "",
   dateDebut: "",
   dateFin: "",
+  idStatus: "",
   description: "",
-  responsable: {},
 });
 export function TaskContextProvider({ children }) {
   const [ListTask, setListTask] = useState([]);
+  const [ListChamps, setListChamps] = useState([]);
+  const [ListChampsWithoutValue, setListChampsWithoutValue] = useState([]);
+  const [ListTaskToMove, setListTaskToMove] = useState([]);
+  const [ListResp, setListResp] = useState([]);
   const [ListStatusTask, setListStatusTask] = useState([]);
   const [idTask, setIdTask] = useState("");
+  const [idStatus, setIdStatus] = useState("");
   const [titreTask, setTitreTask] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
+  const [idInput, setidInput] = useState("");
   const [description, setDescription] = useState("");
-  const [responsable, setResponsable] = useState({});
 
   const { idProject, setIdProject } = useContext(ProjectContext);
   const { url } = useContext(UrlContext);
@@ -30,7 +40,6 @@ export function TaskContextProvider({ children }) {
     useContext(ShowContext);
 
   function getAllTask() {
-    // setListTask([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
@@ -41,9 +50,11 @@ export function TaskContextProvider({ children }) {
       })
       .then((response) => {
         setListTask(response.data.reverse());
+        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
 
@@ -70,7 +81,7 @@ export function TaskContextProvider({ children }) {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
-      .get(`${url}/api/projets/statuts-taches`, {
+      .get(`${url}/api/projets/statuts-taches/${idProject}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,13 +96,72 @@ export function TaskContextProvider({ children }) {
         setShowTask(false);
       });
   }
+  function getAllStatusTaskKanban() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/statuts-taches/${idProject}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListStatusTask(response.data);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowTask(false);
+      });
+  }
+
+  function getAllChamps() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/champs/tache/${idTask}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+        setListChamps(response.data.linkedChamps);
+        setListChampsWithoutValue(response.data.nonLinkedChamps);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowTask(false);
+      });
+  }
+
+  function getAllChampsByProject() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .get(`${url}/api/projets/champs/${idProject}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListChamps(response.data);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowTask(false);
+      });
+  }
 
   function getOneTask(id) {
+    setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
 
     axios
-      .get(`${url}/api/projets/${idProject}/taches/${id}`, {
+      .get(`${url}/api/projets/taches/tache/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -101,11 +171,14 @@ export function TaskContextProvider({ children }) {
         setDateDebut(response.data.date_debut);
         setDateFin(response.data.date_fin);
         setDescription(response.data.description);
-        setResponsable(response.data.utilisateur);
+        setListResp(response.data.responsables);
+        setIdTask(response.data.id);
         setShowSetTask(true);
+        setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
+        setShowSpinner(false);
       });
   }
 
@@ -118,10 +191,22 @@ export function TaskContextProvider({ children }) {
         dateDebut,
         dateFin,
         description,
-        responsable,
         ListStatusTask,
+        ListResp,
+        idStatus,
+        ListTaskToMove,
+        ListChamps,
+        ListChampsWithoutValue,
+        idInput,
+        setListChampsWithoutValue,
+        setidInput,
+        getAllChampsByProject,
+        getAllChamps,
         setListTask,
-        setResponsable,
+        setListChamps,
+        setListTaskToMove,
+        setIdStatus,
+        setListResp,
         getAllTask,
         setIdTask,
         getOneTask,
@@ -132,6 +217,7 @@ export function TaskContextProvider({ children }) {
         getAllTaskFirst,
         setListStatusTask,
         getAllStatusTask,
+        getAllStatusTaskKanban,
       }}
     >
       {children}

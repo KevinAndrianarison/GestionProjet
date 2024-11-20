@@ -23,7 +23,7 @@ function Service() {
   const [serviceToEdit, setServiceToEdit] = useState(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(null);
   const [page, setPage] = useState(1); // Page actuelle
-  const itemsPerPage = 4; // Nombre de prospects par page
+  const itemsPerPage = 25; // Nombre de prospects par page
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [openAccordionnn, setOpenAccordionnn] = useState(false);
   const [nom_tache, setNomTache] = useState('');
@@ -385,7 +385,7 @@ function Service() {
         </div>
       </AccordionItem>
 <div className="overflow-auto h-[458px]">
-      {currentProspects.map((service) => (
+      {currentServices.map((service) => (
         <AccordionItem key={service.id} value={service.id}>
           <div className="flex items-center justify-between px-5 ">
             <div className="flex-1 text-sm font-medium leading-6">

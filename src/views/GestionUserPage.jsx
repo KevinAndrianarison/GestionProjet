@@ -292,9 +292,11 @@ export default function GestionUserPage() {
                     <div className="infosuser">
                       <div>
                         <h1>{list.nom}</h1>
-                        <p className="poste">{list.grade}</p>
+                        <p className="poste font-bold">{list.grade}</p>
                       </div>
-                      <div className="adresse">{list.telephone}</div>
+                      <div className="adresse">
+                        {list.telephone === "null" ? " " : list.telephone}
+                      </div>
                       <div className="email text-xs font-bold">
                         <p>{list.email}</p>
                       </div>

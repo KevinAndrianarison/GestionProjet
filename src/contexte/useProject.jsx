@@ -38,7 +38,8 @@ export function ProjectContextProvider({ children }) {
   const [ListChefs, setListChefs] = useState([]);
   const [ListChefAndMembres, setListChefAndMembres] = useState([]);
   const { url } = useContext(UrlContext);
-  const { setShowSpinner, setShowDetails, setShowListProjet } = useContext(ShowContext);
+  const { setShowSpinner, setShowDetails, setShowListProjet } =
+    useContext(ShowContext);
 
   function getAllproject() {
     setListeProjectWhenMembres([]);
@@ -56,7 +57,7 @@ export function ProjectContextProvider({ children }) {
       })
       .then((response) => {
         setShowListProjet(true);
-        setListeProject(response.data);
+        setListeProject(response.data.reverse());
       })
       .catch((err) => {
         console.error(err);
@@ -153,7 +154,6 @@ export function ProjectContextProvider({ children }) {
   }
 
   function getOneProjet(id) {
-    setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     axios
@@ -171,7 +171,7 @@ export function ProjectContextProvider({ children }) {
         setShowDetails(true);
         setListMembres(response.data.membres);
         setListChefs(response.data.utilisateur_roles);
-        
+
         setShowSpinner(false);
       })
       .catch((err) => {

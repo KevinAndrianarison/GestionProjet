@@ -26,9 +26,9 @@ export default function Task() {
   const [dateDebut, setDateDebut] = useState("");
   const [showChecklistModal, setShowChecklistModal] = useState(false);
   const [checklistName, setChecklistName] = useState("");
+  const [selected, setSelected] = useState([]);
   const editorRef = useRef("");
   const [checklists, setChecklists] = useState([]);
-  const [selected, setSelected] = useState([]);
   const checklistRef = useRef();
   const [userIds, setUserIds] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -36,11 +36,11 @@ export default function Task() {
   const [etapeId, setEtapeId] = useState("");
 
   const { url } = useContext(UrlContext);
-  const { ListStatusTask, getAllTask } = useContext(TaskContext);
+  const { ListStatusTask } = useContext(TaskContext);
   const { setShowSpinner, setShowTask } = useContext(ShowContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { idProject, ListChefs } = useContext(ProjectContext);
-  const { listEtape } = useContext(EtapeContext);
+  const { listEtape, getAlletapeByProjets } = useContext(EtapeContext);
 
   function closeTask() {
     setShowTask(false);
@@ -97,14 +97,16 @@ export default function Task() {
     setSearchTerm(value);
     setIsDropdownOpen(value !== "");
     const options = ListChefs.filter((user) =>
-      user.utilisateur.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.utilisateur.email.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredOptions(options);
   }
 
   function handleRemoveMember(member) {
-    setSelected(selected.filter((m) => m !== member));
-    setUserIds(userIds.filter((id) => id !== member.id));
+    setSelected(
+      selected.filter((m) => m.utilisateur.email !== member.utilisateur.email)
+    );
+    setUserIds(userIds.filter((id) => id !== member.utilisateur.id));
   }
 
   function handleOptionSelect(option) {
@@ -116,7 +118,8 @@ export default function Task() {
     }
   }
 
-  function createTask() {
+  function createTaskAndNew() {
+    let formData;
     let statusId = ListStatusTask[0].id;
     let etpId = listEtape[0].id;
     if (statusTaskId) {
@@ -127,15 +130,28 @@ export default function Task() {
     }
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
-    setShowSpinner(true);
-    let formData = {
-      titre: titreTask,
-      description: editorRef.current.getContent() || "",
-      date_debut: dateDebut,
-      date_limite: dateFin,
-      gest_proj_statuts_tache_id: statusTaskId || statusId,
-      gest_proj_etape_id: etapeId || etpId,
-    };
+    if (editorRef.current) {
+      setShowSpinner(true);
+      formData = {
+        titre: titreTask,
+        description: editorRef.current.getContent(),
+        date_debut: dateDebut,
+        date_limite: dateFin,
+        gest_proj_statuts_tache_id: statusTaskId || statusId,
+        gest_proj_etape_id: etapeId || etpId,
+      };
+    }
+    if (!editorRef.current) {
+      setShowSpinner(true);
+      formData = {
+        titre: titreTask,
+        description: "",
+        date_debut: dateDebut,
+        date_limite: dateFin,
+        gest_proj_statuts_tache_id: statusTaskId || statusId,
+        gest_proj_etape_id: etapeId || etpId,
+      };
+    }
     axios
       .post(`${url}/api/projets/taches`, formData, {
         headers: {
@@ -155,12 +171,16 @@ export default function Task() {
             },
           })
           .then((response) => {
+            getAlletapeByProjets();
             setMessageSucces("Tâche crée avec succès !");
             setShowTask(false);
-            setShowSpinner(false);
             setTimeout(() => {
               setMessageSucces("");
             }, 5000);
+            setShowSpinner(false);
+            setTimeout(() => {
+              setShowTask(true);
+            }, 2000);
           })
           .catch((err) => {
             console.error(err);
@@ -191,9 +211,117 @@ export default function Task() {
                       Authorization: `Bearer ${token}`,
                     },
                   })
-                  .then((response) => {
-                    getAllTask();
+                  .then((response) => {})
+                  .catch((err) => {
+                    console.error(err);
+                    setShowSpinner(false);
+                  });
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              setShowSpinner(false);
+            });
+        });
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
+  function createTask() {
+    let formData;
+    let statusId = ListStatusTask[0].id;
+    let etpId = listEtape[0].id;
+    if (statusTaskId) {
+      statusId = "";
+    }
+    if (etapeId) {
+      etpId = "";
+    }
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    if (editorRef.current) {
+      setShowSpinner(true);
+      formData = {
+        titre: titreTask,
+        description: editorRef.current.getContent(),
+        date_debut: dateDebut,
+        date_limite: dateFin,
+        gest_proj_statuts_tache_id: statusTaskId || statusId,
+        gest_proj_etape_id: etapeId || etpId,
+      };
+    }
+    if (!editorRef.current) {
+      setShowSpinner(true);
+      formData = {
+        titre: titreTask,
+        description: "",
+        date_debut: dateDebut,
+        date_limite: dateFin,
+        gest_proj_statuts_tache_id: statusTaskId || statusId,
+        gest_proj_etape_id: etapeId || etpId,
+      };
+    }
+    axios
+      .post(`${url}/api/projets/taches`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        let idTask = response.data.tache.id;
+        let fomdata = {
+          gest_com_utilisateur_ids: userIds,
+          gest_proj_tache_id: idTask,
+        };
+        axios
+          .post(`${url}/api/projets/responsable-taches`, fomdata, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((response) => {
+            getAlletapeByProjets();
+            setMessageSucces("Tâche crée avec succès !");
+            setShowTask(false);
+            setTimeout(() => {
+              setMessageSucces("");
+            }, 5000);
+            setShowSpinner(false);
+          })
+          .catch((err) => {
+            console.error(err);
+            setShowSpinner(false);
+          });
+        checklists.forEach((list) => {
+          let formData = {
+            nom: list.name,
+            gest_proj_tache_id: idTask,
+          };
+          axios
+            .post(`${url}/api/projets/controle-taches`, formData, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            })
+            .then((response) => {
+              let controleId = response.data.controle.id;
+              list.elements.forEach((l) => {
+                let formData = {
+                  nom: l,
+                  valeur: false,
+                  gest_proj_controle_tache_id: controleId,
+                };
+                axios
+                  .post(`${url}/api/projets/controle-elements`, formData, {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
                   })
+                  .then((response) => {})
                   .catch((err) => {
                     console.error(err);
                     setShowSpinner(false);
@@ -354,7 +482,7 @@ export default function Task() {
                 >
                   <FontAwesomeIcon
                     icon={faXmark}
-                    className="absolute top-2 right-2 text-gray-500 cursor-pointer w-5 h-5"
+                    className="absolute top-2 right-2 text-gray-500 cursor-pointer w-5 h-5 "
                     onClick={() => setShowChecklistModal(false)}
                   />
                   <h2 className="text-sm font-bold mb-4">
@@ -384,19 +512,20 @@ export default function Task() {
                   {checklist.name}
                   <FontAwesomeIcon
                     icon={faXmark}
-                    className="text-red-500 ml-2 cursor-pointer"
+                    className="text-red-500 ml-2 cursor-pointer font-bold "
                     onClick={() => removeChecklist(index)}
                   />
                 </h1>
 
                 {checklist.elements.map((el, elIndex) => (
                   <div className=" flex mt-2 items-center" key={elIndex}>
-                    <p className=" flex ml-5 input text-black">
-                      <input type="checkbox" className="mr-2" /> {el}
+                    <p className=" flex ml-5 input text-black flex items-center">
+                      <FontAwesomeIcon icon={faSquareCheck} className="mr-2" />{" "}
+                      {el}
                     </p>
                     <FontAwesomeIcon
                       icon={faXmark}
-                      className="ml-3 text-red-500 cursor-pointer"
+                      className="ml-3 text-red-500 cursor-pointer font-bold"
                       onClick={() => removeElementFromChecklist(index, elIndex)}
                     />
                   </div>
@@ -465,13 +594,21 @@ export default function Task() {
                     type="text"
                     placeholder="Rechercher..."
                     className="input pl-3 pr-10 block w-72 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                    value={selectedMember ? selectedMember.email : searchTerm}
+                    value={searchTerm}
                     onChange={handleSearchChange}
                   />
+                  <FontAwesomeIcon
+                    onClick={() => {
+                      setSearchTerm("");
+                      setIsDropdownOpen(false);
+                    }}
+                    icon={faXmark}
+                    className=" h-3 w-3 relative text-gray-400 cursor-pointer right-5"
+                    />
                 </div>
 
                 {isDropdownOpen && (
-                  <div className="absolute mt-1 w-full rounded-md bg-white shadow-lg z-10">
+                  <div className="relative max-h-[100px] overflow-y-auto mt-1 w-full rounded-md bg-white shadow-lg z-10">
                     {filteredOptions.length > 0 ? (
                       filteredOptions.map((user, index) => (
                         <div
@@ -480,6 +617,7 @@ export default function Task() {
                           onClick={() => handleOptionSelect(user)}
                         >
                           {user.utilisateur.email}
+                          <b className="text-blue-500 text-xs">({user.role})</b>
                         </div>
                       ))
                     ) : (
@@ -512,15 +650,15 @@ export default function Task() {
             </div>
             <div className="mt-5 w-full flex flex-wrap justify-between">
               <button
-                // disabled={!titreTask || !etapeId || !statusTaskId}
+                disabled={!titreTask || !userIds[0]}
                 onClick={createTask}
                 className="input px-3 py-2 border bg-gray-400 rounded text-blue-800 font-bold cursor-pointer"
               >
                 Enregistrer la tâche
               </button>
               <button
-                disabled={!titreTask || !etapeId || !statusTaskId}
-                // onClick={createTask}
+                disabled={!titreTask || !userIds[0]}
+                onClick={createTaskAndNew}
                 className="input px-3 py-2 border  bg-gray-400 rounded text-blue-800 font-bold cursor-pointer"
               >
                 Enregistrer et créer une nouvelle tâche
