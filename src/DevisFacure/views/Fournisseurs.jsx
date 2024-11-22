@@ -4,56 +4,91 @@ import ModalEditFornisseur from './ModalEditFornisseur';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import Swal from 'sweetalert2';
+import { BASE_URL } from "../contextes/ApiUrls";
+import axios from "axios";
 
 const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 4; // Nombre de factures par page
+  const itemsPerPage = 4;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [fournisseurToEdit, setFournisseurToEdit] = useState(null);
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+  const [refresh, setRefresh] = useState(false);
 
 
   useEffect(() => {
-    const storedFournisseurs = JSON.parse(localStorage.getItem('factures')) || [];
-    setFournisseurs(storedFournisseurs);
-  }, []);
+    const fetchFournisseurs = async () => {
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      try {
+        const response = await axios.get(`${BASE_URL}fournisseurs`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setFournisseurs(response.data);
+          console.log(response.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des fournisseurs :", error);
+      }
+    };
+    fetchFournisseurs();
+  }, [refresh]);
 
-  const addFournisseur = (newFournisseur) => {
-    const uniqueId = new Date().getTime(); // Générer un ID unique basé sur le timestamp
-    const updatedFournisseur = { ...newFournisseur, id: uniqueId };
-    const updatedFournisseurs = [...fournisseurs, updatedFournisseur];
-    setFournisseurs(updatedFournisseurs);
-    localStorage.setItem('fournisseur', JSON.stringify(updatedFournisseurs));
-  };
-  
+  const addFournisseur = async (newFournisseur) => {
 
-  const closeModal = () => setIsModalOpen(false);
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
 
-  const openEditModal = (fournisseur) => {
-    setFournisseurToEdit(fournisseur);
-    setIsEditModalOpen(true);
-    setShowActionsIdProsp(null);
-  };
+    try {
+      const response = await axios.post(`${BASE_URL}fournisseurs`, newFournisseur, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      setRefresh(!refresh);
 
-  useEffect(() => {
-    if (isModalOpen) {
-      setShowActionsIdProsp(null);
+    if (response.status === 200) {
+      setFournisseurs([...fournisseurs, response.data]);
+      setIsModalOpen(false);
+      Swal.fire('Succès!', 'Fournisseur ajouté avec succès!', 'success');
     }
-  }, [isModalOpen]);
 
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setFournisseurToEdit(null);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du fournisseur :", error);
+      Swal.fire("Erreur", "Impossible d'ajouter le fournisseur.", "error");
+    }
   };
 
-  const updateFacture = (updatedFacture) => {
-    const updatedFournisseurs = fournisseurs.map((facture) =>
-      facture.id === updatedFacture.id ? updatedFacture : facture
-    );
-    setFournisseurs(updatedFournisseurs);
-    localStorage.setItem('fournisseur', JSON.stringify(updatedFournisseurs));
+  const updateFournisseur = async (updatedFournisseur) => {
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+    try {
+      const response = await axios.put(`${BASE_URL}fournisseurs/${updatedFournisseur.id}`, updatedFournisseur, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setFournisseurs(
+          fournisseurs.map((fournisseur) =>
+            fournisseur.id === updatedFournisseur.id ? response.data : fournisseur
+          )
+        );
+        setRefresh(!refresh);
+        setIsEditModalOpen(false);
+        Swal.fire('Succès!', 'Fournisseur mis à jour avec succès!', 'success');
+      }
+      
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du fournisseur :", error);
+    }
   };
 
   const handleDelete = async (fournisseurId) => {
@@ -65,18 +100,44 @@ const Fournisseurs = () => {
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
     });
-  
-    if (confirmed.isConfirmed) {
-      const updatedFournisseurs = fournisseurs.filter((fournisseur) => fournisseur.id !== fournisseurId);
-      setFournisseurs(updatedFournisseurs);
-      localStorage.setItem('fournisseurs', JSON.stringify(updatedFournisseurs));
-      Swal.fire('Supprimé!', 'Le fournisseur a été supprimée.', 'success');
-    }
-  };
-  
 
-  
-  const currentFournisseurs= fournisseurs.slice(
+    if (!confirmed.isConfirmed) {
+      return;
+    }
+
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      try {
+        const response = await axios.delete(`${BASE_URL}fournisseurs/${fournisseurId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setFournisseurs(fournisseurs.filter((fournisseur) => fournisseur.id !== fournisseurId));
+          Swal.fire('Supprimé!', 'Le fournisseur a été supprimé.', 'success');
+          setRefresh(!refresh);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la suppression du fournisseur :", error);
+        Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+      }
+  };
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const openEditModal = (fournisseur) => {
+    setFournisseurToEdit(fournisseur);
+    setIsEditModalOpen(true);
+    setShowActionsIdProsp(null);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setFournisseurToEdit(null);
+  };
+
+  const currentFournisseurs = fournisseurs.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
@@ -96,9 +157,8 @@ const Fournisseurs = () => {
   return (
     <div>
       <header>
-        <h1 className="text-2xl">Touts les fournisseurs</h1>
+        <h1 className="text-2xl">Tous les fournisseurs</h1>
       </header>
-
       <div className="flex flex-wrap my-5">
           <div className="w-full md:w-10/12 sm:w-10/12">
             <div className="flex items-center space-x-2">
@@ -189,20 +249,14 @@ const Fournisseurs = () => {
           <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
         )}
       </div>
-
-      <ModalFornisseur 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        addFournisseur={addFournisseur} 
-      />
-
+      {/* Contenu et Table */}
+      <ModalFornisseur isOpen={isModalOpen} onClose={closeModal} addFournisseur={addFournisseur} />
       <ModalEditFornisseur
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
         fournisseurToEdit={fournisseurToEdit}
-        updateFournisseur={updateFacture}
+        updateFournisseur={updateFournisseur}
       />
-
     </div>
   );
 };
