@@ -25,7 +25,7 @@ import Facture from "../DevisFacure/views/Facture";
 import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
-import Historique from "../DevisFacure/views/Fournisseurs.jsx";
+import Fournisseurs from "../DevisFacure/views/Fournisseurs.jsx";
 import ProspectDetail from "../DevisFacure/views/Prospect";
 import EditProspect from "../DevisFacure/views/Prospect";
 import EditUser from "../DevisFacure/views/ModifierClient";
@@ -601,7 +601,7 @@ export default function MainPage() {
                       }
                     >
                       <FontAwesomeIcon icon={faHistory} className="mr-2" />
-                      Historiques
+                      Fournisseurs
                     </NavLink>
                   </li>
                 </ul>
