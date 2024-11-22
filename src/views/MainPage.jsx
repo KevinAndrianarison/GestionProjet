@@ -25,7 +25,7 @@ import Facture from "../DevisFacure/views/Facture";
 import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
-import Historique from "../DevisFacure/views/Historique";
+import Historique from "../DevisFacure/views/Fournisseurs.jsx";
 import ProspectDetail from "../DevisFacure/views/Prospect";
 import EditProspect from "../DevisFacure/views/Prospect";
 import EditUser from "../DevisFacure/views/ModifierClient";
@@ -559,19 +559,6 @@ export default function MainPage() {
                       Facturation
                     </NavLink>
                   </li>
-                  <li className="mr-5  mt-2 pb-2">
-                    <NavLink
-                      to={`${entity}/GestionDevisFactures/historique`}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2"
-                          : "mr-2 pb-2"
-                      }
-                    >
-                      <FontAwesomeIcon icon={faHistory} className="mr-2" />
-                      Historiques
-                    </NavLink>
-                  </li>
                   {(showAdmin) && (
                     <li className="mr-5  mt-2 pb-2">
                       <NavLink
@@ -602,6 +589,19 @@ export default function MainPage() {
                     >
                       <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
                       Prospects
+                    </NavLink>
+                  </li>
+                  <li className="mr-5  mt-2 pb-2">
+                    <NavLink
+                      to={`${entity}/GestionClientsFournisseurs/fornisseurs`}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "mr-2 border-b-4 border-yellow-500 pb-2"
+                          : "mr-2 pb-2"
+                      }
+                    >
+                      <FontAwesomeIcon icon={faHistory} className="mr-2" />
+                      Historiques
                     </NavLink>
                   </li>
                 </ul>
@@ -698,7 +698,7 @@ export default function MainPage() {
               <Route path="/gestionEntity" element={<GestionEntity />} />
               <Route path=":entity/GestionDevisFactures/devis" element={<Devis />} />
               <Route path=":entity/GestionDevisFactures/facture" element={<Facture />} />
-              <Route path=":entity/GestionDevisFactures/historique" element={<Historique />} />
+              <Route path=":entity/GestionClientsFournisseurs/fornisseurs" element={<Fournisseurs />} />
               <Route path=":entity/GestionDevisFactures/services" element={<Services />} />
               <Route path=":entity/GestionClientsFournisseurs/prospect" element={<Prospect />} />
             </Routes>

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import Swal from 'sweetalert2';
 
-const Historique = () => {
+const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [page, setPage] = useState(1);
   const itemsPerPage = 4; // Nombre de factures par page
@@ -207,4 +207,4 @@ const Historique = () => {
   );
 };
 
-export default Historique;
+export default Fournisseurs;
