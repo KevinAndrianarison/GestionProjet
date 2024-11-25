@@ -53,11 +53,11 @@ const Fournisseurs = () => {
       });
       setRefresh(!refresh);
 
-    if (response.status === 200) {
-      setFournisseurs([...fournisseurs, response.data]);
-      setIsModalOpen(false);
-      Swal.fire('Succès!', 'Fournisseur ajouté avec succès!', 'success');
-    }
+      if (response.status === 200) {
+        setFournisseurs([...fournisseurs, response.data]);
+        setIsModalOpen(false);
+        Swal.fire('Succès!', 'Fournisseur ajouté avec succès!', 'success');
+      }
 
     } catch (error) {
       console.error("Erreur lors de l'ajout du fournisseur :", error);
@@ -85,7 +85,7 @@ const Fournisseurs = () => {
         setIsEditModalOpen(false);
         Swal.fire('Succès!', 'Fournisseur mis à jour avec succès!', 'success');
       }
-      
+
     } catch (error) {
       console.error("Erreur lors de la mise à jour du fournisseur :", error);
     }
@@ -105,23 +105,23 @@ const Fournisseurs = () => {
       return;
     }
 
-      const tokenString = localStorage.getItem("token");
-      let token = JSON.parse(tokenString);
-      try {
-        const response = await axios.delete(`${BASE_URL}fournisseurs/${fournisseurId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.status === 200) {
-          setFournisseurs(fournisseurs.filter((fournisseur) => fournisseur.id !== fournisseurId));
-          Swal.fire('Supprimé!', 'Le fournisseur a été supprimé.', 'success');
-          setRefresh(!refresh);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la suppression du fournisseur :", error);
-        Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    try {
+      const response = await axios.delete(`${BASE_URL}fournisseurs/${fournisseurId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setFournisseurs(fournisseurs.filter((fournisseur) => fournisseur.id !== fournisseurId));
+        Swal.fire('Supprimé!', 'Le fournisseur a été supprimé.', 'success');
+        setRefresh(!refresh);
       }
+    } catch (error) {
+      console.error("Erreur lors de la suppression du fournisseur :", error);
+      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+    }
   };
 
   const closeModal = () => setIsModalOpen(false);
@@ -160,41 +160,42 @@ const Fournisseurs = () => {
         <h1 className="text-2xl">Tous les fournisseurs</h1>
       </header>
       <div className="flex flex-wrap my-5">
-          <div className="w-full md:w-10/12 sm:w-10/12">
-            <div className="flex items-center space-x-2">
-              <button
-              onClick={() => setIsModalOpen(true)} 
+        <div className="w-full md:w-10/12 sm:w-10/12">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
+            >
               Nouveau fournisseur
-              </button>
-              </div>
-            </div>
-          <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
-            <div className="flex m-auto space-x-3">
-              <button 
-                onClick={handlePrev} 
-                disabled={page === 1} 
-                className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-              >
-                Prev
-              </button>
-              <button 
-                onClick={handleNext} 
-                disabled={page >= Math.ceil(fournisseurs.length / itemsPerPage)} 
-                className={`px-4 py-1 border rounded ${page >= Math.ceil(fournisseurs.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-              >
-                Next
-              </button>
-            </div>
+            </button>
           </div>
         </div>
+        <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
+          <div className="flex m-auto space-x-3">
+            <button
+              onClick={handlePrev}
+              disabled={page === 1}
+              className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+            >
+              Prev
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={page >= Math.ceil(fournisseurs.length / itemsPerPage)}
+              className={`px-4 py-1 border rounded ${page >= Math.ceil(fournisseurs.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
           <thead>
             <tr>
+              <th className="text-left p-6 text-sm font-bold">Type</th>
               <th className="text-left p-6 text-sm font-bold">Nom société</th>
-              <th className="text-left p-6 text-sm font-bold">Nom</th>
+              <th className="text-left p-6 text-sm font-bold">Nom responsable</th>
               <th className="text-left p-6 text-sm font-bold">Email</th>
               <th className="text-left p-6 text-sm font-bold">Téléphone</th>
               <th className="text-left p-6 text-sm font-bold">Ville</th>
@@ -203,6 +204,7 @@ const Fournisseurs = () => {
           <tbody>
             {currentFournisseurs.map((fournisseur) => (
               <tr key={fournisseur.id}>
+                <td className="border-y py-5 px-6">{fournisseur.type}</td>
                 <td className="border-y py-5 px-6">{fournisseur.nom_societe}</td>
                 <td className="border-y py-5 px-6">{fournisseur.nom}</td>
                 <td className="border-y py-5 px-6">{fournisseur.email}</td>
