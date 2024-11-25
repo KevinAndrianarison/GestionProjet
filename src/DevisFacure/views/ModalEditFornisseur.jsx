@@ -8,7 +8,12 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
     if (!isOpen) {
       setFormData({
         nom_societe: '',
-        note: '',
+        email_societe: '',
+        affilation_tva: '',
+        numero_tva: '',
+        cabisse: '',
+        assurance: '',
+        tel_societe: '',
         nom: '',
         email: '',
         sexe: '',
@@ -18,16 +23,24 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
         ville: '',
         pays: '',
         numero_siren: '',
+        piece_identite: '',
+        contrats: '',
+        confirmer: '',
         type: '',
       });
       setErrorMessage('');
     }
   }, [isOpen]);
-  
+
 
   const [formData, setFormData] = useState({
     nom_societe: '',
-    note: '',
+    email_societe: '',
+    affilation_tva: '',
+    numero_tva: '',
+    cabisse: '',
+    assurance: '',
+    tel_societe: '',
     nom: '',
     email: '',
     sexe: '',
@@ -37,15 +50,18 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
     ville: '',
     pays: '',
     numero_siren: '',
+    piece_identite: '',
+    contrats: '',
+    confirmer: '',
     type: '',
-  }); 
+  });
 
   useEffect(() => {
     if (fournisseurToEdit) {
       setFormData(fournisseurToEdit);
     }
   }, [fournisseurToEdit]);
-  
+
   useEffect(() => {
     if (formData.type === "particulier") {
       setFormData(prev => ({
@@ -56,7 +72,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
       }));
     }
   }, [formData.type]);
-  
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,13 +84,13 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setErrorMessage(''); 
-  
+    setErrorMessage('');
+
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
       setErrorMessage("Veuillez entrer une adresse e-mail valide.");
       return;
     }
-  
+
     if (
       (formData.type === "societe" || formData.type === "auto_entrepreneur") &&
       (!formData.nom_societe || !formData.nom_societe.trim())
@@ -82,20 +98,20 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
       setErrorMessage("Le nom de la société est requis pour ce type de fournisseur.");
       return;
     }
-  
+
     if (
       formData.type === "particulier" &&
       (!formData.nom || !formData.nom.trim())
     ) {
       setErrorMessage("Le nom responsable est requis pour le type 'particulier'.");
-      return;  
+      return;
     }
-  
-    updateFournisseur(formData); 
-    onClose(); 
+
+    updateFournisseur(formData);
+    onClose();
   };
-  
-  
+
+
 
   if (!isOpen) return null;
 
@@ -172,17 +188,43 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
             </div>
             <div className='border rounded-t-xl'>
               {formData.type !== "particulier" && (
-                <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Nom de la société</label>
-                  <input
-                    type="text"
-                    name="nom_societe"
-                    value={formData.nom_societe}
-                    onChange={handleChange}
-                    placeholder="Nom de la société"
-                    className="w-full p-2 rounded text-sm"
-                  />
-                </div>
+                <>
+                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Nom société</label>
+                    <input
+                      type="text"
+                      name="nom_societe"
+                      value={formData.nom_societe}
+                      onChange={handleChange}
+                      placeholder="Nom société"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Email société</label>
+                    <input
+                      type="text"
+                      name="email_societe"
+                      value={formData.email_societe}
+                      onChange={handleChange}
+                      placeholder="Email société"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Téléphone société</label>
+                    <input
+                      type="text"
+                      name="tel_societe"
+                      value={formData.tel_societe}
+                      onChange={handleChange}
+                      placeholder="Téléphone société"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                </>
               )}
               <div className="grid grid-cols-2 px-4 py-3 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Nom responsable</label>
@@ -191,7 +233,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   name="nom"
                   value={formData.nom}
                   onChange={handleChange}
-                  placeholder="Nom"
+                  placeholder="Nom responsable"
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
@@ -202,7 +244,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Email"
+                  placeholder="Email responsable"
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
@@ -212,7 +254,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   type="text"
                   value={formData.telephone}
                   onChange={handleChange}
-                  placeholder="Téléphone"
+                  placeholder="Télephone responsable"
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
@@ -291,16 +333,82 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                 </div>
               )}
               <div className="grid grid-cols-2 px-4 py-3 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Note</label>
-                  <input
-                    type="text"
-                    name="note"
-                    value={formData.note}
-                    onChange={handleChange}
-                    placeholder="Note"
-                    className="w-full p-2 rounded text-sm"
-                  />
-                </div>
+                <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
+                <input
+                  type="text"
+                  name="piece_identite"
+                  value={formData.piece_identite}
+                  onChange={handleChange}
+                  placeholder="Piece d'identité"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
+                <input
+                  type="text"
+                  name="affilation_tva"
+                  value={formData.affilation_tva}
+                  onChange={handleChange}
+                  placeholder="Affilation TVA"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
+                <input
+                  type="text"
+                  name="numero_tva"
+                  value={formData.numero_tva}
+                  onChange={handleChange}
+                  placeholder="Numero TVA"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
+                <input
+                  type="text"
+                  name="cabisse"
+                  value={formData.cabisse}
+                  onChange={handleChange}
+                  placeholder="Cabisse"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Assurance</label>
+                <input
+                  type="text"
+                  name="assurance"
+                  value={formData.assurance}
+                  onChange={handleChange}
+                  placeholder="Assurance"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Contrats</label>
+                <input
+                  type="text"
+                  name="contrats"
+                  value={formData.contrats}
+                  onChange={handleChange}
+                  placeholder="contrats"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Confirmation</label>
+                <input
+                  type="text"
+                  name="confirmer"
+                  value={formData.confirmer}
+                  onChange={handleChange}
+                  placeholder="confirmer"
+                  className="w-full p-2 rounded text-sm"
+                />
+              </div>
             </div>
           </div>
           <div className="lg:col-span-1">

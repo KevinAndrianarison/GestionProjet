@@ -4,7 +4,12 @@ import PropTypes from 'prop-types';
 
 const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
   const [nom_societe, setNomSociete] = useState('');
-  const [note, setNote] = useState('');
+  const [email_societe, setEmailSociete] = useState('');
+  const [affilation_tva, setAffiliationTVA] = useState('');
+  const [numero_tva, setNumeroTVA] = useState('');
+  const [cabisse, setCabisse] = useState('');
+  const [assurance, setAssurance] = useState('');
+  const [tel_societe, setTelSociete] = useState('');
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [sexe, setSexe] = useState('');
@@ -14,12 +19,21 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
   const [ville, setVille] = useState('');
   const [pays, setPays] = useState('');
   const [numero_siren, setNumeroSiren] = useState('');
+  const [numero_siret, setNumeroSiret] = useState('');
   const [type_fournisseur, setTypeFournisseur] = useState('societe');
+  const [piece_identite, setPieceIdentite] = useState('');
+  const [contrats, setContrats] = useState('');
+  const [confirmer, setConfirmer] = useState('');
   const [errorMessage, setErrorMessage] = useState("");
 
   const resetFournisseurFields = () => {
     setNomSociete("");
-    setNote("");
+    setEmailSociete("");
+    setAffiliationTVA("");
+    setNumeroTVA("");
+    setCabisse("");
+    setAssurance("");
+    setTelSociete("");
     setNom("");
     setEmail("");
     setSexe("");
@@ -29,7 +43,11 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
     setVille("");
     setPays("");
     setNumeroSiren("");
+    setNumeroSiret("");
     setTypeFournisseur("societe");
+    setPieceIdentite("");
+    setContrats("");
+    setConfirmer("");
     setErrorMessage("");
   };
 
@@ -42,7 +60,12 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
 
     const newFournisseur = {
       nom_societe,
-      note,
+      email_societe,
+      affilation_tva,
+      numero_tva,
+      cabisse,
+      assurance,
+      tel_societe,
       nom,
       email,
       sexe,
@@ -52,6 +75,10 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
       ville,
       pays,
       numero_siren,
+      numero_siret,
+      piece_identite,
+      contrats,
+      confirmer,
       type: type_fournisseur,
     };
 
@@ -103,7 +130,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
           className="absolute top-2 right-2 text-red-500 text-3xl mr-5">
           &times;
         </button>
-        <h2 className="text-xl mx-2 my-2 ">Ajouter un nouveau fournisseur</h2>
+        <h2 className="text-xl mx-2">Ajouter un nouveau fournisseur</h2>
         <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 overflow-y-auto max-h-[75vh]">
           <div className="mx-2">
             <label className="block text-sm font-medium text-gray-700 my-2">Type de fournisseur</label>
@@ -149,49 +176,70 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
             <div className="">
               <div className='border rounded-t-xl'>
                 {type_fournisseur !== "particulier" && (
-
-                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Nom de la société</label>
-                    <input
-                      type="text"
-                      value={nom_societe}
-                      onChange={(e) => setNomSociete(e.target.value)}
-                      placeholder="Nom de la société"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
+                  <>
+                    <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                      <label className="block text-sm font-medium text-gray-700 my-2">Nom société</label>
+                      <input
+                        type="text"
+                        value={nom_societe}
+                        onChange={(e) => setNomSociete(e.target.value)}
+                        placeholder="Nom de la société"
+                        className="w-full p-2 rounded text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                      <label className="block text-sm font-medium text-gray-700 my-2">Email société</label>
+                      <input
+                        type="text"
+                        value={email_societe}
+                        onChange={(e) => setEmailSociete(e.target.value)}
+                        placeholder="Email de la société"
+                        className="w-full p-2 rounded text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                      <label className="block text-sm font-medium text-gray-700 my-2">Téléphone société</label>
+                      <input
+                        type="text"
+                        value={tel_societe}
+                        onChange={(e) => setTelSociete(e.target.value)}
+                        placeholder="Téléphone société"
+                        className="w-full p-2 rounded text-sm"
+                      />
+                    </div>
+                  </>
                 )}
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Nom responsable</label>
                   <input
                     type="text"
                     value={nom}
                     onChange={(e) => setNom(e.target.value)}
-                    placeholder="Nom"
+                    placeholder="Nom responsable"
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Email responsable</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email"
+                    placeholder="Email responsable"
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Téléphone responsable</label>
                   <input
                     type="text"
                     value={telephone}
                     onChange={(e) => setTelephone(e.target.value)}
-                    placeholder="Téléphone"
+                    placeholder="Téléphone responsable"
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">
                     Genre responsable
                   </label>
@@ -205,7 +253,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                   </select>
                 </div>
                 {type_fournisseur !== "particulier" && (
-                  <div className="grid grid-cols-2 px-4 py-3 border-b">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
                     <label className="block text-sm font-medium text-gray-700 my-2">
                       Site Web
                     </label>
@@ -213,11 +261,12 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                       type="text"
                       value={site_web}
                       onChange={(e) => setSiteWeb(e.target.value)}
+                      placeholder="Site Web"
                       className="w-full p-2 rounded text-sm"
                     />
                   </div>
                 )}
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Adresse</label>
                   <input
                     type="text"
@@ -227,7 +276,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Ville</label>
                   <input
                     type="text"
@@ -237,7 +286,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Pays</label>
                   <input
                     type="text"
@@ -248,7 +297,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                   />
                 </div>
                 {type_fournisseur !== "particulier" && (
-                  <div className="grid grid-cols-2 px-4 py-3 border-b">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
                     <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
                     <input
                       type="text"
@@ -259,13 +308,73 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                     />
                   </div>
                 )}
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Note</label>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
                   <input
                     type="text"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Note"
+                    value={piece_identite}
+                    onChange={(e) => setPieceIdentite(e.target.value)}
+                    placeholder="Piece d'identité"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
+                  <input
+                    type="text"
+                    value={affilation_tva}
+                    onChange={(e) => setAffiliationTVA(e.target.value)}
+                    placeholder="Affilation TVA"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
+                  <input
+                    type="text"
+                    value={numero_tva}
+                    onChange={(e) => setNumeroTVA(e.target.value)}
+                    placeholder="numero_tva"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
+                  <input
+                    type="text"
+                    value={cabisse}
+                    onChange={(e) => setCabisse(e.target.value)}
+                    placeholder="cabisse"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Assurance</label>
+                  <input
+                    type="text"
+                    value={assurance}
+                    onChange={(e) => setAssurance(e.target.value)}
+                    placeholder="assurance"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Contrats</label>
+                  <input
+                    type="text"
+                    value={contrats}
+                    onChange={(e) => setContrats(e.target.value)}
+                    placeholder="contrats"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Confirmation</label>
+                  <input
+                    type="text"
+                    value={confirmer}
+                    onChange={(e) => setConfirmer(e.target.value)}
+                    placeholder="confirmer"
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>

@@ -4,6 +4,8 @@ import ModalEditFactureIn from './ModalEditFactureIn';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import Swal from 'sweetalert2';
+import { BASE_URL } from "../contextes/ApiUrls";
+import axios from "axios";
 
 const Facture = () => {
   const [factures, setFactures] = useState([]);
@@ -13,47 +15,76 @@ const Facture = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [factureToEdit, setFactureToEdit] = useState(null);
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
-
-
-  useEffect(() => {
-    const storedFactures = JSON.parse(localStorage.getItem('factures')) || [];
-    setFactures(storedFactures);
-  }, []);
-
-  const addFacture = (newFacture) => {
-    const uniqueId = new Date().getTime(); // Générer un ID unique basé sur le timestamp
-    const updatedFacture = { ...newFacture, id: uniqueId };
-    const updatedFactures = [...factures, updatedFacture];
-    setFactures(updatedFactures);
-    localStorage.setItem('factures', JSON.stringify(updatedFactures));
-  };
-  
-
-  const closeModal = () => setIsModalOpen(false);
-
-  const openEditModal = (facture) => {
-    setFactureToEdit(facture);
-    setIsEditModalOpen(true);
-    setShowActionsIdProsp(null);
-  };
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
-    if (isModalOpen) {
-      setShowActionsIdProsp(null);
+    const fetchFactures = async () => {
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      try {
+        const response = await axios.get(`${BASE_URL}factures`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setFactures(response.data);
+          console.log(response.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des factures :", error);
+      }
+    };
+    fetchFactures();
+  }, [refresh]);
+
+  const addFacture = async (newFacture) => {
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+
+    try {
+      const response = await axios.post(`${BASE_URL}factures`, newFacture, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      setRefresh(!refresh);
+
+      if (response.status === 200) {
+        setFactures([...factures, response.data]);
+        setIsModalOpen(false);
+        // Swal.fire('Succès!', 'Facture ajoutée avec succès!', 'success');
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la facture :", error);
+      Swal.fire("Erreur", "Impossible d'ajouter la facture.", "error");
     }
-  }, [isModalOpen]);
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setFactureToEdit(null);
   };
 
-  const updateFacture = (updatedFacture) => {
-    const updatedFactures = factures.map((facture) =>
-      facture.id === updatedFacture.id ? updatedFacture : facture
-    );
-    setFactures(updatedFactures);
-    localStorage.setItem('factures', JSON.stringify(updatedFactures));
+  const updateFacture = async (updatedFacture) => {
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+    try {
+      const response = await axios.put(`${BASE_URL}factures/${updatedFacture.id}`, updatedFacture, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setFactures(
+          factures.map((facture) =>
+            facture.id === updatedFacture.id ? response.data : facture
+          )
+        );
+        setRefresh(!refresh);
+        setIsEditModalOpen(false);
+        Swal.fire('Succès!', 'Facture mise à jour avec succès!', 'success');
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la facture :", error);
+    }
   };
 
   const handleDelete = async (factureId) => {
@@ -65,17 +96,43 @@ const Facture = () => {
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
     });
-  
-    if (confirmed.isConfirmed) {
-      const updatedFactures = factures.filter((facture) => facture.id !== factureId);
-      setFactures(updatedFactures);
-      localStorage.setItem('factures', JSON.stringify(updatedFactures));
-      Swal.fire('Supprimé!', 'La facture a été supprimée.', 'success');
+
+    if (!confirmed.isConfirmed) {
+      return;
+    }
+
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    try {
+      const response = await axios.delete(`${BASE_URL}factures/${factureId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setFactures(factures.filter((facture) => facture.id !== factureId));
+        Swal.fire('Supprimée!', 'La facture a été supprimée.', 'success');
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la facture :", error);
+      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
     }
   };
-  
 
-  
+  const closeModal = () => setIsModalOpen(false);
+
+  const openEditModal = (facture) => {
+    setFactureToEdit(facture);
+    setIsEditModalOpen(true);
+    setShowActionsIdProsp(null);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setFactureToEdit(null);
+  };
+
   const currentFactures = factures.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
@@ -93,6 +150,7 @@ const Facture = () => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
   };
 
+
   return (
     <div>
       <header>
@@ -100,35 +158,35 @@ const Facture = () => {
       </header>
 
       <div className="flex flex-wrap my-5">
-          <div className="w-full md:w-10/12 sm:w-10/12">
-            <div className="flex items-center space-x-2">
-              <button
-              onClick={() => setIsModalOpen(true)} 
+        <div className="w-full md:w-10/12 sm:w-10/12">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
+            >
               Nouvelle facture
-              </button>
-              </div>
-            </div>
-          <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
-            <div className="flex m-auto space-x-3">
-              <button 
-                onClick={handlePrev} 
-                disabled={page === 1} 
-                className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-              >
-                Prev
-              </button>
-              <button 
-                onClick={handleNext} 
-                disabled={page >= Math.ceil(factures.length / itemsPerPage)} 
-                className={`px-4 py-1 border rounded ${page >= Math.ceil(factures.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-              >
-                Next
-              </button>
-            </div>
+            </button>
           </div>
         </div>
+        <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
+          <div className="flex m-auto space-x-3">
+            <button
+              onClick={handlePrev}
+              disabled={page === 1}
+              className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+            >
+              Prev
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={page >= Math.ceil(factures.length / itemsPerPage)}
+              className={`px-4 py-1 border rounded ${page >= Math.ceil(factures.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
           <thead>
@@ -190,10 +248,10 @@ const Facture = () => {
         )}
       </div>
 
-      <ModalFactureIn 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        addFacture={addFacture} 
+      <ModalFactureIn
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        addFacture={addFacture}
       />
 
       <ModalEditFactureIn
