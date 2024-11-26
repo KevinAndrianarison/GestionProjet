@@ -6,7 +6,6 @@ import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons"
 import Swal from 'sweetalert2';
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
-
 const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [page, setPage] = useState(1);
@@ -157,17 +156,19 @@ const Fournisseurs = () => {
   return (
     <div>
       <header>
-        <h1 className="text-2xl">Tous les fournisseurs</h1>
-      </header>
-      <div className="flex flex-wrap my-5">
-        <div className="w-full md:w-10/12 sm:w-10/12">
-          <div className="flex items-center space-x-2">
-            <button
+        
+        <button
               onClick={() => setIsModalOpen(true)}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
             >
               Nouveau fournisseur
             </button>
+        </header>
+      <div className="flex flex-wrap my-4">
+        <div className="w-full md:w-10/12 sm:w-10/12">
+          <div className="flex items-center space-x-2">
+          <h1 className="text-sm" style={{ fontFamily: "Righteous" }}>Tous les fournisseurs</h1>
+
           </div>
         </div>
         <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
@@ -191,26 +192,27 @@ const Fournisseurs = () => {
       </div>
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
-          <thead>
+          <thead className='bg-slate-100'>
             <tr>
-              <th className="text-left p-6 text-sm font-bold">Type</th>
-              <th className="text-left p-6 text-sm font-bold">Nom société</th>
-              <th className="text-left p-6 text-sm font-bold">Nom responsable</th>
-              <th className="text-left p-6 text-sm font-bold">Email</th>
-              <th className="text-left p-6 text-sm font-bold">Téléphone</th>
-              <th className="text-left p-6 text-sm font-bold">Ville</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Type</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Nom société</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Nom responsable</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Email</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Téléphone</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Ville</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {currentFournisseurs.map((fournisseur) => (
               <tr key={fournisseur.id}>
-                <td className="border-y py-5 px-6">{fournisseur.type}</td>
-                <td className="border-y py-5 px-6">{fournisseur.nom_societe}</td>
-                <td className="border-y py-5 px-6">{fournisseur.nom}</td>
-                <td className="border-y py-5 px-6">{fournisseur.email}</td>
-                <td className="border-y py-5 px-6">{fournisseur.telephone}</td>
-                <td className="border-y py-5 px-6">{fournisseur.ville}</td>
-                <td className="border-y py-5 px-6 w-[25px] relative">
+                <td className="border-y py-2 px-4">{fournisseur.type}</td>
+                <td className="border-y py-2 px-4">{fournisseur.nom_societe}</td>
+                <td className="border-y py-2 px-4">{fournisseur.nom}</td>
+                <td className="border-y py-2 px-4">{fournisseur.email}</td>
+                <td className="border-y py-2 px-4">{fournisseur.telephone}</td>
+                <td className="border-y py-2 px-4">{fournisseur.ville}</td>
+                <td className="border-y py-2 px-4 w-[25px] relative">
                   <button
                     onClick={() => {
                       toggleActions(fournisseur.id)

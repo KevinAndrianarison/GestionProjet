@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import useGeonames from '../contextes/useGeonames';
+import Select from 'react-select';
 
 const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFournisseur }) => {
   const [errorMessage, setErrorMessage] = useState("");
+  const { countriesAndCities, loading, error } = useGeonames();
+  const [filteredCities, setFilteredCities] = useState([]);
+  const [pays, setPays] = useState(null);
+  const [ville, setVille] = useState(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -23,6 +29,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
         ville: '',
         pays: '',
         numero_siren: '',
+        numero_siret: '',
         piece_identite: '',
         contrats: '',
         confirmer: '',
@@ -50,6 +57,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
     ville: '',
     pays: '',
     numero_siren: '',
+    numero_siret: '',
     piece_identite: '',
     contrats: '',
     confirmer: '',
@@ -57,7 +65,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
   });
 
   useEffect(() => {
-    if (fournisseurToEdit) {
+    if (fournisseurToEdit && Object.keys(fournisseurToEdit).length > 0) {
       setFormData(fournisseurToEdit);
     }
   }, [fournisseurToEdit]);
@@ -111,8 +119,6 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
     onClose();
   };
 
-
-
   if (!isOpen) return null;
 
   const handleClickOutside = (e) => {
@@ -122,9 +128,30 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
     }
   };
 
+  const handleCountryChange = (selectedCountry) => {
+    setFormData((prev) => ({
+      ...prev,
+      pays: selectedCountry ? selectedCountry.value : '',
+      ville: '', // Réinitialiser la ville lorsque le pays change
+    }));
+
+    // Mettre à jour les villes filtrées
+    const country = countriesAndCities.find((c) => c.pays === selectedCountry.value);
+    setFilteredCities(country ? country.villes : []);
+  };
+
+
+  const handleCityChange = (selectedCity) => {
+    setFormData((prev) => ({
+      ...prev,
+      ville: selectedCity ? selectedCity.value : '',
+    }));
+  };
+
+
   return (
     <div
-      className={`fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center ${isOpen ? 'block' : 'hidden'
+      className={`mt-16 fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center ${isOpen ? 'block' : 'hidden'
         }`}
       onClick={handleClickOutside}
       id="modal-background"
@@ -138,56 +165,62 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
         </button>
 
         <h2 className="text-xl mx-2">Modifier le fournisseur</h2>
-        <form
-          className="grid grid-cols-1 lg:grid-cols-1 gap-6 "
-          onSubmit={handleSubmit}
-        >
-          <div className="">
-            <div className="mx-2 my-4">
-              <label className="block text-sm font-medium text-gray-700 my-2">Type de fournisseur</label>
-              <div className="flex space-x-4">
-                <label>
-                  <input
-                    type="radio"
-                    name="type"
-                    value="societe"
-                    checked={formData.type === "societe"}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
+
+        <form className="grid grid-cols-1 lg:grid-cols-1 gap-4 mt-2" onSubmit={handleSubmit}>
+          <div>
+            <div className="flex space-x-2">
+              <div className="flex-1 p-1">
+                <div
+                  type="button"
+                  name="type"
+                  value="societe"
+                  onClick={() => setFormData((prev) => ({ ...prev, type: 'societe' }))}
+                  className={`cursor-pointer px-4 py-2 border rounded-lg ${formData.type === "societe"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                    }`}
+                >
                   Société
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="type"
-                    value="particulier"
-                    checked={formData.type === "particulier"}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
+                </div>
+              </div>
+              <div className="flex-1 p-1">
+                <div
+                  type="button"
+                  name="type"
+                  value="auto_entrepreneur"
+                  onClick={() => setFormData((prev) => ({ ...prev, type: 'auto_entrepreneur' }))}
+                  className={`cursor-pointer px-4 py-2 border rounded-lg ${formData.type === "auto_entrepreneur"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                    }`}>
+                  Auto-Entrepreneur
+                </div>
+              </div>
+              <div className="flex-1 p-1">
+                <div
+                  type="button"
+                  name="type"
+                  value="particulier"
+                  onClick={() => setFormData((prev) => ({ ...prev, type: 'particulier' }))}
+                  className={`cursor-pointer px-4 py-2 border rounded-lg ${formData.type === "particulier"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                    }`}>
                   Particulier
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="type"
-                    value="auto_entrepreneur"
-                    checked={formData.type === "auto_entrepreneur"}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  Auto Entrepreneur
-                </label>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div className="">
+
             <div>
               {errorMessage && (
                 <span className="text-red-600 text-sm">{errorMessage}</span>
               )}
             </div>
-            <div className='border rounded-t-xl overflow-y-auto max-h-[65vh]'>
-              {formData.type !== "particulier" && (
+            <div className='border rounded-t-xl overflow-y-auto max-h-[55vh]'>
+              {formData.type == "societe" && (
                 <>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Nom société</label>
@@ -260,19 +293,20 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
               </div>
               <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">
-                  Genre responsable
+                  Genre
                 </label>
                 <select
                   name="sexe"
                   value={formData.sexe}
                   onChange={handleChange}
                   className="w-full p-2 rounded text-sm">
-                  <option value="">Non précisé</option>
+                  <option value=""></option>
                   <option value="homme">Monsieur</option>
                   <option value="femme">Madame</option>
+                  <option value="non_precise">Non précisé</option>
                 </select>
               </div>
-              {formData.type !== "particulier" && (
+              {formData.type === "societe" && (
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">
                     Site Web
@@ -297,40 +331,82 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Ville</label>
-                <input
-                  type="text"
-                  name="ville"
-                  value={formData.ville}
-                  onChange={handleChange}
-                  placeholder="Ville"
-                  className="w-full p-2 rounded text-sm"
-                />
+
+              <div>
+                {loading && <p>Chargement...</p>}
+                {error && <p>{error}</p>}
+
+                {!loading && !error && (
+                  <>
+                    {/* Select pour les pays */}
+                    <div className="grid grid-cols-2 px-4 py-1 border-b">
+                      <label className="block text-sm font-medium text-gray-700 my-2">
+                        Pays
+                      </label>
+                      <Select
+                        value={formData.pays ? { value: formData.pays, label: formData.pays } : null}
+                        options={countriesAndCities.map((country) => ({
+                          value: country.pays,
+                          label: country.pays,
+                        }))}
+                        onChange={handleCountryChange}
+                        placeholder="Sélectionnez un pays"
+                        className="basic-select"
+                        menuPortalTarget={document.body}
+                        styles={{
+                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                        }}
+                      />
+
+                    </div>
+
+                    <div className="grid grid-cols-2 px-4 py-1 border-b">
+                      <label className="block text-sm font-medium text-gray-700 my-2">Ville</label>
+                      <Select
+                        value={formData.ville ? { value: formData.ville, label: formData.ville } : null}
+                        options={filteredCities.map((city) => ({
+                          value: city,
+                          label: city,
+                        }))}
+                        onChange={handleCityChange}
+                        isDisabled={!formData.pays}
+                        placeholder={!formData.pays ? "Veuillez d'abord choisir un pays" : "Sélectionner une ville"}
+                        className="basic-select"
+                        menuPortalTarget={document.body}
+                        styles={{
+                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                        }}
+                      />
+
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Pays</label>
-                <input
-                  type="text"
-                  name="pays"
-                  value={formData.pays}
-                  onChange={handleChange}
-                  placeholder="Pays"
-                  className="w-full p-2 rounded text-sm"
-                />
-              </div>
-              {formData.type !== "particulier" && (
-                <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
-                  <input
-                    type="text"
-                    name="numero_siren"
-                    value={formData.numero_siren}
-                    onChange={handleChange}
-                    placeholder="Numéro SIREN"
-                    className="w-full p-2 rounded text-sm"
-                  />
-                </div>
+              {formData.type === "societe" && (
+                <>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
+                    <input
+                      type="text"
+                      name="numero_siren"
+                      value={formData.numero_siren}
+                      onChange={handleChange}
+                      placeholder="Numéro SIREN"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIRET</label>
+                    <input
+                      type="text"
+                      name="numero_siret"
+                      value={formData.numero_siret}
+                      onChange={handleChange}
+                      placeholder="Numéro SIRET"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                </>
               )}
               <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
