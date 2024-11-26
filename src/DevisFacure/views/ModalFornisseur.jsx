@@ -83,7 +83,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
     };
 
     if (
-      type_fournisseur === "societe" || type_fournisseur === "auto_entrepreneur" &&
+      (type_fournisseur === "societe" || type_fournisseur === "auto_entrepreneur") &&
       (!newFournisseur.nom_societe || !newFournisseur.nom_societe.trim())
     ) {
       setErrorMessage("Le nom de la société est requis pour ce type de fournisseur.");
@@ -130,8 +130,8 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
           className="absolute top-2 right-2 text-red-500 text-3xl mr-5">
           &times;
         </button>
-        <h2 className="text-xl mx-2">Ajouter un nouveau fournisseur</h2>
-        <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 overflow-y-auto max-h-[75vh]">
+        <h2 className="text-xl mx-2">Nouveau fournisseur</h2>
+        <form className="grid grid-cols-1 lg:grid-cols-1 gap-6">
           <div className="mx-2">
             <label className="block text-sm font-medium text-gray-700 my-2">Type de fournisseur</label>
             <div className="flex space-x-4">
@@ -167,12 +167,10 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
               </label>
             </div>
           </div>
-          <div className='rounded-lg shadow-lg w-full'>
-            <div>
               {errorMessage && (
                 <span className="text-red-600 text-sm">{errorMessage}</span>
               )}
-            </div>
+          <div className='rounded-lg shadow-lg w-full overflow-y-auto max-h-[75vh]'>
             <div className="">
               <div className='border rounded-t-xl'>
                 {type_fournisseur !== "particulier" && (
@@ -240,9 +238,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                   />
                 </div>
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">
-                    Genre responsable
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 my-2">Genre responsable</label>
                   <select
                     value={sexe}
                     onChange={(e) => setSexe(e.target.value)}
@@ -320,14 +316,15 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                 </div>
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
-                  <input
-                    type="text"
+                  <select
                     value={affilation_tva}
                     onChange={(e) => setAffiliationTVA(e.target.value)}
-                    placeholder="Affilation TVA"
-                    className="w-full p-2 rounded text-sm"
-                  />
+                    className="w-full p-2 rounded text-sm">
+                    <option value="non">Non</option>
+                    <option value="oui">Oui</option>
+                  </select>
                 </div>
+                {affilation_tva === "oui" && (
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
                   <input
@@ -338,6 +335,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
+                 )}
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
                   <input

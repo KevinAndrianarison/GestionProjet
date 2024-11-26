@@ -10,7 +10,7 @@ import axios from "axios";
 const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 8;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [fournisseurToEdit, setFournisseurToEdit] = useState(null);
