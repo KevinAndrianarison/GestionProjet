@@ -3,9 +3,11 @@ import ModalFornisseur from './ModalFornisseur';
 import ModalEditFornisseur from './ModalEditFornisseur';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import Swal from 'sweetalert2';
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
+import Notiflix from 'notiflix';
+
+
 const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [page, setPage] = useState(1);
@@ -55,12 +57,17 @@ const Fournisseurs = () => {
       if (response.status === 200) {
         setFournisseurs([...fournisseurs, response.data]);
         setIsModalOpen(false);
-        Swal.fire('Succès!', 'Fournisseur ajouté avec succès!', 'success');
       }
+      Notiflix.Notify.success("Fournisseur ajouté avec succès !");
 
     } catch (error) {
-      console.error("Erreur lors de l'ajout du fournisseur :", error);
-      Swal.fire("Erreur", "Impossible d'ajouter le fournisseur.", "error");
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+      if (error.response?.data?.message) {
+        Notiflix.Notify.failure(error.response.data.message);
+      } else {
+        Notiflix.Notify.failure("Une erreur inattendue s'est produite. Veuillez réessayer.");
+      }
+      setShowSpinner(false);
     }
   };
 
@@ -82,27 +89,38 @@ const Fournisseurs = () => {
         );
         setRefresh(!refresh);
         setIsEditModalOpen(false);
-        Swal.fire('Succès!', 'Fournisseur mis à jour avec succès!', 'success');
       }
+      Notiflix.Notify.success("Fournisseur modifié avec succès !");
 
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du fournisseur :", error);
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+      if (error.response?.data?.message) {
+        Notiflix.Notify.failure(error.response.data.message);
+      } else {
+        Notiflix.Notify.failure("Une erreur inattendue s'est produite. Veuillez réessayer.");
+      }
+      setShowSpinner(false);
     }
   };
 
   const handleDelete = async (fournisseurId) => {
-    const confirmed = await Swal.fire({
-      title: 'Êtes-vous sûr ?',
-      text: "Cette action est irréversible.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler',
-    });
-
-    if (!confirmed.isConfirmed) {
+    const confirmDelete = () => {
+      return new Promise((resolve) => {
+        Notiflix.Confirm.show(
+          'Confirmer',
+          'Êtes-vous sûr de vouloir supprimer ?',
+          'Oui',
+          'Non',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+    };
+    const confirmed = await confirmDelete();
+    if (!confirmed) {
       return;
     }
+    
 
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -114,12 +132,21 @@ const Fournisseurs = () => {
       });
       if (response.status === 200) {
         setFournisseurs(fournisseurs.filter((fournisseur) => fournisseur.id !== fournisseurId));
-        Swal.fire('Supprimé!', 'Le fournisseur a été supprimé.', 'success');
         setRefresh(!refresh);
+        Notiflix.Report.success(
+          'Succès',
+          'Fournisseur supprimé avec succès.',
+          'Fermer'
+        );
       }
+      
     } catch (error) {
       console.error("Erreur lors de la suppression du fournisseur :", error);
-      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+      Notiflix.Report.failure(
+        'Echec',
+        'Echec lors de la suppression du fournisseur.',
+        'Fermer'
+      );
     }
   };
 

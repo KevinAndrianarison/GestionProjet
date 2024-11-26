@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Swal from 'sweetalert2';
 import PropTypes from 'prop-types';
 import useGeonames from '../contextes/useGeonames';
 import Select from 'react-select';
@@ -107,12 +106,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
     addFournisseur(newFournisseur);
     resetFournisseurFields();
 
-    Swal.fire({
-      title: "Succès!",
-      text: "Fournisseur ajouté avec succès!",
-      icon: "success",
-      confirmButtonText: "OK",
-    });
+
     onClose();
   };
 
@@ -235,6 +229,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                 onChange={(e) => setNom(e.target.value)}
                 className="w-full p-2 rounded text-sm"
                 placeholder={type_fournisseur === "societe" ? "Nom complet du contact" : "Nom complet"}
+
               />
             </div>
             <div className="grid grid-cols-2 px-4 py-1 border-b">
@@ -284,27 +279,27 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                   />
                 </div>
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
-                  <select
-                    value={affilation_tva}
-                    onChange={(e) => setAffiliationTVA(e.target.value)}
-                    className="w-full p-2 rounded text-sm  text-gray-700">
-                    <option value="non">Non</option>
-                    <option value="oui">Oui</option>
-                  </select>
-                </div>
-                {affilation_tva === "oui" && (
-                  <div className="grid grid-cols-2 px-4 py-1 border-b">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
-                    <input
-                      type="text"
-                      value={numero_tva}
-                      onChange={(e) => setNumeroTVA(e.target.value)}
-                      className="w-full p-2 rounded text-sm"
-                      placeholder='Numéro TVA'
-                    />
-                  </div>
-                )}
+              <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
+              <select
+                value={affilation_tva}
+                onChange={(e) => setAffiliationTVA(e.target.value)}
+                className="w-full p-2 rounded text-sm  text-gray-700">
+                <option value="non">Non</option>
+                <option value="oui">Oui</option>
+              </select>
+            </div>
+            {affilation_tva === "oui" && (
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
+                <input
+                  type="text"
+                  value={numero_tva}
+                  onChange={(e) => setNumeroTVA(e.target.value)}
+                  className="w-full p-2 rounded text-sm"
+                  placeholder='Numéro TVA'
+                />
+              </div>
+            )}
 
               </>
             )}
@@ -364,27 +359,27 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
 
             {type_fournisseur === "societe" && (
               <>
-                <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
-                  <input
-                    type="text"
-                    value={numero_siren}
-                    onChange={(e) => setNumeroSiren(e.target.value)}
-                    className="w-full p-2 rounded text-sm"
-                    placeholder='Numéro SIREN'
-                  />
-                </div>
-                <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIRET</label>
-                  <input
-                    type="text"
-                    value={numero_siret}
-                    onChange={(e) => setNumeroSiret(e.target.value)}
-                    className="w-full p-2 rounded text-sm"
-                    placeholder='Numéro SIRET'
-                  />
-                </div>
-              </>
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
+                <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
+                <input
+                  type="text"
+                  value={numero_siren}
+                  onChange={(e) => setNumeroSiren(e.target.value)}
+                  className="w-full p-2 rounded text-sm"
+                  placeholder='Numéro SIREN'
+                />
+              </div>
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
+              <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIRET</label>
+              <input
+                type="text"
+                value={numero_siret}
+                onChange={(e) => setNumeroSiret(e.target.value)}
+                className="w-full p-2 rounded text-sm"
+                placeholder='Numéro SIRET'
+              />
+            </div>
+            </>
             )}
             <div className="grid grid-cols-2 px-4 py-1 border-b">
               <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
@@ -396,7 +391,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                 placeholder="Piece d'identité"
               />
             </div>
-
+            
             <div className="grid grid-cols-2 px-4 py-1 border-b">
               <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
               <input
