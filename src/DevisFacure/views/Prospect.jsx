@@ -6,7 +6,7 @@ import {
   faTrash, faEdit,
   faEllipsisV
 } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import Modal from './Modal';
 import Notiflix from 'notiflix';
 import React from "react";
@@ -14,12 +14,13 @@ import Select from 'react-select';
 import useGeonames from '../contextes/useGeonames';
 import { UrlContext } from "../../contexte/useUrl";
 import { ShowContext } from "../../contexte/useShow";
-import { MessageContext } from "../../contexte/useMessage.jsx";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 function ProspectSCT() {
   const { countriesAndCities, loading, error } = useGeonames();
   const [filteredCities, setFilteredCities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); 
 
   const [isFirstModalOpen, setFirstModalOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -64,6 +65,7 @@ function ProspectSCT() {
     const fetchData = async () => {
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
+      setIsLoading(true);
       try {
         const response = await axios.get(`${BASE_URL}clients`, {
           headers: {
@@ -75,6 +77,8 @@ function ProspectSCT() {
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -360,41 +364,54 @@ function ProspectSCT() {
         </div>
 
         <div className="divide-y divide-gray-200 p-0 h-[600px] overflow-y-auto min-w-[700px]">
-        {currentProspects.map((prospect, index ) => (
+        {currentProspects.map((prospect) => (
           <React.Fragment key={prospect.id}>
-            <div className="grid grid-cols-6 px-4 py-2 font-normal">
-              <div>{prospect.type}</div>
-              <div>{prospect.nom_societe}</div>
-              <div>{prospect.nom}</div>
-              <div>{prospect.telephone}</div>
-              <div>{prospect.email}</div>
-              <div className="relative text-right">
-                <button
-                  onClick={() => toggleActions(prospect.id)}
-                  className="rounded hover:text-red-500"
-                >
-                  <FontAwesomeIcon icon={faEllipsisV} />
-                </button>
-                {showActionsIdProsp === prospect.id && (
-                  <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
-                    <button
-                      onClick={() => handleEditClick(prospect.id)}
-                      className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
-                    >
-                      <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                      Modifier
-                    </button>
-                    <button
-                      onClick={() => handleDelete(prospect.id)}
-                      className="text-red-500 hover:text-red-700 flex items-center"
-                    >
-                      <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                      Effacer
-                    </button>
-                  </div>
-                )}
+            {isLoading ? (
+            <div className="w-full  border-0 mt-2">
+            <div className="flex flex-col space-y-3">
+              <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
+              <div className="space-y-3">
+                <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                <Skeleton className="h-4 w-[75%]" />
+                <Skeleton className=" h-4 w-[50%]" />
               </div>
             </div>
+          </div>
+          ) : (
+              <div className="grid grid-cols-6 px-4 py-2 font-normal hover:shadow-md hover:bg-slate-50">
+                <Link to={`${prospect.id}`}><div>{prospect.type}</div></Link>
+                <Link to={`${prospect.id}`}><div>{prospect.nom_societe}</div></Link>
+                <Link to={`${prospect.id}`}><div>{prospect.nom}</div></Link>
+                <Link to={`${prospect.id}`}><div>{prospect.telephone}</div></Link>
+                <Link to={`${prospect.id}`}><div>{prospect.email}</div></Link>
+                <div className="relative text-right">
+                  <button
+                    onClick={() => toggleActions(prospect.id)}
+                    className="rounded hover:text-red-500"
+                  >
+                    <FontAwesomeIcon icon={faEllipsisV} />
+                  </button>
+                  {showActionsIdProsp === prospect.id && (
+                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+                      <button
+                        onClick={() => handleEditClick(prospect.id)}
+                        className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                      >
+                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => handleDelete(prospect.id)}
+                        className="text-red-500 hover:text-red-700 flex items-center"
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                        Effacer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </React.Fragment>
         ))}
 
