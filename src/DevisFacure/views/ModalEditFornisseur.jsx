@@ -139,7 +139,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
 
         <h2 className="text-xl mx-2">Modifier le fournisseur</h2>
         <form
-          className="grid grid-cols-1 lg:grid-cols-1 gap-6 overflow-y-auto max-h-[75vh]"
+          className="grid grid-cols-1 lg:grid-cols-1 gap-6 "
           onSubmit={handleSubmit}
         >
           <div className="">
@@ -186,10 +186,10 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                 <span className="text-red-600 text-sm">{errorMessage}</span>
               )}
             </div>
-            <div className='border rounded-t-xl'>
+            <div className='border rounded-t-xl overflow-y-auto max-h-[65vh]'>
               {formData.type !== "particulier" && (
                 <>
-                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Nom société</label>
                     <input
                       type="text"
@@ -201,7 +201,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Email société</label>
                     <input
                       type="text"
@@ -213,7 +213,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 px-4 py-3 border-b rounded-t-xl">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Téléphone société</label>
                     <input
                       type="text"
@@ -226,7 +226,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   </div>
                 </>
               )}
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Nom responsable</label>
                 <input
                   type="text"
@@ -237,7 +237,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Email responsable</label>
                 <input
                   type="email"
@@ -248,7 +248,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Téléphone responsable</label>
                 <input
                   type="text"
@@ -258,7 +258,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">
                   Genre responsable
                 </label>
@@ -273,7 +273,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                 </select>
               </div>
               {formData.type !== "particulier" && (
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">
                     Site Web
                   </label>
@@ -286,7 +286,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   />
                 </div>
               )}
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Adresse</label>
                 <input
                   type="text"
@@ -297,7 +297,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Ville</label>
                 <input
                   type="text"
@@ -308,7 +308,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Pays</label>
                 <input
                   type="text"
@@ -320,7 +320,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                 />
               </div>
               {formData.type !== "particulier" && (
-                <div className="grid grid-cols-2 px-4 py-3 border-b">
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
                   <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
                   <input
                     type="text"
@@ -332,7 +332,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   />
                 </div>
               )}
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
                 <input
                   type="text"
@@ -343,29 +343,31 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
-                <input
-                  type="text"
+                <select
                   name="affilation_tva"
                   value={formData.affilation_tva}
                   onChange={handleChange}
-                  placeholder="Affilation TVA"
-                  className="w-full p-2 rounded text-sm"
-                />
+                  className="w-full p-2 rounded text-sm">
+                  <option value="non">Non</option>
+                  <option value="oui">Oui</option>
+                </select>
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
-                <input
-                  type="text"
-                  name="numero_tva"
-                  value={formData.numero_tva}
-                  onChange={handleChange}
-                  placeholder="Numero TVA"
-                  className="w-full p-2 rounded text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              {formData.affilation_tva === "oui" && (
+                <div className="grid grid-cols-2 px-4 py-1 border-b">
+                  <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
+                  <input
+                    type="text"
+                    name="numero_tva"
+                    value={formData.numero_tva}
+                    onChange={handleChange}
+                    placeholder="Numero TVA"
+                    className="w-full p-2 rounded text-sm"
+                  />
+                </div>
+              )}
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
                 <input
                   type="text"
@@ -376,7 +378,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Assurance</label>
                 <input
                   type="text"
@@ -387,7 +389,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
+              <div className="grid grid-cols-2 px-4 py-1 border-b">
                 <label className="block text-sm font-medium text-gray-700 my-2">Contrats</label>
                 <input
                   type="text"
@@ -395,17 +397,6 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   value={formData.contrats}
                   onChange={handleChange}
                   placeholder="contrats"
-                  className="w-full p-2 rounded text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 px-4 py-3 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Confirmation</label>
-                <input
-                  type="text"
-                  name="confirmer"
-                  value={formData.confirmer}
-                  onChange={handleChange}
-                  placeholder="confirmer"
                   className="w-full p-2 rounded text-sm"
                 />
               </div>

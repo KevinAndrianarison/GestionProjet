@@ -366,16 +366,6 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                     className="w-full p-2 rounded text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Confirmation</label>
-                  <input
-                    type="text"
-                    value={confirmer}
-                    onChange={(e) => setConfirmer(e.target.value)}
-                    placeholder="confirmer"
-                    className="w-full p-2 rounded text-sm"
-                  />
-                </div>
               </div>
               <div className="lg:col-span-1 mt-6">
                 <button
