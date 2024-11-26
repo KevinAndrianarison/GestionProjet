@@ -25,8 +25,7 @@ import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
 import Fournisseurs  from "../DevisFacure/views/Fournisseurs.jsx";
-import ProspectDetail from "../DevisFacure/views/Prospect";
-import EditProspect from "../DevisFacure/views/Prospect";
+import ProspectDetail from "../DevisFacure/views/ProspectDetail";
 import EditUser from "../DevisFacure/views/ModifierClient";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
@@ -566,7 +565,7 @@ export default function MainPage() {
                       }
                     >
                       <FontAwesomeIcon icon={faHistory} className="mr-2" />
-                      Historiques
+                      Fournisseurs
                     </NavLink>
                   </li>
                 </ul>
@@ -675,12 +674,10 @@ export default function MainPage() {
 
             <Routes>
               <Route path="/ModifierClient/:id" element={<ModifierClient />} />
-              <Route path="/prospect/:id" element={<ProspectDetail />} />
               <Route path="/NavbarClient" element={<NavbarClient />} />
               <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
-              <Route path="/EditProspect/:id" element={<EditProspect />} />
               <Route path="/edit/:id" element={<EditUser />} />
-              <Route path="/ProspectDetail/:id" element={<ProspectDetail />} />
+              <Route path=":entity/GestionClientsFournisseurs/prospect/:id" element={<ProspectDetail />} />
             </Routes>
 
             <Routes>
