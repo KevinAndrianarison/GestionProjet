@@ -12,8 +12,8 @@
 
 .titles {
   font-family: "righteous";
-  font-size: 1.5em;
-  color: rgba(0, 0, 0, 0.747);
+  font-size: 1.3em;
+  color: white;
 }
 
 .description {
@@ -69,9 +69,15 @@
   cursor: pointer;
   color: rgba(0, 0, 0, 0.747);
 }
+.sous_entete{
+  display: flex;
+}
 
 @media screen and (max-width: 768px) {
   .description {
+    display: none;
+  }
+  .sous_entete{
     display: none;
   }
   .title {

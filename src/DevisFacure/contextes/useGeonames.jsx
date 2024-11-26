@@ -10,7 +10,6 @@ const useGeonames = () => {
     const fetchCountriesAndCities = async () => {
       try {
         setLoading(true);
-        // Utilisation directe des données du fichier JSON
         setCountriesAndCities(countriesAndCitiesData);
       } catch (error) {
         setError('Erreur lors de la récupération des données');

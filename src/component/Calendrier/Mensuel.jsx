@@ -1,18 +1,25 @@
 import styles from "../../styles/Calendrier.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import Tippy from "@tippyjs/react";
 
 export default function Mentuel() {
   return (
     <>
       <div className="head flex flex-wrap text-auto justify-between">
         <div className={styles.head}>
-          <h1 className="flex  flex-wrap">
-            Ma feuille de temps |{" "}
-            <p className="text-blue-500"> &nbsp; Vue Mentuelle</p>
-          </h1>
-          <h1 className="text-xs  mt-2">
+          <div className="flex items-end">
+            <h1 className="flex  flex-wrap text-yellow-600 mr-2">
+              - Validation des comptes rendus -
+            </h1>
+            <button className="hidden bg-green-200 px-5 text-sm rounded-sm py-1 hover:bg-green-500 hover:font-bold">
+              Tout valider
+            </button>
+          </div>
+          {/* <h1 className="text-xs  mt-2">
             <b>Nom de la ressource :</b> Jao RAKOTO
-          </h1>
-          <h1 className="text-xs mt-1">
+          </h1> */}
+          {/* <h1 className="text-xs mt-1">
             <b>Nom du projet :</b> Module de gestion de proje
           </h1>
           <h1 className="text-xs mt-1">
@@ -23,24 +30,10 @@ export default function Mentuel() {
           </h1>
           <h1 className="text-xs mt-1">
             <b>Chefs de projet :</b> Jao RAKOTO
-          </h1>
-        </div>
-        <div className={styles.btn}>
-          <div className="flex justify-evenly flex-wrap text-xs">
-            <button className="px-3 mt-1 py-2 bg-blue-500 text-white rounded mr-2">
-              Basuler vers la vue Hebdomadaire
-            </button>
-            <button className="px-3 mt-1 py-2 bg-blue-500 text-white rounded mr-2">
-              Bouton Modifier / Enregistrer
-            </button>
-          </div>
-          <h1 className="hidden mt-2 text-center text-xs">
-            <b>Etat de la feuille de temps :</b> Brouillon ou Validé ou Approuvé
-            (par CP)
-          </h1>{" "}
+          </h1> */}
         </div>
       </div>
-      <div className="min-w-max">
+      {/* <div className="min-w-max">
         <div className=" bg-blue-300 flex px-3 mt-5 tableau border  text-sm py-2">
           <div className="w-[450px] border-gray-600 border-r">
             Grandes étapes et tâches
@@ -328,6 +321,38 @@ export default function Mentuel() {
             <div className="w-[25px] text-center border-r py-1"></div>
             <div className="w-[100px] text-center  py-1">5</div>
           </div>
+        </div>
+      </div> */}
+      <div className=" max-h-[65vh] overflow-y-auto mt-2">
+        <div className="flex border px-2 text-sm font-bold py-1 bg-blue-300">
+          <div className="w-[5%]">
+            <Tippy content="Tout sélectionner">
+              <input type="checkbox" />
+            </Tippy>
+          </div>
+          <li className="w-[35%]">Nom </li>
+          <li className="w-[35%]">Tâches </li>
+          <li className="w-[10%]">Date </li>
+          <li className="w-[10%] text-center">Heures </li>
+          <li className="w-[5%] text-center"></li>
+        </div>
+        <div className="flex border px-2 text-xs py-1">
+          <div className="w-[5%]">
+            <input type="checkbox" />
+          </div>
+          <li className="w-[35%]">Steeve </li>
+          <li className="w-[35%]">Tâches 1 </li>
+          <li className="w-[10%]">20-10-2020 </li>
+          <li className="w-[10%] text-center">8 </li>
+
+          <li className="w-[5%] text-center">
+            <Tippy content="Valider">
+              <FontAwesomeIcon
+                icon={faArrowRight}
+                className="w-5 text-green-500 cursor-pointer focus:outline-none"
+              />
+            </Tippy>
+          </li>
         </div>
       </div>
     </>

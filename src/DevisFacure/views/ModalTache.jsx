@@ -12,7 +12,6 @@ const ModalTache = ({ isOpen, onClose, selectedServiceId }) => {
   const [taches, setTaches] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
 
-  // Récupérer les tâches
   const fetchTaches = async () => {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -37,7 +36,6 @@ const ModalTache = ({ isOpen, onClose, selectedServiceId }) => {
     }
   }, [selectedServiceId]);
 
-  // Ajouter une tâche
   const handleAddTask = async (e) => {
     e.preventDefault();
     const tokenString = localStorage.getItem("token");

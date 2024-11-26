@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { BASE_URL } from "../contextes/ApiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,116 +8,277 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import Modal from './Modal';
-import Swal from 'sweetalert2';
+import Notiflix from 'notiflix';
+import React from "react";
+import Select from 'react-select';
+import useGeonames from '../contextes/useGeonames';
+import { UrlContext } from "../../contexte/useUrl";
+import { ShowContext } from "../../contexte/useShow";
+import { MessageContext } from "../../contexte/useMessage.jsx";
+
 
 function ProspectSCT() {
+  const { countriesAndCities, loading, error } = useGeonames();
+  const [filteredCities, setFilteredCities] = useState([]);
+
   const [isFirstModalOpen, setFirstModalOpen] = useState(false);
-  const [isSecondModalOpen, setSecondModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 25;
+
   const [type_client, setTypeClient] = useState("societe");
+  const [tel_societe, setTel_societe] = useState("");
+  const [email_societe, setEmail_societe] = useState("");
   const [nom_societe, setNomSociete] = useState("");
+  const [site_web, setSiteWeb] = useState("");
+  const [numero_siren, setNumeroSiren] = useState("");
+  const [numero_siret, setNumeroSiret] = useState("");
+  const [affiliation_tva, setaffiliation_tva] = useState(false);
+  const [numero_tva, setnumero_tva] = useState("");
+
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [sexe, setSexe] = useState("");
   const [telephone, setTelephone] = useState("");
-  const [site_web, setSiteWeb] = useState("");
+  
   const [adresse, setAdresse] = useState("");
-  const [ville, setVille] = useState("");
-  const [pays, setPays] = useState("");
-  const [numero_siren, setNumeroSiren] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // État pour le message d'erreur
-  const [prospects, setProspects] = useState([]); // État pour stocker les données récupérées
-  const [page, setPage] = useState(1); // Page actuelle
-  const itemsPerPage = 25; // Nombre de prospects par page
+  const [ville, setVille] = useState(null);
+  const [pays, setPays] = useState(null);
+  
+
+  const [prospects, setProspects] = useState([]);
   const [prospectToEdit, setProspectToEdit] = useState({});
-  const [type_client_edit, setTypeClientEdit] = useState(""); 
-  const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
+  const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
+  
+  const { url } = useContext(UrlContext);
+  const { setShowSpinner, showAdmin } = useContext(ShowContext);
+
+  useEffect(() => {
+    if (!isFirstModalOpen) {
+      resetFormFields();
+    }
+  }, [isFirstModalOpen]);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      try {
+        const response = await axios.get(`${BASE_URL}clients`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setProspects(response.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+      }
+    };
+    fetchData();
+  }, [refresh]);
+
+  const currentProspects = prospects.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+
+  const handleNext = () => {
+    if (page < Math.ceil(prospects.length / itemsPerPage)) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  const toggleActions = (id) => {
+    setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
+  };
+
+  const handleCountryChange = (selectedCountry) => {
+    setPays(selectedCountry);
+    setVille(null);
+    const country = countriesAndCities.find((c) => c.pays === selectedCountry.value);
+    setFilteredCities(country ? country.villes : []);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setShowSpinner(true);
+    let errors = [];
+
+    
+    if (type_client === "societe") {
+      if (!nom_societe) errors.push("Le nom de la société est requis.");
+      if (!email_societe || !validateEmail(email_societe))
+        errors.push("L'adresse email de la société est invalide.");
+      if (!adresse) errors.push("L'adresse est requise.");
+      if (!pays) errors.push("Le pays est requis.");
+      if (!ville) errors.push("La ville est requise.");
+      if (!nom) errors.push("Le nom du contact est requis.");
+      if (!email || !validateEmail(email))
+        errors.push("L'adresse email du contact est invalide.");
+      if (!telephone) errors.push("Le numéro de téléphone du contact est requis.");
+    } else {
+      if (!nom) errors.push("Le nom complet est requis.");
+      if (!email || !validateEmail(email))
+        errors.push("L'adresse email est invalide.");
+      if (!telephone) errors.push("Le numéro de téléphone est requis.");
+      if (!pays) errors.push("Le pays est requis.");
+      if (!ville) errors.push("La ville est requise.");
+      if (!adresse) errors.push("L'adresse est requise.");
+    }
+
+    if (errors.length > 0) {
+      setShowSpinner(false);
+      Notiflix.Notify.failure(errors.join("\n"));
+      return;
+    }
+  
+    const formData = {
+      nom_societe: type_client === "societe" ? nom_societe : "",
+      email_societe: type_client === "societe" ? email_societe : "",
+      affilation_tva: String(affiliation_tva),
+      numero_tva,
+      tel_societe,
+      numero_siren,
+      numero_siret,
+      nom,
+      email,
+      sexe,
+      telephone,
+      site_web,
+      adresse,
+      ville: ville?.value,
+      pays: pays?.value,
+      type: type_client,
+    };
+  
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+    console.log(prospectToEdit);
+    try {
+      if(!prospectToEdit.id) {
+        const response = await axios.post(`${url}/api/clients`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        Notiflix.Notify.success("Client ajouté avec succès !");
+      }else{
+        const response = await axios.put(`${BASE_URL}clients/${prospectToEdit.id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        Notiflix.Notify.success("Client modifié avec succès !");
+      }
+  
+      setShowSpinner(false);
+
+      resetFormFields();
+      setRefresh(!refresh);
+  
+      setFirstModalOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+      if (error.response?.data?.message) {
+        Notiflix.Notify.failure(error.response.data.message);
+      } else {
+        Notiflix.Notify.failure("Une erreur inattendue s'est produite. Veuillez réessayer.");
+      }
+      setShowSpinner(false);
+    }
+  };
+  
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
+  const resetFormFields = () => {
+    setProspectToEdit({});
+    setNomSociete("");
+    setNom("");
+    setEmail("");
+    setSexe("");
+    setTelephone("");
+    setSiteWeb("");
+    setAdresse("");
+    setVille("");
+    setPays("");
+    setNumeroSiren("");
+    setTypeClient("societe");
+    setEmail_societe("");
+    setaffiliation_tva(false);
+    setnumero_tva("");
+    setTel_societe("");
+    setNumeroSiret("");
+  };
 
 
   const handleDelete = async (prospectId) => {
-    // Demander confirmation avant de supprimer
     setShowActionsIdProsp((prevId) => (prevId === prospectId ? null : prospectId));
   
-    // Utilisation de SweetAlert2 pour la confirmation
-    const confirmed = await Swal.fire({
-      title: 'Êtes-vous sûr ?',
-      text: "Cette action est irréversible.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler',
-      reverseButtons: true,  // Pour inverser les boutons
-    });
-  
-    if (!confirmed.isConfirmed) {
-      return; // Si l'utilisateur annule, ne rien faire
+    const confirmDelete = () => {
+      return new Promise((resolve) => {
+        Notiflix.Confirm.show(
+          'Confirmer',
+          'Êtes-vous sûr de vouloir supprimer ?',
+          'Oui',
+          'Non',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+    };
+    const confirmed = await confirmDelete();
+    if (!confirmed) {
+      return;
     }
+  
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
+  
     try {
       const response = await axios.delete(`${BASE_URL}clients/${prospectId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if(response){
+  
+      if (response) {
         setRefresh(!refresh);
       }
-      Swal.fire('Supprimé!', 'Le prospect a été supprimé.', 'success');
+      Notiflix.Report.success(
+        'Succès',
+        'Client supprimé avec succès.',
+        'Fermer'
+      );
     } catch (error) {
       console.error('Erreur lors de la suppression des données :', error);
-      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+      Notiflix.Report.failure(
+        'Echec',
+        'Echec lors de la suppression du client.',
+        'Fermer'
+      );
     }
   };
-    
-     // Charger tous les prospects une seule fois
-      useEffect(() => {
-        const fetchData = async () => {
-          const tokenString = localStorage.getItem("token");
-          let token = JSON.parse(tokenString);
-          try {
-            const response = await axios.get(`${BASE_URL}clients`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (response.status === 200) {
-              setProspects(response.data);
-            }
-          } catch (error) {
-            console.error("Erreur lors de la récupération des données:", error);
-          }
-        };
-        fetchData();
-      }, [refresh]);
-  
-      // Découper les prospects à afficher pour la page actuelle
-      const currentProspects = prospects.slice(
-        (page - 1) * itemsPerPage,
-        page * itemsPerPage
-      );
 
-      // Gestion de la navigation entre pages
-      const handleNext = () => {
-        if (page < Math.ceil(prospects.length / itemsPerPage)) {
-          setPage(page + 1);
-        }
-      };
-
-      const handlePrev = () => {
-        if (page > 1) {
-          setPage(page - 1);
-        }
-      };
-
-      const toggleActions = (id) => {
-        setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
-      };
-
-  
 
   const handleEditClick = async (id) => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
+    setShowSpinner(true);
+    resetFormFields();
+    setProspectToEdit({ id: id });
+
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     try {
@@ -127,179 +288,46 @@ function ProspectSCT() {
         },
       });
       if (response.status === 200) {
-        setProspectToEdit(response.data); // Mettre les données dans l'état
-        setTypeClientEdit(response.data.type); // Initialiser le type pour l'édition
-        setSecondModalOpen(true); // Ouvrir le modal
+        setNomSociete(response.data.nom_societe);
+        setNom(response.data.nom);
+        setEmail(response.data.email);
+        setSexe(response.data.sexe);
+        setTelephone(response.data.telephone);
+        setSiteWeb(response.data.site_web);
+        setAdresse(response.data.adresse);
+        setPays({ value: response.data.pays, label: response.data.pays });
+        setVille({ value: response.data.ville, label: response.data.ville });
+        setNumeroSiren(response.data.numero_siren);
+        setTypeClient(response.data.type);
+        setEmail_societe(response.data.email);
+        setaffiliation_tva(Boolean(response.data.affilation_tva));
+        setnumero_tva(response.data.numero_tva);
+        setTel_societe(response.data.tel_societe);
+        setNumeroSiret(response.data.numero_siret);
+        setShowSpinner(false);
+        setFirstModalOpen(true);
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du prospect:", error);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    setErrorMessage(""); // Réinitialiser le message d'erreur
-  
-    // Validation de l'email
-    if (!email.includes("@") || !email.includes(".")) {
-      setErrorMessage("Veuillez entrer une adresse e-mail valide.");
-      return;
-    }
-  
-    // Validation pour le type "société"
-    if (type_client === "societe" && !nom_societe.trim()) {
-      setErrorMessage("Le nom de la société est requis pour le type 'société'.");
-      return; // Arrête la soumission si la condition n'est pas remplie
-    }
-  
-    // Données à envoyer
-    const formData = {
-      nom_societe,
-      nom,
-      email,
-      sexe,
-      telephone,
-      site_web,
-      adresse,
-      ville,
-      pays,
-      numero_siren,
-      type: type_client,
-    };
-    console.log("Données du formulaire : ", formData);
-  
-    const tokenString = localStorage.getItem("token");
-    const token = JSON.parse(tokenString);
-  
-    try {
-      const response = await axios.post(`${BASE_URL}clients`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log("Réponse du backend :", response);
-  
-      // Réinitialiser le message d'erreur
-      setErrorMessage("");
-  
-      // Déclencher un rafraîchissement
-      setRefresh(!refresh);
-  
-      // Réinitialiser tous les champs après la soumission
-      setNomSociete("");
-      setNom("");
-      setEmail("");
-      setSexe("");
-      setTelephone("");
-      setSiteWeb("");
-      setAdresse("");
-      setVille("");
-      setPays("");
-      setNumeroSiren("");
-      setTypeClient("societe");
-  
-      // Mettre à jour la liste des prospects
-      setProspects([...prospects, response.data]);
-  
-      // Fermer le modal
-      setFirstModalOpen(false);
-  
-      // Afficher une alerte de succès avec SweetAlert2
-      Swal.fire({
-        title: "Succès!",
-        text: "Ajout de client avec succès!",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'envoi du formulaire:", error);
-  
-      // Afficher un message d'erreur spécifique selon le problème
-      const errorMessage =
-        error.response?.data?.message ||
-        "Une erreur s'est produite. Veuillez réessayer.";
-      setErrorMessage(errorMessage);
-    }
-  };
-  
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const editedData = {
-      ...prospectToEdit,
-      type: type_client_edit, // Utilisation de type_client_edit pour l'édition
-    };
-
-      // Supprimer les champs spécifiques aux sociétés si le type est "particulier"
-  if (type_client_edit === "particulier") {
-    editedData.nom_societe = null; //asiana "delete" + esapce  eo aloha raha hamafa
-    editedData.numero_siren = null;
-    editedData.site_web = null;
-  }
-    setErrorMessage("");
-
-    if (type_client_edit === "societe" && (!editedData.nom_societe || !editedData.nom_societe.trim())) {
-      setErrorMessage("Le nom de la société est requis pour le type 'société'.");
-      return; // Arrête la soumission si la condition n'est pas remplie
-    }
-
-    const tokenString = localStorage.getItem("token");
-    let token = JSON.parse(tokenString);
-
-    try {
-      const response = await axios.put(`${BASE_URL}clients/${prospectToEdit.id}`, editedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("Réponse de mise à jour :", response.data);
-      setRefresh(!refresh);
-
-      setSecondModalOpen(false);
-      
-      Swal.fire({
-        title: 'Succès!',
-        text: 'Modification de client avec succès!',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      });
-
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du prospect:", error);
-    }
-  };
   
   
   return (
-    <div>
-      <div className="">
-        <div>
-          <nav className="rounded-md flex justify-between items-center p-4 ">
-            <div>
-              <Link to="/" className="text-2xl ">
-                Tous les prospects
-              </Link>
-            </div>
-           </nav>
-        </div>
+    <>
+      <div className="w-full mb-3 ">
+        <button onClick={() => setFirstModalOpen(true)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          Nouveau Client
+        </button>
       </div>
+      
+      <div className="flex flex-wrap align-center">
+        <div className="w-full md:w-10/12 sm:w-10/12">
+          <h1 className="text-sm" style={{ fontFamily: "Righteous" }}>Tous les clients</h1>
+        </div>
 
-        {/* Boutons de navigation */}
-        <div className="flex flex-wrap">
-          <div className="w-full md:w-10/12 sm:w-10/12">
-            <div className="flex items-center space-x-2">
-
-              <button
-              onClick={() => setFirstModalOpen(true)} 
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-              Nouveau prospect
-              </button>
-              </div>
-            </div>
-          <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
+        <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
             <div className="flex mb-4 m-auto">
               <button 
                 onClick={handlePrev} 
@@ -317,459 +345,354 @@ function ProspectSCT() {
               </button>
             </div>
           </div>
+      </div>
+
+      <div className="w-full border rounded-lg shadow-md p-0 relative overflow-x-auto">
+        <div className="divide-y divide-gray-200 p-0 bg-slate-100 font-bold z-0 min-w-[700px]">
+          <div className="grid grid-cols-6 px-4 py-2">
+            <div>Type</div>
+            <div>Nom société</div>
+            <div>Nom du contact</div>
+            <div>Téléphone du contact</div>
+            <div>Email du contact</div>
+            <div></div>
+          </div>
         </div>
 
-        {/* Tableau des prospects */}
-        <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px] p-4">
-          <table className="min-w-full">
-            <thead>
-              <tr>
-                <th className="text-left p-4 text-sm font-bold leading-6">Type</th>
-                <th className="text-left p-4 text-sm font-bold leading-6">Nom société</th>
-                <th className="text-left p-4 text-sm font-bold leading-6">Nom</th>
-                <th className="text-left p-4 text-sm font-bold leading-6">Email</th>
-              </tr>
-            </thead>
-            <tbody className="border-gray-300">
-              {currentProspects.map((prospect) => (
-                <tr key={prospect.id}>
-                  <td className="border-y py-2 px-4">{prospect.type}</td>
-                  <td className="border-y px-4">{prospect.nom_societe}</td>
-                  <td className="border-y px-4">{prospect.nom}</td>
-                  <td className="border-y px-4">{prospect.email}</td>
-                  <td className="border-y w-[25px] relative">
+        <div className="divide-y divide-gray-200 p-0 h-[600px] overflow-y-auto min-w-[700px]">
+        {currentProspects.map((prospect, index ) => (
+          <React.Fragment key={prospect.id}>
+            <div className="grid grid-cols-6 px-4 py-2 font-normal">
+              <div>{prospect.type}</div>
+              <div>{prospect.nom_societe}</div>
+              <div>{prospect.nom}</div>
+              <div>{prospect.telephone}</div>
+              <div>{prospect.email}</div>
+              <div className="relative text-right">
+                <button
+                  onClick={() => toggleActions(prospect.id)}
+                  className="rounded hover:text-red-500"
+                >
+                  <FontAwesomeIcon icon={faEllipsisV} />
+                </button>
+                {showActionsIdProsp === prospect.id && (
+                  <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
                     <button
-                    onClick={() => toggleActions(prospect.id)}
-                    className="rounded hover:text-red-500"
-                  >
-                    <FontAwesomeIcon icon={faEllipsisV} />
-                  </button>
+                      onClick={() => handleEditClick(prospect.id)}
+                      className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                    >
+                      <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                      Modifier
+                    </button>
+                    <button
+                      onClick={() => handleDelete(prospect.id)}
+                      className="text-red-500 hover:text-red-700 flex items-center"
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                      Effacer
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </React.Fragment>
+        ))}
 
-                  {/* Affichage conditionnel des boutons Modifier et Effacer pour le prospect en cours */}
-                  {showActionsIdProsp === prospect.id && (
-                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
-                      <button
-                        onClick={() => handleEditClick(prospect.id)}
-                        className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
-                      >
-                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                        Modifier
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prospect.id)}
-                        className="text-red-500 hover:text-red-700 flex items-center"
-                      >
-                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                        Effacer
-                      </button>
-                    </div>
-                  )}
-                  </td>
-                  
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {prospects.length === 0 && <p className="text-#707070-500"><i>Aucun prospect disponible.</i></p>}
-        </div>
+      </div>
+      {prospects.length === 0 && <p className="text-slate-400"><i>Aucun prospect disponible.</i></p>}
+    </div>
 
-        <div className="p-6">
-        <div >
-
-      <Modal 
+    <Modal 
       isOpen={isFirstModalOpen} 
       onClose={() => {
-        setFirstModalOpen(false);
-        setErrorMessage("")}}>
-        <h2 className="text-xl ">Nouveau prospect</h2>
-    <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
-        <div className="sm:col-span-2">
-            <label className="block text-sm font-normal leading-6 text-gray-900">
-              Type de client
-            </label>
-            <div className="mt-2 flex space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  value="societe"
-                  checked={type_client === "societe"}
-                  onChange={() => setTypeClient("societe")}
-                  className="mr-2"
-                />
-                Société
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="particulier"
-                  checked={type_client === "particulier"}
-                  onChange={() => setTypeClient("particulier")}
-                  className="mr-2"
-                />
-                Particulier
-              </label>
-            </div>
-
-            <div>
-            {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}              
-            </div>
-
-          </div>
-          <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-            {type_client === "societe" && (
-              <div className="sm:col-span-1">
-                <label className="block text-sm font-medium leading-6 text-gray-900">
-                  Dénomination de la société
-                </label>
-                <input
-                  type="text"
-                  value={nom_societe}
-                  onChange={(e) => setNomSociete(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                />
-              </div>
-            )}
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Nom complet
-              </label>
-              <input
-                type="text"
-                value={nom}
-                onChange={(e) => setNom(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                value={telephone}
-                onChange={(e) => setTelephone(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Sexe
-              </label>
-              <select
-                value={sexe}
-                onChange={(e) => setSexe(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+        setFirstModalOpen(false);}}>
+        <h2 className="text-sm font-semibold mb-2">Nouveau client :</h2>
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 bg-white">
+          <div className="sm:col-span-1 p-1">
+              {/* Option Société */}
+              <div
+                onClick={() => setTypeClient("societe")}
+                className={`cursor-pointer px-4 py-2 border rounded-lg ${
+                  type_client === "societe"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                }`}
               >
-                <option value=""></option>
-                <option value="homme">Homme</option>
-                <option value="femme">Femme</option>
-              </select>
-            </div>
-
-            {type_client === "societe" && (
-              <div className="sm:col-span-1">
-                <label className="block text-sm font-medium leading-6 text-gray-900">
-                  Site Web
-                </label>
-                <input
-                  type="text"
-                  value={site_web}
-                  onChange={(e) => setSiteWeb(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                />
+                Société
               </div>
-            )}
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Adresse
-              </label>
-              <input
-                type="text"
-                value={adresse}
-                onChange={(e) => setAdresse(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
             </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Ville
-              </label>
-              <input
-                type="text"
-                value={ville}
-                onChange={(e) => setVille(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Pays
-              </label>
-              <input
-                type="text"
-                value={pays}
-                onChange={(e) => setPays(e.target.value)}
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            {type_client === "societe" && (
-              <div className="sm:col-span-1">
-                <label className="block text-sm font-medium leading-6 text-gray-900">
-                  Numéro SIREN
-                </label>
-                <input
-                  type="text"
-                  value={numero_siren}
-                  onChange={(e) => setNumeroSiren(e.target.value)}
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                />
+            <div className="sm:col-span-1 p-1">
+              {/* Option Particulier */}
+              <div
+                onClick={() => setTypeClient("Auto-Entrepreneur")}
+                className={`cursor-pointer px-4 py-2 border rounded-lg ${
+                  type_client === "Auto-Entrepreneur"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                }`}
+              >
+                Auto-Entrepreneur
               </div>
-            )}
-            <br />
+            </div>
+            <div className="sm:col-span-1 p-1">
+              {/* Option Particulier */}
+              <div
+                onClick={() => setTypeClient("particulier")}
+                className={`cursor-pointer px-4 py-2 border rounded-lg ${
+                  type_client === "particulier"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                }`}
+              >
+                Particulier
+              </div>
+            </div>
+          </div>
+          
+          <form onSubmit={handleSubmit}>
+              <div className="max-h-[55vh] overflow-y-auto px-4">
+                {type_client === "societe" && (
+                    <>
+                      <hr className="my-2"></hr>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Dénomination de la société
+                          </label>
+                          <input
+                            type="text"
+                            value={nom_societe}
+                            onChange={(e) => setNomSociete(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
 
-            <div className="sm:col-span-1 py-2">
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Site Web
+                          </label>
+                          <input
+                            type="text"
+                            value={site_web}
+                            onChange={(e) => setSiteWeb(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Email de la société
+                          </label>
+                          <input
+                            type="text"
+                            value={email_societe}
+                            onChange={(e) => setEmail_societe(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Téléphone de la société
+                          </label>
+                          <input
+                            type="text"
+                            value={tel_societe}
+                            onChange={(e) => setTel_societe(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Numéro Siren
+                          </label>
+                          <input
+                            type="text"
+                            value={numero_siren}
+                            onChange={(e) => setNumeroSiren(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Numéro SIRET
+                          </label>
+                          <input
+                            type="text"
+                            value={numero_siret}
+                            onChange={(e) => setNumeroSiret(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Affiliation TVA
+                          </label>
+                          <select
+                              value={affiliation_tva}
+                              onChange={(e) => setaffiliation_tva(e.target.value === "true")}
+                              className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          >
+                              <option value="true">Oui</option>
+                              <option value="false">Non</option>
+                          </select>
+                        </div>
+
+                        {affiliation_tva && (
+                          <div className="sm:col-span-1">
+                            <label className="block text-sm font-medium leading-6 text-gray-900">
+                              Numéro TVA
+                            </label>
+                            <input
+                              type="text"
+                              value={numero_tva}
+                              onChange={(e) => setnumero_tva(e.target.value)}
+                              className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                            />
+                          </div>
+                        )}
+
+                      </div>
+                      <hr className="my-4"></hr>
+                    </>
+                  )}
+              
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      {type_client === "societe" ? "Nom complet du contact" : "Nom complet"}
+                    </label>
+                    <input
+                      type="text"
+                      value={nom}
+                      onChange={(e) => setNom(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      {type_client === "societe" ? "Email du contact" : "Adresse e-mail"}
+                    </label>
+                    <input
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      {type_client === "societe" ? "Téléphone du contact" : "Numéro de téléphone"}
+                    </label>
+                    <input
+                      type="text"
+                      value={telephone}
+                      onChange={(e) => setTelephone(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Genre
+                    </label>
+                    <select
+                        value={sexe}
+                        onChange={(e) => setSexe(e.target.value)}
+                        className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    >
+                      <option value=""></option>
+                      <option value="Masculin">Masculin</option>
+                      <option value="Féminin">Féminin</option>
+                      <option value="Non Precisé">Non Precisé</option>
+                    </select>
+                  </div>
+              </div>
+
+              <hr className="my-2"></hr>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
+                {loading && <p>Chargement...</p>}
+                {error && <p>{error}</p>}
+
+                {!loading && !error && (
+                    <>
+                      {/* Select pour les pays */}
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Pays
+                        </label>
+                        <Select value={pays}
+                          options={countriesAndCities.map((country) => ({
+                            value: country.pays,
+                            label: country.pays,
+                          }))}
+                          onChange={handleCountryChange}
+                          placeholder="Sélectionnez un pays"
+                          className="basic-select"
+                          menuPortalTarget={document.body}
+                          styles={{
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }), 
+                          }}
+                        />
+                      </div>
+
+                      {/* Select pour les villes */}
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Ville
+                        </label>
+                        <Select
+                          options={filteredCities.map((city) => ({
+                            value: city,
+                            label: city,
+                          }))}
+                          value={ville}
+                          onChange={(selectedOption) => setVille(selectedOption)}
+                          placeholder="Sélectionnez une ville"
+                          className="basic-select z-30"
+                          isDisabled={!filteredCities.length}
+                          menuPortalTarget={document.body}
+                          styles={{
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Adresse
+                    </label>
+                    <input
+                      type="text"
+                      value={adresse}
+                      onChange={(e) => setAdresse(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+              </div>
+              </div>
+
+            <div className="w-[300px] max-w-[100%] py-2 mt-5">
               <button 
                 type="submit"
-                className="bg-blue-500 pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
->
+                className="bg-blue-500 px-3 block w-full rounded-md border-0 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
                 Enregistrer
               </button>
-
             </div>
+          </form>
 
-          </form>            
-        </div>
-      </Modal>
+    </Modal>
 
-
-      <Modal 
-      isOpen={isSecondModalOpen}
-      onClose={() => {
-        setSecondModalOpen(false); 
-        setErrorMessage("");  }}>
-  <h2 className="text-xl">Modifier le prospect</h2>
-  <div className="grid grid-cols overflow-y-auto sm:grid-cols-1 max-h-[70vh]">
-    <div className="sm:col-span-2">
-    <div>
-            <label className="block text-sm font-normal leading-6 text-gray-900">
-              Type de client
-            </label>
-            <div className="mt-2 flex space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  value="societe"
-                  checked={type_client_edit === "societe"}
-                  onChange={() => setTypeClientEdit("societe")}
-                  className="mr-2"
-                />
-                Société
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="particulier"
-                  checked={type_client_edit === "particulier"}
-                  onChange={() => setTypeClientEdit("particulier")}
-                  className="mr-2"
-                />
-                Particulier
-              </label>
-            </div>
-            <div>
-            {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}              
-            </div>
-          </div>
-      <form onSubmit={handleFormSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-      {type_client_edit  === "societe" && (
-        <div className="sm:col-span-1">
-          <label className="block text-sm font-medium leading-6 text-gray-900">
-            Dénomination de la société
-          </label>
-          <input
-            type="text"
-            value={prospectToEdit.nom_societe || ""}
-            onChange={(e) =>
-              setProspectToEdit({ ...prospectToEdit, nom_societe: e.target.value })
-            }
-            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-          />
-        </div>
-            )}
-
-        <div className="sm:col-span-1">
-          <label className="block text-sm font-medium leading-6 text-gray-900">
-            Nom complet
-          </label>
-          <input
-            type="text"
-            value={prospectToEdit.nom || ""}
-            onChange={(e) =>
-              setProspectToEdit({ ...prospectToEdit, nom: e.target.value })
-            }
-            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-          />
-        </div>
-
-        <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Email
-              </label>
-              <input
-                type="email"
-                value={prospectToEdit.email || ""}
-                onChange={(e) =>
-                  setProspectToEdit({ ...prospectToEdit, email: e.target.value })
-                }                
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                value={prospectToEdit.telephone || ""}
-                onChange={(e) =>
-                  setProspectToEdit({ ...prospectToEdit, telephone: e.target.value })
-                }
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Sexe
-              </label>
-              <select
-            value={prospectToEdit.sexe || ""}
-            onChange={(e) =>
-              setProspectToEdit({ ...prospectToEdit, sexe: e.target.value })
-            }
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              >
-                <option value=""></option>
-                <option value="homme">Homme</option>
-                <option value="femme">Femme</option>
-              </select>
-            </div>
-
-            {type_client_edit === "societe" && (
-              <div className="sm:col-span-1">
-                <label className="block text-sm font-medium leading-6 text-gray-900">
-                  Site Web
-                </label>
-                <input
-                  type="text"
-                  value={prospectToEdit.site_web || ""}
-                  onChange={(e) =>
-                    setProspectToEdit({ ...prospectToEdit, site_web: e.target.value })
-                  }
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                />
-              </div>
-            )}
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Adresse
-              </label>
-              <input
-                type="text"
-                value={prospectToEdit.adresse || ""}
-                onChange={(e) =>
-                  setProspectToEdit({ ...prospectToEdit, adresse: e.target.value })
-                }
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Ville
-              </label>
-              <input
-                type="text"
-                value={prospectToEdit.ville || ""}
-                onChange={(e) =>
-                  setProspectToEdit({ ...prospectToEdit, ville: e.target.value })
-                }
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-sm font-medium leading-6 text-gray-900">
-                Pays
-              </label>
-              <input
-                type="text"
-                value={prospectToEdit.pays || ""}
-                onChange={(e) =>
-                  setProspectToEdit({ ...prospectToEdit, pays: e.target.value })
-                }
-                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            {type_client_edit  === "societe" && (
-              <div className="sm:col-span-1">
-                <label className="block text-sm font-medium leading-6 text-gray-900">
-                  Numéro SIREN
-                </label>
-                <input
-                  type="text"
-                  value={prospectToEdit.numero_siren || ""}
-                  onChange={(e) =>
-                    setProspectToEdit({ ...prospectToEdit, numero_siren: e.target.value })
-                  }
-                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                />
-              </div>
-            )}
-<br />
-        <div className="sm:col-span-1 py-2">
-          <button
-            type="submit"
-            className="bg-blue-500 pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-          >
-            Enregistrer
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</Modal>
-
-    </div>
-    </div>
-    </div>
+    </>
   );
 }
 

@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { TaskContext } from "../contexte/useTask";
 import { ComsContext } from "../contexte/useComs";
 import { EtapeContext } from "../contexte/useEtape";
-import { faAnglesRight, faSort } from "@fortawesome/free-solid-svg-icons";
+import { faAnglesRight, faSort, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import { ProjectContext } from "../contexte/useProject";
 import { faTrash, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AllprojectPage() {
   const [activeDropdown, setActiveDropdown] = useState("");
+  const {setShowcreateTask } =
+    useContext(ShowContext);
 
   const {
     showAdmin,
@@ -40,6 +42,13 @@ export default function AllprojectPage() {
   const { getAllTaskFirst } = useContext(TaskContext);
   const { getAllComs } = useContext(ComsContext);
   const { getAlletapeByProjetsFirst } = useContext(EtapeContext);
+
+  const userString = localStorage.getItem("user");
+  let user = JSON.parse(userString);
+
+  function createProject() {
+    setShowcreateTask(true);
+  }
 
   useEffect(() => {
     if (categorie === "Tous les projets") {
@@ -84,6 +93,16 @@ export default function AllprojectPage() {
           <h1 className="titreMyproject mr-5">
             <FontAwesomeIcon icon={faAnglesRight} className="w-6 h-4" />
             Les projets
+            {((user.grade === "chef") ||
+              (user.role === "admin")) && (
+              <Tippy content="Créer un projet ">
+                <FontAwesomeIcon
+                  onClick={createProject}
+                  icon={faPlusCircle}
+                  className="cursor-pointer ml-5 focus:outline-none"
+                />
+              </Tippy>
+            )}
           </h1>
           <div className="flex flex-wrap items-end mt-2">
             <h1 className="mr-5 font-bold">

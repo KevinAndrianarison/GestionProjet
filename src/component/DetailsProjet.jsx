@@ -490,7 +490,7 @@ export default function DetailsProject() {
                   }}
                 >
                   <div className={styles.left}>
-                    <div className=" flex flex-wrap items-end text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
+                    <div className=" flex flex-wrap text-gray-600 text-xs sm:text-xs md:text-xs lg:text-xs xl:text-xs font-bold items-end">
                       <strong className="mr-2 ">Membres : </strong>
                       {ListChefs.length !== 0 && (
                         <ul className="flex flex-wrap">

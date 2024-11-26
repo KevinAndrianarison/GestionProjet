@@ -2,7 +2,6 @@ import "../styles/MainPage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolderOpen,
-  faPlusCircle,
   faUserPlus,
   faSignOutAlt,
   faGear,
@@ -25,7 +24,7 @@ import Facture from "../DevisFacure/views/Facture";
 import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
-import Fournisseurs from "../DevisFacure/views/Fournisseurs.jsx";
+import Fournisseurs  from "../DevisFacure/views/Fournisseurs.jsx";
 import ProspectDetail from "../DevisFacure/views/Prospect";
 import EditProspect from "../DevisFacure/views/Prospect";
 import EditUser from "../DevisFacure/views/ModifierClient";
@@ -35,6 +34,8 @@ import GestionUserPage from "./GestionUserPage";
 import { GestionEntity } from "./GestionEntity";
 import MyProfil from "./MyProfil";
 import InfoSociete from "./InfoSociete";
+import ParametreDevis from "./ParametreDevis.jsx";
+import ParametreFacturations from "./ParametreFacturations.jsx";
 import { Routes, Route, NavLink } from "react-router-dom";
 import { ShowContext } from "../contexte/useShow";
 import { useContext, useEffect, useState } from "react";
@@ -58,7 +59,7 @@ export default function MainPage() {
   const { url } = useContext(UrlContext);
   const [showMenuMobile, setshowMenuMobile] = useState(false);
 
-  const { setShowLogout, setShowcreateTask, showUser, showAdmin } =
+  const { setShowLogout, showUser, showAdmin } =
     useContext(ShowContext);
 
   function logout() {
@@ -84,10 +85,6 @@ export default function MainPage() {
       switchToSetting();
     }
   }, []);
-
-  function createProject() {
-    setShowcreateTask(true);
-  }
 
   function switchToGestProj() {
     localStorage.setItem("navBar", JSON.stringify("Gestion de projet"));
@@ -146,341 +143,324 @@ export default function MainPage() {
 
   return (
     <>
-      <div 
+      {/* <div 
         onClick={() => setshowMenuMobile(false)}
-        className={`bg-white backdrop-blur-sm p-6 rounded-lg shadow-lg opacity-40 top-0 left-0 fixed transition-all ${showMenuMobile === false ?  "w-0 h-0": "w-full h-full"}`}>
-      </div>
-      <div className={`bg-white max-w-[90%] fixed shadow-2xl border-t-4 border-blue-500 ${showMenuMobile === false ?  "w-0 h-0 top-0 right-[-100px]": "w-[400px] p-4 top-0 right-0"}`}>
-          <p className="text-red-600 text-xl p-4"><FontAwesomeIcon icon={faXmark} className="cursor-pointer" onClick={() => setshowMenuMobile(false)}/></p>
+        className={`fixed bg-white backdrop-blur-sm p-6 rounded-lg shadow-lg opacity-10 top-0 left-0 transition-all ${showMenuMobile === false ?  "hidden w-0 h-0": "block w-full h-full"}`}>
+      </div>*/}
+      <header className="fixed w-full top-0 left-0 z-10">
+        <div className="flex justify-between w-full border-b-4 border-blue-500 py-2 md:py-1 flex-wrap bg-white m-0">
+          <div className="flex items-center cursor-pointer" onClick={() => navigate(`${entity}/GestionProjet/AllProject`)}>
+            <div className="w-28 lg:w-32 xl:w-36 2xl:w-40 pl-4">
+              <img src={logosofticeo} alt="Sofiticeo" />
+            </div>
+          </div>
           {(showAdmin || showUser) && (
-            <>
-              <div className="flex mr-5 items-center mb-4">
-                <div
-                  style={{
-                    backgroundImage: `url(${url}/storage/${user.photo_profile})`,
-                  }}
-                  className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-7 sm:h-9 lg:h-11 xl:h-13 2xl:h-15"
-                ></div>
-                <p className="input text-black font-bold">{user.nom}</p>
-              </div>
-              <hr className="mb-2"></hr>
-            </>
-          )}
-          {(showAdmin || showUser) && (
-            <div className="input text-xs cursor-pointer text-gray-500 items-center p-0">
+            <div
+            className="input text-xs cursor-pointer text-gray-500 flex-wrap items-center hidden xl:flex p-0"
+          >
             {/* Gestion de projet */}
-            <div
-              title="Gestion de projet"
+            <div title="Gestion de projet"
               onClick={switchToGestProj}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 1
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 1 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 1 ? "scale-110" : "scale-100"
+                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                  statusNavBar === 1
+                    ? "bg-blue-100 text-blue-500"
+                    : "hover:bg-blue-50 hover:text-blue-500"
                 }`}
               >
-                <FontAwesomeIcon
-                  icon={faDiagramProject}
-                  className="text-white text-xl w-4"
-                />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                  statusNavBar === 1 ? "opacity-100" : "opacity-100"
-                }`}
-              >
-                Gestion de projet
-              </span>
-            </div>
-        
-            {/* Gestion de devis-facture */}
-            <div
-              title="Gestion de devis-facture"
-              onClick={switchToGestDevis}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 2
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 2 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 2 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={faReceipt}
-                  className="text-white text-xl w-4"
-                />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 opacity-100`}
-              >
-                Gestion de devis-facture
-              </span>
-            </div>
-        
-            {/* Gestion RH */}
-            <div
-              title="Gestion RH"
-              onClick={switchToGestRH}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 3
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 3 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 3 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={faUsersGear}
-                  className="text-white text-xl w-4"
-                />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 opacity-100`}
-              >
-                Gestion RH
-              </span>
-            </div>
-        
-            {/* Gestion client */}
-            <div
-              title="Gestion client"
-              onClick={switchToGestClient}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 4
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 4 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 4 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={faStar}
-                  className="text-white text-xl w-4"
-                />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 opacity-100`}
-              >
-                Gestion client
-              </span>
-            </div>
-          </div>
-          )}
-          <hr></hr>
-      </div>
-      <div className="flex justify-between w-full border-b-4 border-blue-500 py-4 flex-wrap">
-        <div className="flex items-center cursor-pointer" onClick={() => navigate(`${entity}/GestionProjet/AllProject`)}>
-          <div className="w-32 sm:w-36 lg:w-40 xl:w-44 2xl:w-48 pl-4">
-            <img src={logosofticeo} alt="Sofiticeo" />
-          </div>
-        </div>
-        {(showAdmin || showUser) && (
-          <div
-          className="input text-xs cursor-pointer text-gray-500 flex-wrap items-center hidden xl:flex p-0"
-        >
-          {/* Gestion de projet */}
-          <div title="Gestion de projet"
-            onClick={switchToGestProj}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 1
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 1 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 1 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={faDiagramProject}
-                  className="text-white text-xl w-4"
-                />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                  statusNavBar === 1 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
-                } group-hover:opacity-100 group-hover:max-w-xs`}
-              >
-                {statusNavBar === 1 && "Gestion de projet"}
-              </span>
-            </div>
-          
-            {/* Gestion de devis-facture */}
-            <div title="Gestion de devis-facture"
-              onClick={switchToGestDevis}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 2
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 2 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 2 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon icon={faReceipt} className="text-white text-xl w-4" />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                  statusNavBar === 2 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
-                } group-hover:opacity-100 group-hover:max-w-xs`}
-              >
-                {statusNavBar === 2 && "Gestion de devis-facture"}
-              </span>
-            </div>
-          
-            {/* Gestion RH */}
-            <div title="Gestion RH"
-              onClick={switchToGestRH}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 3
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 3 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 3 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon icon={faUsersGear} className="text-white text-xl w-4" />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                  statusNavBar === 3 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
-                } group-hover:opacity-100 group-hover:max-w-xs`}
-              >
-                {statusNavBar === 3 && "Gestion RH"}
-              </span>
-            </div>
-          
-            {/* Gestion client */}
-            <div title="Gestion client"
-              onClick={switchToGestClient}
-              className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                statusNavBar === 4
-                  ? "bg-blue-100 text-blue-500"
-                  : "hover:bg-blue-50 hover:text-blue-500"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
-                  statusNavBar === 4 ? "bg-blue-500" : "bg-gray-300"
-                } transition-transform transform ${
-                  statusNavBar === 4 ? "scale-110" : "scale-100"
-                }`}
-              >
-                <FontAwesomeIcon icon={faStar} className="text-white text-xl w-4" />
-              </div>
-              <span
-                className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                  statusNavBar === 4 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
-                } group-hover:opacity-100 group-hover:max-w-xs`}
-              >
-                {statusNavBar === 4 && "Gestion client"}
-              </span>
-            </div>
-          </div>
-        
-        )}
-
-        <div className="text-xs flex items-center text-gray-700">
-          {(showAdmin || showUser) && (
-            <>
-              <div className="mr-5 items-center hidden xl:flex">
                 <div
-                  style={{
-                    backgroundImage: `url(${url}/storage/${user.photo_profile})`,
-                  }}
-                  className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-7 sm:h-9 lg:h-11 xl:h-13 2xl:h-15"
-                ></div>
-                <p className="input text-black font-bold">{user.nom}</p>
-              </div>
-              <div className="flex xl:hidden">
-                <Tippy content="Menu">
-                    <FontAwesomeIcon
-                      icon={faBars}
-                      className="mr-5 mt-1 cursor-pointer w-16 h-5"
-                      onClick={() => setshowMenuMobile(true)}
-                    />
-                  </Tippy>
-              </div>
-              <div className="flex cursor-pointer">
-                  <Tippy content="Paramètres">
-                    <FontAwesomeIcon
-                      onClick={switchToSetting}
-                      icon={faGear}
-                      className="mr-5 mt-1 focus:outline-none"
-                    />
-                  </Tippy>
-              </div>
-            </>
-          )}
-          <div className="flex">
-            <Tippy content="Se déconnecter">
-              <FontAwesomeIcon
-                onClick={logout}
-                icon={faSignOutAlt}
-                className="mr-5 mt-1 cursor-pointer"
-              />
-            </Tippy>
-          </div>
-        </div>
-      </div>
-      <div className="mains">
-        <div className="header">
-          {(showAdmin || showUser) && (
-            <div className="titles mt-2 flex items-center">
-              {TitreNavBar}
-              {((statusNavBar === 1 && user.grade === "chef") ||
-                (statusNavBar === 1 && user.role === "admin")) && (
-                <Tippy content="Créer un projet ">
+                  className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
+                    statusNavBar === 1 ? "bg-blue-500" : "bg-gray-300"
+                  } transition-transform transform ${
+                    statusNavBar === 1 ? "scale-110" : "scale-100"
+                  }`}
+                >
                   <FontAwesomeIcon
-                    onClick={createProject}
-                    icon={faPlusCircle}
-                    className="cursor-pointer ml-5 focus:outline-none iconeResponsive"
+                    icon={faDiagramProject}
+                    className="text-white text-xl w-3"
                   />
-                </Tippy>
-              )}
+                </div>
+                <span
+                  className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                    statusNavBar === 1 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                  } group-hover:opacity-100 group-hover:max-w-xs`}
+                >
+                  {statusNavBar === 1 && "Gestion de projet"}
+                </span>
+              </div>
+            
+              {/* Gestion de devis-facture */}
+              <div title="Gestion de devis-facture"
+                onClick={switchToGestDevis}
+                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                  statusNavBar === 2
+                    ? "bg-blue-100 text-blue-500"
+                    : "hover:bg-blue-50 hover:text-blue-500"
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
+                    statusNavBar === 2 ? "bg-blue-500" : "bg-gray-300"
+                  } transition-transform transform ${
+                    statusNavBar === 2 ? "scale-110" : "scale-100"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faReceipt} className="text-white text-xl w-3" />
+                </div>
+                <span
+                  className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                    statusNavBar === 2 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                  } group-hover:opacity-100 group-hover:max-w-xs`}
+                >
+                  {statusNavBar === 2 && "Gestion de devis-facture"}
+                </span>
+              </div>
+            
+              {/* Gestion RH */}
+              <div title="Gestion RH"
+                onClick={switchToGestRH}
+                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                  statusNavBar === 3
+                    ? "bg-blue-100 text-blue-500"
+                    : "hover:bg-blue-50 hover:text-blue-500"
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
+                    statusNavBar === 3 ? "bg-blue-500" : "bg-gray-300"
+                  } transition-transform transform ${
+                    statusNavBar === 3 ? "scale-110" : "scale-100"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faUsersGear} className="text-white text-xl w-3" />
+                </div>
+                <span
+                  className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                    statusNavBar === 3 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                  } group-hover:opacity-100 group-hover:max-w-xs`}
+                >
+                  {statusNavBar === 3 && "Gestion RH"}
+                </span>
+              </div>
+            
+              {/* Gestion client */}
+              <div title="Gestion client"
+                onClick={switchToGestClient}
+                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                  statusNavBar === 4
+                    ? "bg-blue-100 text-blue-500"
+                    : "hover:bg-blue-50 hover:text-blue-500"
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
+                    statusNavBar === 4 ? "bg-blue-500" : "bg-gray-300"
+                  } transition-transform transform ${
+                    statusNavBar === 4 ? "scale-110" : "scale-100"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faStar} className="text-white text-xl w-3" />
+                </div>
+                <span
+                  className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                    statusNavBar === 4 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                  } group-hover:opacity-100 group-hover:max-w-xs`}
+                >
+                  {statusNavBar === 4 && "Gestion clients/Fournisseurs"}
+                </span>
+              </div>
             </div>
+          
           )}
 
-          {(showAdmin || showUser) && (
-            <div
-              className="description  mt-2"
-              dangerouslySetInnerHTML={{ __html: DescrNavBar }}
-            ></div>
-          )}
+          <div className="text-xs flex items-center text-gray-700">
+            {(showAdmin || showUser) && (
+              <>
+                <div className="mr-5 items-center hidden xl:flex">
+                  <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-sm"
+                  >
+                    <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="zazaz" />
+                  </div>
+                  <p className="input text-black font-bold ml-3">{user.nom}</p>
+                </div>
+                <div className="flex xl:hidden">
+                    {!showMenuMobile && (<FontAwesomeIcon icon={faBars} className="mr-5 mt-1 cursor-pointer w-16 h-5" onClick={() => setshowMenuMobile(true)}
+                    />)}
+                    {showMenuMobile && (<FontAwesomeIcon icon={faXmark} className="mr-5 mt-1 cursor-pointer w-16 h-5 text-red-600 z-30" onClick={() => setshowMenuMobile(false)}/>)}
+                </div>
+                <div className="flex cursor-pointer">
+                    <Tippy content="Paramètres">
+                      <FontAwesomeIcon
+                        onClick={switchToSetting}
+                        icon={faGear}
+                        className="mr-5 mt-1 focus:outline-none"
+                      />
+                    </Tippy>
+                </div>
+              </>
+            )}
+            <div className="flex">
+              <Tippy content="Se déconnecter">
+                <FontAwesomeIcon
+                  onClick={logout}
+                  icon={faSignOutAlt}
+                  className="mr-5 mt-1 cursor-pointer"
+                />
+              </Tippy>
+            </div>
+          </div>
         </div>
+        <div className="bg-blue-500 m-0 sous_entete items-start">
+          <div className="titles flex items-center text-white pl-4 whitespace-nowrap">
+            {TitreNavBar} : 
+          </div>
+          <span
+              className="pl-4 mt-2 text-white text-sm font-thin!important"
+              dangerouslySetInnerHTML={{ __html: DescrNavBar }}
+            ></span>
+        </div>
+
+        <div className="w-full flex justify-end z-20">
+          <div className={`bg-white max-w-[90%] shadow-2xl ${showMenuMobile === false ?  "hidden": "w-[400px] p-4 top-0 right-0"}`}>
+              {(showAdmin || showUser) && (
+                <>
+                  <div className="mr-5 items-center flex">
+                    <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-md"
+                    >
+                      <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="zazaz" />
+                    </div>
+                    <p className="input text-black font-bold ml-3">{user.nom}</p>
+                  </div>
+                  <hr className="mb-2 mt-5"></hr>
+                </>
+              )}
+              {(showAdmin || showUser) && (
+                <div className="input text-xs cursor-pointer text-gray-500 items-center p-0">
+                {/* Gestion de projet */}
+                <div
+                  title="Gestion de projet"
+                  onClick={switchToGestProj}
+                  className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                    statusNavBar === 1
+                      ? "bg-blue-100 text-blue-500"
+                      : "hover:bg-blue-50 hover:text-blue-500"
+                  }`}
+                >
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                      statusNavBar === 1 ? "bg-blue-500" : "bg-gray-300"
+                    } transition-transform transform ${
+                      statusNavBar === 1 ? "scale-110" : "scale-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={faDiagramProject}
+                      className="text-white text-xl w-4"
+                    />
+                  </div>
+                  <span
+                    className={`ml-4 text-sm font-medium transition-all duration-300 ${
+                      statusNavBar === 1 ? "opacity-100" : "opacity-100"
+                    }`}
+                  >
+                    Gestion de projet
+                  </span>
+                </div>
+            
+                {/* Gestion de devis-facture */}
+                <div
+                  title="Gestion de devis-facture"
+                  onClick={switchToGestDevis}
+                  className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                    statusNavBar === 2
+                      ? "bg-blue-100 text-blue-500"
+                      : "hover:bg-blue-50 hover:text-blue-500"
+                  }`}
+                >
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                      statusNavBar === 2 ? "bg-blue-500" : "bg-gray-300"
+                    } transition-transform transform ${
+                      statusNavBar === 2 ? "scale-110" : "scale-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={faReceipt}
+                      className="text-white text-xl w-4"
+                    />
+                  </div>
+                  <span
+                    className={`ml-4 text-sm font-medium transition-all duration-300 opacity-100`}
+                  >
+                    Gestion de devis-facture
+                  </span>
+                </div>
+            
+                {/* Gestion RH */}
+                <div
+                  title="Gestion RH"
+                  onClick={switchToGestRH}
+                  className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                    statusNavBar === 3
+                      ? "bg-blue-100 text-blue-500"
+                      : "hover:bg-blue-50 hover:text-blue-500"
+                  }`}
+                >
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                      statusNavBar === 3 ? "bg-blue-500" : "bg-gray-300"
+                    } transition-transform transform ${
+                      statusNavBar === 3 ? "scale-110" : "scale-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={faUsersGear}
+                      className="text-white text-xl w-4"
+                    />
+                  </div>
+                  <span
+                    className={`ml-4 text-sm font-medium transition-all duration-300 opacity-100`}
+                  >
+                    Gestion RH
+                  </span>
+                </div>
+            
+                {/* Gestion client */}
+                <div
+                  title="Gestion client"
+                  onClick={switchToGestClient}
+                  className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                    statusNavBar === 4
+                      ? "bg-blue-100 text-blue-500"
+                      : "hover:bg-blue-50 hover:text-blue-500"
+                  }`}
+                >
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full shadow-md ${
+                      statusNavBar === 4 ? "bg-blue-500" : "bg-gray-300"
+                    } transition-transform transform ${
+                      statusNavBar === 4 ? "scale-110" : "scale-100"
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      className="text-white text-xl w-4"
+                    />
+                  </div>
+                  <span
+                    className={`ml-4 text-sm font-medium transition-all duration-300 opacity-100`}
+                  >
+                    Gestion clients/ Fournisseurs
+                  </span>
+                </div>
+              </div>
+              )}
+              <hr></hr>
+          </div>
+        </div>
+        
+      </header>
+
+      <div className="mains mt-16 sm:mt-20 md:mt-24">
         <div className="body text-xs">
           {(showAdmin || showUser) && (
             <div className="navBar mt-4">
@@ -496,7 +476,7 @@ export default function MainPage() {
                       }
                     >
                       <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
-                      Tous les projets
+                      Tous les projets 
                     </NavLink>
                   </li>
 
@@ -559,21 +539,6 @@ export default function MainPage() {
                       Facturation
                     </NavLink>
                   </li>
-                  {(showAdmin) && (
-                    <li className="mr-5  mt-2 pb-2">
-                      <NavLink
-                        to={`${entity}/GestionDevisFactures/Parametres`}
-                        className={({ isActive }) =>
-                          isActive
-                            ? "mr-2 border-b-4 border-yellow-500 pb-2"
-                            : "mr-2 pb-2"
-                        }
-                      >
-                        <FontAwesomeIcon icon={faGear} className="mr-2" />
-                        Paramètres
-                      </NavLink>
-                    </li>
-                  )}
                 </ul>
               )}
               {statusNavBar === 4 && (
@@ -626,7 +591,7 @@ export default function MainPage() {
 
                     <li className="mr-5  mt-2 pb-2">
                     <NavLink
-                      to={`${entity}/Settings/ParametresDevis`}
+                      to={`${entity}/Settings/Parametres/Devis`}
                       className={({ isActive }) =>
                         isActive
                           ? "mr-2 border-b-4 border-yellow-500 pb-2 "
@@ -640,7 +605,7 @@ export default function MainPage() {
 
                     <li className="mr-5  mt-2 pb-2">
                     <NavLink
-                      to={`${entity}/Settings/ParametresFacturations`}
+                      to={`${entity}/Settings/Parametres/Facturations`}
                       className={({ isActive }) =>
                         isActive
                           ? "mr-2 border-b-4 border-yellow-500 pb-2 "
@@ -691,10 +656,15 @@ export default function MainPage() {
                     />
                   )}
                   {showAdmin && (
-                    <Route path=":entity/Settings/entity" element={<InfoSociete />} />
+                    <>
+                      <Route path=":entity/Settings/entity" element={<InfoSociete />} />
+                      <Route path=":entity/Settings/Parametres/Devis" element={<ParametreDevis />} />
+                      <Route path=":entity/Settings/Parametres/facturations" element={<ParametreFacturations />} />
+                    </>
                   )}
                 </>
               )}
+              
               <Route path="/gestionEntity" element={<GestionEntity />} />
               <Route path=":entity/GestionDevisFactures/devis" element={<Devis />} />
               <Route path=":entity/GestionDevisFactures/facture" element={<Facture />} />
