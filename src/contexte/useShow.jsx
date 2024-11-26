@@ -24,6 +24,7 @@ export const ShowContext = createContext({
   showListProjet: false,
   showDeletechamps: false,
   showDeleteStatus: false,
+  showModaleTask: false,
 });
 
 export function ShowContextProvider({ children }) {
@@ -52,6 +53,7 @@ export function ShowContextProvider({ children }) {
   const [showListProjet, setShowListProjet] = useState(false);
   const [showUser, setUser] = useState(false);
   const [showTask, setShowTask] = useState(false);
+  const [showModaleTask, setShowModaleTask] = useState(false);
 
   return (
     <ShowContext.Provider
@@ -81,6 +83,7 @@ export function ShowContextProvider({ children }) {
         showDeleteStatus,
         showDeleteStatusTask,
         showDeletechamps,
+        showModaleTask,
         setShowDeleteStatusTask,
         setShowDeletechamps,
         setShowDeletetask,
@@ -106,6 +109,7 @@ export function ShowContextProvider({ children }) {
         setShowDeleteEntity,
         setUser,
         setShowRetierChefs,
+        setShowModaleTask,
       }}
     >
       {children}

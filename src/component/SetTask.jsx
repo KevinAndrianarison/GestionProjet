@@ -349,7 +349,18 @@ export default function SetTask() {
                   {item.label} :
                 </label>
                 {item.type === "file" ? (
-                  <p>{`${url}/storage/${item.applic_champs[0].valeur}`}</p>
+                  <a
+                    href={`${url}/storage/${item.applic_champs[0].valeur}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline mt-1"
+                  >
+                    {
+                      item.applic_champs[0].valeur.split("/")[
+                        item.applic_champs[0].valeur.split("/").length - 1
+                      ]
+                    }
+                  </a>
                 ) : (
                   <input
                     type={item.type}

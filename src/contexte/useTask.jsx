@@ -6,9 +6,13 @@ import { ShowContext } from "../contexte/useShow";
 
 export const TaskContext = createContext({
   ListTask: [],
+  ListTaskById: [],
   ListChamps: [],
+  ListTaskComs: [],
   ListChampsWithoutValue: [],
+  ListControleModale: [],
   ListResp: [],
+  ListRespModale: [],
   ListStatusTask: [],
   ListTaskToMove: [],
   idTask: "",
@@ -18,25 +22,37 @@ export const TaskContext = createContext({
   dateFin: "",
   idStatus: "",
   description: "",
+  titreTaskModale: "",
+  dateDebutModale: "",
+  dateFinModale: "",
+  descriptionModale: "",
 });
 export function TaskContextProvider({ children }) {
   const [ListTask, setListTask] = useState([]);
+  const [ListTaskComs, setListTaskComs] = useState([]);
+  const [ListTaskById, setListTaskById] = useState([]);
   const [ListChamps, setListChamps] = useState([]);
   const [ListChampsWithoutValue, setListChampsWithoutValue] = useState([]);
   const [ListTaskToMove, setListTaskToMove] = useState([]);
   const [ListResp, setListResp] = useState([]);
+  const [ListRespModale, setListRespModale] = useState([]);
+  const [ListControleModale, setListControleModale] = useState([]);
   const [ListStatusTask, setListStatusTask] = useState([]);
   const [idTask, setIdTask] = useState("");
   const [idStatus, setIdStatus] = useState("");
   const [titreTask, setTitreTask] = useState("");
+  const [titreTaskModale, setTitreTaskModale] = useState("");
+  const [dateDebutModale, setDateDebutModale] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
+  const [dateFinModale, setDateFinModale] = useState("");
   const [idInput, setidInput] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionModale, setDescriptionModale] = useState("");
 
   const { idProject, setIdProject } = useContext(ProjectContext);
   const { url } = useContext(UrlContext);
-  const { setShowSetTask, setShowTask, setShowSpinner } =
+  const { setShowSetTask, setShowTask, setShowSpinner, setShowModaleTask } =
     useContext(ShowContext);
 
   function getAllTask() {
@@ -125,7 +141,6 @@ export function TaskContextProvider({ children }) {
         },
       })
       .then((response) => {
-        console.log(response.data);
         setListChamps(response.data.linkedChamps);
         setListChampsWithoutValue(response.data.nonLinkedChamps);
         setShowSpinner(false);
@@ -155,6 +170,45 @@ export function TaskContextProvider({ children }) {
       });
   }
 
+  function gettaskById() {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/taches/responsable-tache`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListTaskById(response.data);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
+  function getComsTask() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/taches/commentaires/${idTask}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setListTaskComs(response.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   function getOneTask(id) {
     setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
@@ -181,6 +235,33 @@ export function TaskContextProvider({ children }) {
         setShowSpinner(false);
       });
   }
+  function getOneTaskModal(id) {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/taches/tache/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setTitreTaskModale(response.data.titre);
+        setDateDebutModale(response.data.date_debut);
+        setDateFinModale(response.data.date_limite);
+        setDescriptionModale(response.data.description);
+        setListRespModale(response.data.responsables);
+        setListControleModale(response.data.controle_taches);
+        setIdTask(response.data.id);
+        setShowModaleTask(true);
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
 
   return (
     <TaskContext.Provider
@@ -198,9 +279,25 @@ export function TaskContextProvider({ children }) {
         ListChamps,
         ListChampsWithoutValue,
         idInput,
+        ListTaskById,
+        titreTaskModale,
+        dateDebutModale,
+        dateFinModale,
+        descriptionModale,
+        ListRespModale,
+        ListControleModale,
+        ListTaskComs,
+        setListControleModale,
+        setTitreTaskModale,
+        setListTaskComs,
+        setListRespModale,
+        setDescriptionModale,
+        setDateDebutModale,
+        setListTaskById,
         setListChampsWithoutValue,
         setidInput,
         getAllChampsByProject,
+        setDateFinModale,
         getAllChamps,
         setListTask,
         setListChamps,
@@ -208,6 +305,7 @@ export function TaskContextProvider({ children }) {
         setIdStatus,
         setListResp,
         getAllTask,
+        getComsTask,
         setIdTask,
         getOneTask,
         setTitreTask,
@@ -218,6 +316,8 @@ export function TaskContextProvider({ children }) {
         setListStatusTask,
         getAllStatusTask,
         getAllStatusTaskKanban,
+        gettaskById,
+        getOneTaskModal,
       }}
     >
       {children}

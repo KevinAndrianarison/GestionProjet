@@ -6,6 +6,7 @@ import { ShowContext } from "../contexte/useShow";
 import { MessageContext } from "../contexte/useMessage";
 import { UrlContext } from "../contexte/useUrl";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import Notiflix from 'notiflix';
 
 
 function InfoSociete() {
@@ -48,8 +49,7 @@ function InfoSociete() {
 
         Promise.all([request1])
           .then(([entrepriseResponse]) => {
-            setLogo(`https://bg.societe-manage.com/public/storage/${entrepriseResponse.data.entreprise.logo}` || "https://archive.org/download/placeholder-image/placeholder-image.jpg")
-            console.log(entrepriseResponse.data.entreprise.logo);
+            setLogo(`https://bg.societe-manage.com/public/storage/${entrepriseResponse.data.entreprise.logo}` || "https://archive.org/download/placeholder-image/placeholder-image.jpg");
             setnomSociete(entrepriseResponse.data.entreprise.nom || "");
             setgerant(entrepriseResponse.data.entreprise.gerant || "");
             setemail_societe(entrepriseResponse.data.entreprise.email_societe || "");
@@ -130,17 +130,14 @@ function InfoSociete() {
             "entity",
             JSON.stringify(response.data.entreprise.nom)
           );
-          setMessageSucces("Modification réussi !");
+          Notiflix.Notify.success("Modification réussi !");
           setIsEditable(false);
           setShowSpinner(false);
           setLogo("https://archive.org/download/placeholder-image/placeholder-image.jpg")
           setLoad(!load);
-          setTimeout(() => {
-            setMessageSucces("");
-          }, 5000);
         })
         .catch((err) => {
-          console.error(err);
+        Notiflix.Notify.failure(err.response.data.error);
           setShowSpinner(false);
         });
     }
@@ -436,7 +433,7 @@ function InfoSociete() {
                                 <div>
                                     <select
                                         value={affiliation_tva}
-                                        onChange={(e) => setaffiliation_tva(e.target.value === "true")}
+                                        onChange={(e) => setaffiliation_tva(e.target.value === "true")} 
                                         disabled={!isEditable}
                                         className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 ring-inset focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                                     >
@@ -466,7 +463,7 @@ function InfoSociete() {
                                             <select
                                                 value={tva || ""}
                                                 onChange={(e) => settva(e.target.value)}
-                                                readOnly={!isEditable}
+                                                disabled={!isEditable}
                                                 className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 ring-inset focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none">
                                                 <option value="">TVA par defaut</option>
                                                 <option value={20}>20%</option>

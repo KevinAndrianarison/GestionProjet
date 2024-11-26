@@ -12,6 +12,7 @@ import CreateProject from "./component/CreateProject";
 import DeleteProject from "./component/DeleteProject";
 import SetProject from "./component/SetProject";
 import SeRetirer from "./component/SeRetirer";
+import ModaleTask from "./component/ModaleTask";
 import RetirerMembres from "./component/RetirerMembres";
 import RetirerChefs from "./component/RetirerChefs";
 import DetailsProject from "./component/DetailsProjet";
@@ -52,7 +53,8 @@ function App() {
     showDeleteEtape,
     showDeleteStatus,
     showDeleteStatusTask,
-    showDeletechamps
+    showModaleTask,
+    showDeletechamps,
   } = useContext(ShowContext);
   const { getAllUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -109,7 +111,7 @@ function App() {
       {showDeleteStatus && <DeleteStatus />}
       {showDeleteStatusTask && <DeleteStatusIfHaveTask />}
       {showDeletechamps && <DeleteChamps />}
-
+      {showModaleTask && <ModaleTask />}
 
       <AlertComponent />
     </div>

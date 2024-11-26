@@ -26,6 +26,7 @@ export default function TableauKanban() {
     ListStatusTask,
     setIdStatus,
     setListTaskToMove,
+    getOneTaskModal,
   } = useContext(TaskContext);
   const { url } = useContext(UrlContext);
   const { setShowSpinner, setShowDeleteStatus, setShowDeleteStatusTask } =
@@ -48,6 +49,10 @@ export default function TableauKanban() {
   function openModal(users) {
     setModalUsers(users);
     setShowModal(true);
+  }
+
+  function showModaleTask(id) {
+    getOneTaskModal(id);
   }
 
   function closeModal() {
@@ -188,7 +193,8 @@ export default function TableauKanban() {
                       key={task.id}
                       draggable
                       onDragStart={() => handleDragStart(task.id)}
-                      className="w-[250px] bg-white border shadow-lg p-3 rounded shadow-sm"
+                      className="w-[250px] bg-white border shadow-lg p-3 rounded shadow-sm cursor-pointer"
+                      onClick={() => showModaleTask(task.id)}
                     >
                       <div className="px-1 min-w-[200px] flex h-2 justify-end"></div>
                       <h1 className=" text-xs font-bold">
@@ -202,7 +208,6 @@ export default function TableauKanban() {
                         className="text-xs"
                         dangerouslySetInnerHTML={{ __html: task.description }}
                       ></div>
-
                       <div className="flex flex-wrap-reverse justify-between items-center mt-1">
                         <div className="flex  items-end">
                           {task.date_limite && (
@@ -224,12 +229,18 @@ export default function TableauKanban() {
                                 style={{
                                   backgroundImage: `url(${url}/storage/${resp.utilisateur.photo_profile})`,
                                 }}
-                                onClick={() => openModal(task.responsables)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openModal(task.responsables);
+                                }}
                               ></div>
                             ))}
                             {task.responsables.length > 2 && (
                               <div
-                                onClick={() => openModal(task.responsables)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openModal(task.responsables);
+                                }}
                                 className="inline-block bg-gray-300 size-6 rounded-full ring-2 ring-white flex items-center justify-center text-xs font-medium text-gray-600 cursor-pointer"
                               >
                                 +{task.responsables.length - 2}
