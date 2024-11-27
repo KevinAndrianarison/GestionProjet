@@ -223,10 +223,9 @@ const Fournisseurs = () => {
             <tr>
               <th className="text-left py-2 px-4 text-xs font-bold">Type</th>
               <th className="text-left py-2 px-4 text-xs font-bold">Nom société</th>
-              <th className="text-left py-2 px-4 text-xs font-bold">Nom responsable</th>
-              <th className="text-left py-2 px-4 text-xs font-bold">Email</th>
-              <th className="text-left py-2 px-4 text-xs font-bold">Téléphone</th>
-              <th className="text-left py-2 px-4 text-xs font-bold">Ville</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Nom du contact</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Téléphone du contact</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Email du contact</th>
               <th></th>
             </tr>
           </thead>
@@ -236,9 +235,8 @@ const Fournisseurs = () => {
                 <td className="border-y py-2 px-4">{fournisseur.type}</td>
                 <td className="border-y py-2 px-4">{fournisseur.nom_societe}</td>
                 <td className="border-y py-2 px-4">{fournisseur.nom}</td>
-                <td className="border-y py-2 px-4">{fournisseur.email}</td>
                 <td className="border-y py-2 px-4">{fournisseur.telephone}</td>
-                <td className="border-y py-2 px-4">{fournisseur.ville}</td>
+                <td className="border-y py-2 px-4">{fournisseur.email}</td>
                 <td className="border-y py-2 px-4 w-[25px] relative">
                   <button
                     onClick={() => {
