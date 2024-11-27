@@ -5,13 +5,23 @@ import axios from 'axios';
 import { BASE_URL } from "../contextes/ApiUrls";
 import { ShowContext } from "../../contexte/useShow";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faXmark, faFile } from '@fortawesome/free-solid-svg-icons';
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
 
 const ProspectDetail = () => {
   const { id } = useParams();
   const { setShowSpinner, showAdmin } = useContext(ShowContext);
 
   const [refresh, setRefresh] = useState(false);
+  const [refreshClientFiles, setRefreshClientFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
+  const [IsLoadingClientFiles, setIsLoadingClientFiles] = useState(false);
+  const [ClientFiles, setClientFiles] = useState([]);
+  const [showAddFile, setShowAddFile] = useState(false);
+  const [designation_file, setDesignationFile] = useState("");
+  const [client_file, setClient_file] = useState(null)
 
   const [type_client, setTypeClient] = useState("societe");
   const [tel_societe, setTel_societe] = useState("");
@@ -35,58 +45,75 @@ const ProspectDetail = () => {
   const [adresse, setAdresse] = useState("");
   const [ville, setVille] = useState(null);
   const [pays, setPays] = useState(null);
+  const [pdfUrl, setPdf] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const tokenString = localStorage.getItem("token");
-      let token = JSON.parse(tokenString);
 
-      setIsLoading(true);
+  const fetchData = async () => {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
 
+    setIsLoading(true);
+
+    try {
+      const response = await axios.get(`${BASE_URL}clients/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setNomSociete(response.data.nom_societe);
+        setNom(response.data.nom);
+        setEmail(response.data.email);
+        setSexe(response.data.sexe);
+        setTelephone(response.data.telephone);
+        setSiteWeb(response.data.site_web);
+        setAdresse(response.data.adresse);
+        setPays(response.data.pays);
+        setVille(response.data.ville);
+        setNumeroSiren(response.data.numero_siren);
+        setTypeClient(response.data.type);
+        setEmail_societe(response.data.email);
+        setaffiliation_tva(Boolean(response.data.affilation_tva));
+        setnumero_tva(response.data.numero_tva);
+        setTel_societe(response.data.tel_societe);
+        setNumeroSiret(response.data.numero_siret);
+        setPieceIdentite(`https://bg.societe-manage.com/public/storage/${response.data.piece_identite}`);
+        setAssurance(`https://bg.societe-manage.com/public/storage/${response.data.assurance}`);
+        setCabisse(`https://bg.societe-manage.com/public/storage/${response.data.cabisse}`);
+        setContrats(`https://bg.societe-manage.com/public/storage/${response.data.contrats}`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données du prospect:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchDataClientFiles = async () => {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    setIsLoadingClientFiles(true);
       try {
-        const response = await axios.get(`${BASE_URL}clients/${id}`, {
+        const response = await axios.get(`${BASE_URL}clients/client-files/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         if (response.status === 200) {
-          setNomSociete(response.data.nom_societe);
-          setNom(response.data.nom);
-          setEmail(response.data.email);
-          setSexe(response.data.sexe);
-          setTelephone(response.data.telephone);
-          setSiteWeb(response.data.site_web);
-          setAdresse(response.data.adresse);
-          setPays(response.data.pays);
-          setVille(response.data.ville);
-          setNumeroSiren(response.data.numero_siren);
-          setTypeClient(response.data.type);
-          setEmail_societe(response.data.email);
-          setaffiliation_tva(Boolean(response.data.affilation_tva));
-          setnumero_tva(response.data.numero_tva);
-          setTel_societe(response.data.tel_societe);
-          setNumeroSiret(response.data.numero_siret);
-          setPieceIdentite(`https://bg.societe-manage.com/public/storage/${response.data.piece_identite}`);
-          setAssurance(`https://bg.societe-manage.com/public/storage/${response.data.assurance}`);
-          setCabisse(`https://bg.societe-manage.com/public/storage/${response.data.cabisse}`);
-          setContrats(`https://bg.societe-manage.com/public/storage/${response.data.contrats}`);
-
-          console.log(response.data)
+          setClientFiles(response.data);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des données du prospect:", error);
       } finally {
-        setIsLoading(false);
+        setIsLoadingClientFiles(false);
       }
-    };
-    fetchData();
-  }, [refresh]);
+  };
 
   const handleUpload = async (e, field) => {
     const file = e.target.files[0];
 
     if (file) {
-      console.log(file);
       const formData = new FormData();
       formData.append(field, file);
   
@@ -100,8 +127,6 @@ const ProspectDetail = () => {
             "X-HTTP-Method-Override": "PUT",
           },
         });
-
-        console.log(response);
   
         if (response.status === 200) {
           setRefresh(!refresh);
@@ -116,10 +141,71 @@ const ProspectDetail = () => {
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [refresh]);
+
+  useEffect(() => {
+    fetchDataClientFiles();
+  }, [refreshClientFiles]);
+
+  const handleSaveClientFile = async () => {
+    if (!designation_file || !client_file) {
+      alert("Veuillez fournir une désignation et sélectionner un fichier.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("designation", designation_file);
+    formData.append("file", client_file);
+    formData.append("gest_fac_client_id", id);
+  
+    try {
+      const tokenString = localStorage.getItem("token");
+      const token = JSON.parse(tokenString);
+  
+      const response = await axios.post(`${BASE_URL}clients/client-files`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(response);
+      if (response.status === 201) {
+        alert("Fichier enregistré avec succès !");
+        setRefreshClientFiles(!refreshClientFiles);
+        setDesignationFile("");
+        setClient_file(null);
+      } else {
+        alert("Erreur lors de l'enregistrement du fichier.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement :", error);
+      alert("Une erreur s'est produite lors de l'enregistrement.");
+    }
+  };
+
+  const showPdf = (url) => {
+    console.log("Afficher le PDF :", url);
+    setPdf(url);
+  };
+  
+  const showImg = (url) => {
+    console.log("Afficher l'image :", url);
+    // Code pour afficher l'image
+  };
+
   return (
     <>
+      {pdfUrl && (
+        <div style={{ height: "600px" }}>
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
+            <Viewer fileUrl={pdfUrl} />
+          </Worker>
+        </div>
+      )}
       <h1 className='mb-4 font-bold'>Détail sur la fiche client :</h1>
-      <div>
+      <div className='pb-5'>
         {isLoading ? (
           <div className="w-full  border-0 mt-2">
           <div className="flex flex-col space-y-3">
@@ -136,7 +222,7 @@ const ProspectDetail = () => {
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3'>
               <div className='p-3 shadow-md cursor-pointer'>
                 <h1 className='font-bold text-center'>Cabisse</h1>
-                {Cabisse ? (
+                {Cabisse && (Cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Cabisse)) ? (
                   <>
                     {Cabisse.endsWith('.pdf') ? (
                       <embed src={Cabisse} type="application/pdf" className="w-full h-40" />
@@ -175,7 +261,7 @@ const ProspectDetail = () => {
 
               <div className='p-3 shadow-md cursor-pointer'>
                 <h1 className='font-bold text-center'>Assurance</h1>
-                {assurance ? (
+                {assurance && (assurance.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance)) ? (
                   <>
                     {assurance.endsWith('.pdf') ? (
                       <embed src={assurance} type="application/pdf" className="w-full h-40" />
@@ -212,10 +298,10 @@ const ProspectDetail = () => {
               </div>
 
               <div className='p-3 shadow-md cursor-pointer'>
-                <h1 className='font-bold text-center'>Pièce Jointe</h1>
-                {assurance ? (
+                <h1 className='font-bold text-center'>Pièce d'identité</h1>
+                {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
                   <>
-                    {assurance.endsWith('.pdf') ? (
+                    {piece_identite.endsWith('.pdf') ? (
                       <embed src={piece_identite} type="application/pdf" className="w-full h-40" />
                     ) : (
                       <img src={piece_identite} alt="Pièce Jointe" className="w-full h-40 object-cover" />
@@ -251,9 +337,9 @@ const ProspectDetail = () => {
 
               <div className='p-3 shadow-md cursor-pointer'>
                 <h1 className='font-bold text-center'>Contrats</h1>
-                {Contrats ? (
+                {Contrats && (Contrats.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Contrats)) ? (
                   <>
-                    {assurance.endsWith('.pdf') ? (
+                    {Contrats.endsWith('.pdf') ? (
                       <embed src={Contrats} type="application/pdf" className="w-full h-40" />
                     ) : (
                       <img src={Contrats} alt="Contrats" className="w-full h-40 object-cover" />
@@ -355,8 +441,100 @@ const ProspectDetail = () => {
                   <div>{adresse}</div>
                 </div>
               </div>
-              <div className='border-l-4 border-blue-500 shadow-md max-h-[700px] overflow-auto'>
+              <div className='border-l-4 border-blue-500 shadow-md'>
+              {IsLoadingClientFiles ? (
+                <div className="w-full  border-0 mt-2">
+                <div className="flex flex-col space-y-3">
+                  <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
+                  <div className="space-y-3">
+                    <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                    <Skeleton className=" h-4 w-[50%]" />
+                  </div>
+                </div>
+              </div>
+              ) : (
+                <>
+                  <div className='w-full p-2 h-[400px] max-h-[500px] overflow-auto'>
+                  {ClientFiles.length > 0 ? (
+                    <div className='p-3 shadow-md divide-y divide-gray-200'>
+                      {ClientFiles.map((ClientFile) => (
+                        <div key={ClientFile.id} className="grid grid-cols-2 px-4 py-2">
+                          <div
+                            className='cursor-pointer hover:scale-105 transition-all'
+                              onClick={() => {
+                                const fileUrl = `https://bg.societe-manage.com/public/storage/${ClientFile.file}`;
+                                
+                                if (ClientFile.file.endsWith('.pdf')) {
+                                  showPdf(fileUrl);
+                                } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(ClientFile.file)) {
+                                  showImg(fileUrl);
+                                }
+                              }}
+                            >
+                              {ClientFile.designation}
+                            </div>
+                          <div></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className='p-2'><i>Aucun autre fichier enregistré</i></p>
+                  )}
 
+                  </div>
+                  <div className='w-full p-2'>
+                    {showAddFile ? (
+                      <>
+                        <div className='w-full relative shadow-md'>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-6">
+                            <div className="sm:col-span-1">
+                              <input
+                                type="text"
+                                value={designation_file}
+                                onChange={(e) => setDesignationFile(e.target.value)}
+                                placeholder='Designation du fichier'
+                                className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-1">
+                                <label className="text-blue-500 underline cursor-pointer">
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(e) => setClient_file(e.target.files[0])}
+                                />
+                                {client_file ? (
+                                    <>
+                                      <FontAwesomeIcon icon={faFile} />
+                                      {` Modifier : ${client_file.name}`}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FontAwesomeIcon icon={faFile} /> Ajouter le fichier
+                                    </>
+                                  )}
+                              </label>
+                            </div>
+                          </div>
+                          <div className='p-2'>
+                            <button className='px-2 py-1 bg-blue-400 text-white' title='Enregistrer' onClick={handleSaveClientFile} disabled={!client_file}><FontAwesomeIcon icon={faCheck}/></button>
+                            <button className='px-2 py-1 bg-red-400 text-white ml-2' title='Annuler' onClick={() => setShowAddFile(false)}><FontAwesomeIcon icon={faXmark}/></button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setShowAddFile(true)}
+                        className='bg-blue-500 px-6 py-2 text-white hover:scale-105 transition-all'
+                      >
+                        Ajouter un fichier
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
               </div>
             </div>
           </div>
