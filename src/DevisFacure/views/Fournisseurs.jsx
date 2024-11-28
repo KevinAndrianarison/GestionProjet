@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import ModalFornisseur from './ModalFornisseur';
 import ModalEditFornisseur from './ModalEditFornisseur';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit, faEllipsisV, faBuilding, faHome, faLaptop } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Notiflix from 'notiflix';
 import { Link } from 'react-router-dom';
 import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
@@ -18,11 +19,13 @@ const Fournisseurs = () => {
   const [fournisseurToEdit, setFournisseurToEdit] = useState(null);
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchFournisseurs = async () => {
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
+      setIsLoading(true);
       try {
         const response = await axios.get(`${BASE_URL}fournisseurs`, {
           headers: {
@@ -36,6 +39,7 @@ const Fournisseurs = () => {
       } catch (error) {
         console.error("Erreur lors du chargement des fournisseurs :", error);
       }
+      setIsLoading(false);
     };
     fetchFournisseurs();
   }, [refresh]);
@@ -179,11 +183,11 @@ const Fournisseurs = () => {
   const toggleActions = (id) => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
   };
+  console.log("ino ato ai", fournisseurs);
 
   return (
     <div>
       <header>
-
         <button
           onClick={() => setIsModalOpen(true)}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
@@ -226,58 +230,107 @@ const Fournisseurs = () => {
               <th className="text-left py-2 px-4 text-xs font-bold">Nom du contact</th>
               <th className="text-left py-2 px-4 text-xs font-bold">Téléphone du contact</th>
               <th className="text-left py-2 px-4 text-xs font-bold">Email du contact</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Pièces jointes</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {currentFournisseurs.map((fournisseur) => (
-              <tr key={fournisseur.id}>
-                <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.type}</Link></td>
-                <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.nom_societe}</Link></td>
-                <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.nom}</Link></td>
-                <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.telephone}</Link></td>
-                <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.email}</Link></td>
-                <td className="border-y py-2 px-4 w-[25px] relative">
-                <button
-                  onClick={() => {
-                    toggleActions(fournisseur.id)
-                  }}
-                  className="rounded hover:text-red-500"
-                >
-                  <FontAwesomeIcon icon={faEllipsisV} />
-                </button>
-                {showActionsIdProsp === fournisseur.id && (
-                  <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
-                    <button
-                      onClick={() => {
-                        openEditModal(fournisseur)
-                      }}
-                      className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
-                    >
-                      <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                      Modifier
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        handleDelete(fournisseur.id)
-                      }}
-                      className="text-red-500 hover:text-red-700 flex items-center"
-                    >
-                      <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                      Effacer
-                    </button>
+            {isLoading ? (
+              <div className="w-full  border-0 mt-2">
+                <div className="flex flex-col space-y-3">
+                  <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
+                  <div className="space-y-3">
+                    <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                    <Skeleton className=" h-4 w-[50%]" />
                   </div>
-                )}
-              </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-      {fournisseurs.length === 0 && (
-        <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
-      )}
-    </div>
+                  <div className="space-y-3">
+                    <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                    <Skeleton className=" h-4 w-[50%]" />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {currentFournisseurs.map((fournisseur) => (
+                  <tr key={fournisseur.id}>
+                    <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>
+                      {fournisseur.type === 'societe'
+                        ? (<><FontAwesomeIcon icon={faBuilding} className='mx-1' />Société</>)
+                        : fournisseur.type === 'particulier'
+                          ? (<><FontAwesomeIcon icon={faHome} className='mx-1' />Particulier</>)
+                          : (<><FontAwesomeIcon icon={faLaptop} className='mx-1' />Auto-Entrepreneur</>)}
+                    </Link>
+                    </td>
+                    <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.nom_societe}</Link></td>
+                    <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.nom}</Link></td>
+                    <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.telephone}</Link></td>
+                    <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.email}</Link></td>
+                    <td className="border-y py-2 px-4">
+                      <Link to={`${fournisseur.id}`}>
+                        <div className="text-center" title="Nombre de pièces jointes">
+                          {(() => {
+                            let nb_link = 0;
+                            let nb_linkShow = '';
+                            if (fournisseur.assurance) { nb_link += 1; }
+                            if (fournisseur.cabisse) { nb_link += 1; }
+                            if (fournisseur.piece_identite) { nb_link += 1; }
+                            if (fournisseur.contrats) { nb_link += 1; }
+                            nb_link += fournisseur.files?.length || 0;
+                            nb_linkShow = (nb_link > 9) ? '+9' : nb_link;
+                            return (
+                              <>
+                                ({nb_linkShow}) P.J
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="border-y py-2 px-4 w-[25px] relative">
+                      <button
+                        onClick={() => {
+                          toggleActions(fournisseur.id)
+                        }}
+                        className="rounded hover:text-red-500"
+                      >
+                        <FontAwesomeIcon icon={faEllipsisV} />
+                      </button>
+                      {showActionsIdProsp === fournisseur.id && (
+                        <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+                          <button
+                            onClick={() => {
+                              openEditModal(fournisseur)
+                            }}
+                            className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                          >
+                            <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                            Modifier
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              handleDelete(fournisseur.id)
+                            }}
+                            className="text-red-500 hover:text-red-700 flex items-center"
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                            Effacer
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </>
+            )}
+          </tbody>
+        </table>
+        {fournisseurs.length === 0 && (
+          <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
+        )}
+      </div>
       <ModalFornisseur isOpen={isModalOpen} onClose={closeModal} addFournisseur={addFournisseur} />
       <ModalEditFornisseur
         isOpen={isEditModalOpen}
