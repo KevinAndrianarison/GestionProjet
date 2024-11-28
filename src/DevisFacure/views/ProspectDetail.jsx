@@ -14,6 +14,7 @@ import useGeonames from '../contextes/useGeonames';
 import Select from 'react-select';
 import { UrlContext } from "../../contexte/useUrl";
 import { ShowContext } from "../../contexte/useShow";
+import { useNavigate } from 'react-router-dom';
 
 const ProspectDetail = () => {
   const { id } = useParams();
@@ -244,15 +245,14 @@ const ProspectDetail = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      if (response) {
-        navigate('../');
+      if (response.status === 200) {
+        Notiflix.Report.success(
+          'Succès',
+          'Client supprimé avec succès.',
+          'Fermer'
+        );
+        window.location.href = '../';
       }
-      Notiflix.Report.success(
-        'Succès',
-        'Client supprimé avec succès.',
-        'Fermer'
-      );
     } catch (error) {
       console.error('Erreur lors de la suppression des données :', error);
       Notiflix.Report.failure(
@@ -457,7 +457,7 @@ const ProspectDetail = () => {
       <Modal 
         isOpen={isFirstModalOpen} 
         onClose={() => {
-          setFirstModalOpen(false);}}>
+          setFirstModalOpen(false); setRefresh(!refresh);}}>
           <h2 className="text-sm font-semibold mb-2">Modifier le client :</h2>
           <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 bg-white">
             <div className="sm:col-span-1 p-1">
@@ -709,7 +709,6 @@ const ProspectDetail = () => {
                             onChange={(selectedOption) => setVille(selectedOption)}
                             placeholder="Sélectionnez une ville"
                             className="basic-select z-30"
-                            isDisabled={!filteredCities.length}
                             menuPortalTarget={document.body}
                             styles={{
                               menuPortal: (base) => ({ ...base, zIndex: 9999 }),
