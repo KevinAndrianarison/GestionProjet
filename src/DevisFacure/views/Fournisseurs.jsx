@@ -268,7 +268,7 @@ const Fournisseurs = () => {
                     <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.telephone}</Link></td>
                     <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.email}</Link></td>
                     <td className="border-y py-2 px-4">
-                      <Link to={`${fournisseur.id}`}>
+                      <Link to={`${fournisseur.id}`}> {fournisseurs.file}
                         <div className="text-center" title="Nombre de pièces jointes">
                           {(() => {
                             let nb_link = 0;

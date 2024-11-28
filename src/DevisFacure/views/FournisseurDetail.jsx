@@ -1,18 +1,21 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react';
 import axios from 'axios';
 import { BASE_URL } from "../contextes/ApiUrls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faXmark, faFile, faFilePdf, faImages, faPenToSquare, faPlus, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faXmark, faFile, faFilePdf, faImages, faPenToSquare, faPlus, faTrashAlt, faEdit, faBuilding, faHome, faLaptop } from '@fortawesome/free-solid-svg-icons';
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
 import Notiflix from 'notiflix';
+import ModalEditFornisseur from './ModalEditFornisseur';
 
 const FournisseurDetail = () => {
   const { id } = useParams();
   const [alt, setAlt] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const closeModal = () => setIsEditModalOpen(false);
 
   const [refresh, setRefresh] = useState(false);
   const [refreshFournisseurFiles, setRefreshFournisseurFiles] = useState(false);
@@ -149,6 +152,51 @@ const FournisseurDetail = () => {
     }
   };
 
+  const deleteFournisseur = async () => {
+    const confirmDelete = () => {
+      return new Promise((resolve) => {
+        Notiflix.Confirm.show(
+          'Confirmer',
+          'Êtes-vous sûr de vouloir supprimer ?',
+          'Oui',
+          'Non',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+    };
+    const confirmed = await confirmDelete();
+    if (!confirmed) {
+      return;
+    }
+
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    try {
+      const response = await axios.delete(`${BASE_URL}fournisseurs/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        Notiflix.Report.success(
+          'Succès',
+          'Fournisseur supprimé avec succès.',
+          'Fermer'
+        );
+        window.location.href = '../';
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression des données :', error);
+      Notiflix.Report.failure(
+        'Echec',
+        'Echec lors de la suppression du fournisseur.',
+        'Fermer'
+      );
+    }
+  }
+
   const DeleteFile = async (IdFile) => {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -205,7 +253,7 @@ const FournisseurDetail = () => {
 
   const HideAddFile = () => {
     setDesignationFile("");
-    setClient_file(null);
+    setFournisseurFile(null);
     setShowAddFile(false);
   }
 
@@ -213,19 +261,19 @@ const FournisseurDetail = () => {
   const AllowedFile = (file) => {
     const allowedFileTypes = /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i;
     const maxFileSize = 2 * 1024 * 1024;
-  
+
     if (!allowedFileTypes.test(file.name)) {
       Notiflix.Notify.warning(
         "Le fichier doit être un PDF ou une image valide (jpg, jpeg, png, gif, bmp, svg, webp)."
       );
       return false;
     }
-  
+
     if (file.size > maxFileSize) {
       Notiflix.Notify.warning("Le fichier ne doit pas dépasser 2 Mo.");
       return false;
     }
-  
+
     return true;
   };
 
@@ -262,6 +310,7 @@ const FournisseurDetail = () => {
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
       Notiflix.Notify.failure("Une erreur s'est produite lors de l'enregistrement.");
+      setIsLoadingClientFiles(false);
     }
   };
 
@@ -301,7 +350,13 @@ const FournisseurDetail = () => {
           </div>
         </>
       )}
-      <h1 className='mb-4 font-bold'>Détail sur la fiche Fournisseur :</h1>
+      <h1 className='mb-4 font-bold'>Détail sur la fiche Fournisseur :
+        {type_Fournisseur === 'societe'
+          ? (<><FontAwesomeIcon icon={faBuilding} className='mx-2' /> Société</>)
+          : type_Fournisseur === 'particulier'
+            ? (<><FontAwesomeIcon icon={faHome} className='mx-2' /> Particulier</>)
+            : (<><FontAwesomeIcon icon={faLaptop} className='mx-2' /> Auto-Entrepreneur</>)}
+      </h1>
       <div className='pb-5'>
         {isLoading ? (
           <div className="w-full  border-0 mt-2">
@@ -313,58 +368,69 @@ const FournisseurDetail = () => {
                 <Skeleton className=" h-4 w-[50%]" />
               </div>
             </div>
+            <div className="flex flex-col space-y-3">
+              <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
+              <div className="space-y-3">
+                <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                <Skeleton className="h-4 w-[75%]" />
+                <Skeleton className=" h-4 w-[50%]" />
+              </div>
+            </div>
           </div>
         ) : (
           <div className='w-full'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3'>
-              <div className='p-3 shadow-md '>
-                {cabisse && (cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) ? (
-                  <>
-                    <p
-                      className="cursor-pointer hover:scale-105 transition-all mb-4"
-                      onClick={() => {
-                        const fileUrl = `${cabisse}`;
+            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-3'>
+              {type_Fournisseur === 'societe' && (
+                <>
+                  <div className='p-3 shadow-md '>
+                    {cabisse && (cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) ? (
+                      <>
+                        <p
+                          className="cursor-pointer hover:scale-105 transition-all mb-4"
+                          onClick={() => {
+                            const fileUrl = `${cabisse}`;
 
-                        if (cabisse.endsWith('.pdf')) {
-                          showPdf(fileUrl);
-                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) {
-                          showImg(fileUrl);
-                          setAlt('Pièce d\'identité');
-                        }
-                      }}
-                    >
-                      {cabisse.endsWith('.pdf') ? (
-                        <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
-                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse) ? (
-                        <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
-                      ) : null}
-                      Cabisse
-                    </p>
-                    <label className="text-blue-500 cursor-pointer">
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleUpload(e, "cabisse")}
-                      />
-                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
-                    </label>
-                  </>
-                ) : (
-                  <>
-                    <h1 className='font-bold text-center'>Cabisse
-                      <label className="text-blue-500 cursor-pointer ml-4">
-                        <input
-                          type="file"
-                          className="hidden"
-                          onChange={(e) => handleUpload(e, "cabisse")}
-                        />
-                        <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
-                      </label>
-                    </h1>
-                  </>
-                )}
-              </div>
-
+                            if (cabisse.endsWith('.pdf')) {
+                              showPdf(fileUrl);
+                            } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) {
+                              showImg(fileUrl);
+                              setAlt('Pièce d\'identité');
+                            }
+                          }}
+                        >
+                          {cabisse.endsWith('.pdf') ? (
+                            <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                          ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse) ? (
+                            <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                          ) : null}
+                          Cabisse
+                        </p>
+                        <label className="text-blue-500 cursor-pointer">
+                          <input
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => handleUpload(e, "cabisse")}
+                          />
+                          <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
+                        </label>
+                      </>
+                    ) : (
+                      <>
+                        <h1 className='font-bold text-center'>Cabisse
+                          <label className="text-blue-500 cursor-pointer ml-4">
+                            <input
+                              type="file"
+                              className="hidden"
+                              onChange={(e) => handleUpload(e, "cabisse")}
+                            />
+                            <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                          </label>
+                        </h1>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
               <div className='p-3 shadow-md'>
                 {assurance && (assurance.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance)) ? (
                   <>
@@ -412,6 +478,7 @@ const FournisseurDetail = () => {
                   </>
                 )}
               </div>
+              {(type_Fournisseur === 'particulier' || type_Fournisseur === 'auto_entrepreneur') && (
 
               <div className='p-3 shadow-md'>
                 {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
@@ -459,6 +526,7 @@ const FournisseurDetail = () => {
                   </>
                 )}
               </div>
+              )}
               <div className='p-3 shadow-md'>
                 {contrats && (contrats.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats)) ? (
                   <>
@@ -510,6 +578,13 @@ const FournisseurDetail = () => {
             </div>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 border-l-4 border-blue-500'>
               <div className='p-3 shadow-md divide-y divide-gray-200'>
+                <div className="grid grid-cols-2 px-4 py-2">
+                  <div className="font-normal pr-2"><button className='w-full bg-blue-500 py-2 text-white' onClick={() => setIsEditModalOpen(true)}><FontAwesomeIcon icon={faEdit} className='mr-2' />Modifier</button></div>
+                  <div className='pl-2'><button className='w-full bg-red-500 py-2 text-white' onClick={deleteFournisseur}><FontAwesomeIcon icon={faTrashAlt} className='mr-2' />Effacer</button></div>
+                </div>
+                {isEditModalOpen && (
+                  <ModalEditFornisseur onClose={closeModal} />
+                )}
                 {type_Fournisseur === "societe" && (
                   <>
                     <div className="grid grid-cols-2 px-4 py-2">
