@@ -6,13 +6,14 @@ import { BASE_URL } from "../contextes/ApiUrls";
 import { ShowContext } from "../../contexte/useShow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faXmark, faFile } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faXmark, faFile, faFilePdf, faImages } from '@fortawesome/free-solid-svg-icons';
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 
 const FournisseurDetail = () => {
   const { id } = useParams();
   const { setShowSpinner, showAdmin } = useContext(ShowContext);
+  const [alt, setAlt] = useState('');
 
   const [refresh, setRefresh] = useState(false);
   const [refreshFournisseurFiles, setRefreshFournisseurFiles] = useState(false);
@@ -45,8 +46,8 @@ const FournisseurDetail = () => {
   const [adresse, setAdresse] = useState("");
   const [ville, setVille] = useState(null);
   const [pays, setPays] = useState(null);
-  const [pdfUrl, setPdf] = useState('');
-
+  const [pdfUrl, setPdfurl] = useState('');
+  const [ImgUrl, setImgUrl] = useState('');
 
   const fetchData = async () => {
     const tokenString = localStorage.getItem("token");
@@ -193,17 +194,34 @@ const FournisseurDetail = () => {
 
   const showImg = (url) => {
     console.log("Afficher l'image :", url);
-    // Code pour afficher l'image
+    setImgUrl(url);
   };
 
   return (
     <>
       {pdfUrl && (
-        <div style={{ height: "600px" }}>
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
-            <Viewer fileUrl={pdfUrl} />
-          </Worker>
-        </div>
+        <>
+          <div className='fixed w-full h-full top-0 left-0 z-30 bg-opacity-55 bg-black' onClick={(e) => setPdfurl('')}></div>
+          <div className='z-50 fixed w-[1200px] max-w-[90%] max-h-full h-[90vh] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] shadow-md'>
+            <FontAwesomeIcon icon={faXmark} className='absolute top-0 right-0 text-xl bg-red-600 p-1 text-white cursor-pointer hover:scale-105 transition-all' onClick={(e) => setPdfurl('')} />
+            <embed src={pdfUrl} type="application/pdf" className="w-full h-full" />
+          </div>
+        </>
+      )}
+
+      {ImgUrl && (
+        <>
+          <div className='fixed w-full h-full top-0 left-0 z-30 bg-opacity-55 bg-black' onClick={(e) => setImgUrl('')}></div>
+          <div className='z-50 fixed w-[1200px] max-w-[90%] max-h-[75vh] top-[45%] left-[50%] translate-x-[-50%] translate-y-[-50%] shadow-md'>
+            <div className='bg-black p-4'>
+              <FontAwesomeIcon icon={faXmark} className='absolute top-0 right-0 text-xl bg-red-600 p-1 text-white cursor-pointer hover:scale-105 transition-all' onClick={(e) => setImgUrl('')} />
+              <h1 className='text-white'><FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />{alt}</h1>
+            </div>
+            <div className='overflow-auto max-h-[80vh] text-center bg-white align-middle'>
+              <img src={ImgUrl} alt={alt} className="w-full" />
+            </div>
+          </div>
+        </>
       )}
       <h1 className='mb-4 font-bold'>Détail sur la fiche Fournisseur :</h1>
       <div className='pb-5'>
@@ -225,11 +243,26 @@ const FournisseurDetail = () => {
                 <h1 className='font-bold text-center'>Cabisse</h1>
                 {cabisse && (cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) ? (
                   <>
-                    {cabisse.endsWith('.pdf') ? (
-                      <embed src={cabisse} type="application/pdf" className="w-full h-40" />
-                    ) : (
-                      <img src={cabisse} alt="cabisse" className="w-full h-40 object-cover" />
-                    )}
+                    <p
+                      className="cursor-pointer hover:scale-105 transition-all mb-4"
+                      onClick={() => {
+                        const fileUrl = `${cabisse}`;
+
+                        if (cabisse.endsWith('.pdf')) {
+                          showPdf(fileUrl);
+                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) {
+                          showImg(fileUrl);
+                          setAlt('Pièce d\'identité');
+                        }
+                      }}
+                    >
+                      {cabisse.endsWith('.pdf') ? (
+                        <embed src={cabisse} type="application/pdf" className="w-full h-40" />
+                      ) : (
+                        <img src={cabisse} alt="cabisse" className="w-full h-40 object-cover" />
+                      )}
+                      Cabisse
+                    </p>
                     <a
                       href={cabisse}
                       target="_blank"
@@ -302,27 +335,26 @@ const FournisseurDetail = () => {
                 <h1 className='font-bold text-center'>Pièce d'identité</h1>
                 {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
                   <>
-                    {piece_identite.endsWith('.pdf') ? (
-                      <embed src={piece_identite} type="application/pdf" className="w-full h-40" />
-                    ) : (
-                      <img src={piece_identite} alt="Pièce Jointe" className="w-full h-40 object-cover" />
-                    )}
-                    <a
-                      href={piece_identite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline block mt-2"
+                    <p
+                      className="cursor-pointer hover:scale-105 transition-all mb-4"
+                      onClick={() => {
+                        const fileUrl = `${piece_identite}`;
+
+                        if (piece_identite.endsWith('.pdf')) {
+                          showPdf(fileUrl);
+                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) {
+                          showImg(fileUrl);
+                          setAlt('Pièce d\'identité');
+                        }
+                      }}
                     >
-                      Voir le fichier
-                    </a>
-                    <label className="text-blue-500 underline cursor-pointer">
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleUpload(e, "piece_identite")}
-                      />
-                      Modifier le fichier
-                    </label>
+                      {piece_identite.endsWith('.pdf') ? (
+                        <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite) ? (
+                        <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                      ) : null}
+                      Pièce d'identité
+                    </p>
                   </>
                 ) : (
                   <label className="text-blue-500 underline cursor-pointer">
@@ -470,9 +502,15 @@ const FournisseurDetail = () => {
                                     showPdf(fileUrl);
                                   } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(FournisseurFile.file)) {
                                     showImg(fileUrl);
+                                    setAlt(FournisseurFile.designation);
                                   }
                                 }}
                               >
+                                {FournisseurFile.file.endsWith('.pdf') ? (
+                                  <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                                ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(FournisseurFile.file) ? (
+                                  <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                                ) : null}
                                 {FournisseurFile.designation}
                               </div>
                               <div></div>
