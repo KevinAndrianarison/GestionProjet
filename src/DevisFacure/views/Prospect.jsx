@@ -4,7 +4,11 @@ import { BASE_URL } from "../contextes/ApiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash, faEdit,
-  faEllipsisV
+  faEllipsisV,
+  faFile,
+  faBuilding,
+  faHome,
+  faLaptop
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from 'react-router-dom';
 import Modal from './Modal';
@@ -74,9 +78,11 @@ function ProspectSCT() {
         });
         if (response.status === 200) {
           setProspects(response.data);
+          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
+        Notiflix.Notify.failure("Erreur lors de la récupération des données:");
       } finally {
         setIsLoading(false);
       }
@@ -313,6 +319,7 @@ function ProspectSCT() {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du prospect:", error);
+      Notiflix.Notify.failure("Erreur lors de la récupération des données du prospect:");
     }
   };
 
@@ -352,21 +359,19 @@ function ProspectSCT() {
       </div>
 
       <div className="w-full border rounded-lg shadow-md p-0 relative overflow-x-auto">
-        <div className="divide-y divide-gray-200 p-0 bg-slate-100 font-bold z-0 min-w-[700px]">
-          <div className="grid grid-cols-6 px-4 py-2">
+        <div className="divide-y divide-gray-200 p-0 bg-slate-100 font-bold z-0 min-w-[1000px]">
+          <div className="grid grid-cols-[2fr,5fr,5fr,4fr,4fr,3fr,1fr] px-4 py-2">
             <div>Type</div>
             <div>Nom société</div>
             <div>Nom du contact</div>
             <div>Téléphone du contact</div>
             <div>Email du contact</div>
+            <div className="text-center">Pièces Jointes</div>
             <div></div>
           </div>
         </div>
-
-        <div className="divide-y divide-gray-200 p-0 h-[600px] overflow-y-auto min-w-[700px]">
-        {currentProspects.map((prospect) => (
-          <React.Fragment key={prospect.id}>
-            {isLoading ? (
+        <div className="divide-y divide-gray-200 p-0 h-[600px] overflow-y-auto min-w-[1000px]">
+          {isLoading ? (
             <div className="w-full  border-0 mt-2">
             <div className="flex flex-col space-y-3">
               <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
@@ -375,48 +380,82 @@ function ProspectSCT() {
                 <Skeleton className="h-4 w-[75%]" />
                 <Skeleton className=" h-4 w-[50%]" />
               </div>
+              <div className="space-y-3">
+                <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                <Skeleton className="h-4 w-[75%]" />
+                <Skeleton className=" h-4 w-[50%]" />
+              </div>
             </div>
           </div>
           ) : (
-              <div className="grid grid-cols-6 px-4 py-2 font-normal hover:shadow-md hover:bg-slate-50">
-                <Link to={`${prospect.id}`}><div>{prospect.type}</div></Link>
-                <Link to={`${prospect.id}`}><div>{prospect.nom_societe}</div></Link>
-                <Link to={`${prospect.id}`}><div>{prospect.nom}</div></Link>
-                <Link to={`${prospect.id}`}><div>{prospect.telephone}</div></Link>
-                <Link to={`${prospect.id}`}><div>{prospect.email}</div></Link>
-                <div className="relative text-right">
-                  <button
-                    onClick={() => toggleActions(prospect.id)}
-                    className="rounded hover:text-red-500"
-                  >
-                    <FontAwesomeIcon icon={faEllipsisV} />
-                  </button>
-                  {showActionsIdProsp === prospect.id && (
-                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+            <>
+              {currentProspects.map((prospect) => (
+                <React.Fragment key={prospect.id}>
+                  <div className="grid grid-cols-[2fr,5fr,5fr,4fr,4fr,3fr,1fr] px-4 py-2 font-normal hover:shadow-md hover:bg-slate-50">
+                    <Link to={`${prospect.id}`}>
+                      <div>{prospect.type === 'societe' 
+                        ? (<><FontAwesomeIcon icon={faBuilding} className='mx-2'/> Société</>)
+                        : type_client === 'particulier' 
+                        ? (<><FontAwesomeIcon icon={faHome} className='mx-2'/> Particulier</>)
+                        : (<><FontAwesomeIcon icon={faLaptop} className='mx-2'/> Auto-Entrepreneur</>)}
+                      </div>
+                    </Link>
+                    <Link to={`${prospect.id}`}><div>{prospect.nom_societe}</div></Link>
+                    <Link to={`${prospect.id}`}><div>{prospect.nom}</div></Link>
+                    <Link to={`${prospect.id}`}><div>{prospect.telephone}</div></Link>
+                    <Link to={`${prospect.id}`}><div>{prospect.email}</div></Link>
+                    <Link to={`${prospect.id}`}>
+                      <div className="text-center" title="Nombre de pièces jointe">
+                        {(() => {
+                          let nb_link = 0;
+                          let nb_linkShow = '';
+                          if (prospect.assurance) {nb_link = nb_link + 1;}
+                          if (prospect.cabisse) {nb_link = nb_link + 1;}
+                          if (prospect.piece_identite) {nb_link = nb_link + 1;}
+                          if (prospect.contrats) {nb_link = nb_link + 1;}
+                          nb_link = nb_link + prospect.files.length;
+                          nb_linkShow = (nb_link > 9) ? '+9' : nb_link;
+                          return (
+                            <>
+                              ({nb_linkShow}) P.J
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </Link>
+                    <div className="relative text-right">
                       <button
-                        onClick={() => handleEditClick(prospect.id)}
-                        className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                        onClick={() => toggleActions(prospect.id)}
+                        className="rounded hover:text-red-500"
                       >
-                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                        Modifier
+                        <FontAwesomeIcon icon={faEllipsisV} />
                       </button>
-                      <button
-                        onClick={() => handleDelete(prospect.id)}
-                        className="text-red-500 hover:text-red-700 flex items-center"
-                      >
-                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                        Effacer
-                      </button>
+                      {showActionsIdProsp === prospect.id && (
+                        <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+                          <button
+                            onClick={() => handleEditClick(prospect.id)}
+                            className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                          >
+                            <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                            Modifier
+                          </button>
+                          <button
+                            onClick={() => handleDelete(prospect.id)}
+                            className="text-red-500 hover:text-red-700 flex items-center"
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                            Effacer
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-
-      </div>
-      {prospects.length === 0 && <p className="text-slate-400"><i>Aucun prospect disponible.</i></p>}
+                  </div>
+                </React.Fragment>
+              ))}
+              {prospects.length === 0 && <p className="text-slate-400"><i>Aucun prospect disponible.</i></p>}
+            </>
+          )}
+        </div>
     </div>
 
     <Modal 
