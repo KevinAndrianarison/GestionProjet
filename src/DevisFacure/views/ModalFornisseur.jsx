@@ -203,9 +203,7 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                   />
                 </div>
                 <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">
-                    Site Web
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 my-2">Site Web</label>
                   <input
                     type="text"
                     value={site_web}
@@ -372,48 +370,6 @@ const ModalFornisseur = ({ isOpen, onClose, addFournisseur }) => {
                   placeholder='Adresse'
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 px-4 py-1 border-b">
-              <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
-              <input
-                type="text"
-                value={piece_identite}
-                onChange={(e) => setPieceIdentite(e.target.value)}
-                className="w-full p-2 rounded text-sm"
-                placeholder="Piece d'identité"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 px-4 py-1 border-b">
-              <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
-              <input
-                type="text"
-                value={cabisse}
-                onChange={(e) => setCabisse(e.target.value)}
-                className="w-full p-2 rounded text-sm"
-                placeholder='Cabisse'
-              />
-            </div>
-            <div className="grid grid-cols-2 px-4 py-1 border-b">
-              <label className="block text-sm font-medium text-gray-700 my-2">Assurance</label>
-              <input
-                type="text"
-                value={assurance}
-                onChange={(e) => setAssurance(e.target.value)}
-                className="w-full p-2 rounded text-sm"
-                placeholder='Assurance'
-              />
-            </div>
-            <div className="grid grid-cols-2 px-4 py-1 border-b">
-              <label className="block text-sm font-medium text-gray-700 my-2">Contrats</label>
-              <input
-                type="text"
-                value={contrats}
-                onChange={(e) => setContrats(e.target.value)}
-                className="w-full p-2 rounded text-sm"
-                placeholder='Contrats'
-              />
             </div>
           </div>
           <div className="lg:col-span-1">

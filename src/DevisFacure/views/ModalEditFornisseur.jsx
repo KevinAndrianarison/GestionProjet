@@ -7,8 +7,6 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
   const [errorMessage, setErrorMessage] = useState("");
   const { countriesAndCities, loading, error } = useGeonames();
   const [filteredCities, setFilteredCities] = useState([]);
-  const [pays, setPays] = useState(null);
-  const [ville, setVille] = useState(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -211,9 +209,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
               </div>
             </div>
           </div>
-
           <div className="">
-
             <div>
               {errorMessage && (
                 <span className="text-red-600 text-sm">{errorMessage}</span>
@@ -223,7 +219,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
               {formData.type == "societe" && (
                 <>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Nom société</label>
+                    <label className="block text-sm font-medium text-gray-700 my-2">Dénomination de la société</label>
                     <input
                       type="text"
                       name="nom_societe"
@@ -233,9 +229,18 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                       className="w-full p-2 rounded text-sm"
                     />
                   </div>
-
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Site Web</label>
+                    <input
+                      type="text"
+                      name="site_web"
+                      value={formData.site_web}
+                      onChange={handleChange}
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Email société</label>
+                    <label className="block text-sm font-medium text-gray-700 my-2">Email de la société</label>
                     <input
                       type="text"
                       name="email_societe"
@@ -245,9 +250,8 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                       className="w-full p-2 rounded text-sm"
                     />
                   </div>
-
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Téléphone société</label>
+                    <label className="block text-sm font-medium text-gray-700 my-2">Téléphone de la société</label>
                     <input
                       type="text"
                       name="tel_societe"
@@ -257,32 +261,79 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                       className="w-full p-2 rounded text-sm"
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
+                    <input
+                      type="text"
+                      name="numero_siren"
+                      value={formData.numero_siren}
+                      onChange={handleChange}
+                      placeholder="Numéro SIREN"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIRET</label>
+                    <input
+                      type="text"
+                      name="numero_siret"
+                      value={formData.numero_siret}
+                      onChange={handleChange}
+                      placeholder="Numéro SIRET"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
+                    <select
+                      name="affilation_tva"
+                      value={formData.affilation_tva}
+                      onChange={handleChange}
+                      className="w-full p-2 rounded text-sm">
+                      <option value="non">Non</option>
+                      <option value="oui">Oui</option>
+                    </select>
+                  </div>
+                  {formData.affilation_tva === "oui" && (
+                    <div className="grid grid-cols-2 px-4 py-1 border-b">
+                      <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
+                      <input
+                        type="text"
+                        name="numero_tva"
+                        value={formData.numero_tva}
+                        onChange={handleChange}
+                        placeholder="Numero TVA"
+                        className="w-full p-2 rounded text-sm"
+                      />
+                    </div>
+                  )}
                 </>
               )}
               <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Nom responsable</label>
+                <label className="block text-sm font-medium text-gray-700 my-2">{formData.type === "societe" ? "Nom complet du contact" : "Nom complet"}</label>
                 <input
                   type="text"
                   name="nom"
                   value={formData.nom}
                   onChange={handleChange}
-                  placeholder="Nom responsable"
+                  placeholder={formData.type === "societe" ? "Nom complet du contact" : "Nom complet"}
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Email responsable</label>
+                <label className="block text-sm font-medium text-gray-700 my-2">{formData.type === "societe" ? "Email du contact" : "Adresse e-mail"}</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Email responsable"
+                  placeholder={formData.type === "societe" ? "Email du contact" : "Adresse e-mail"}
                   className="w-full p-2 rounded text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Téléphone responsable</label>
+                <label className="block text-sm font-medium text-gray-700 my-2">{formData.type === "societe" ? "Téléphone du contact" : "Numéro de téléphone"}</label>
                 <input
                   type="text"
                   value={formData.telephone}
@@ -305,31 +356,6 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   <option value="femme">Madame</option>
                   <option value="non_precise">Non précisé</option>
                 </select>
-              </div>
-              {formData.type === "societe" && (
-                <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">
-                    Site Web
-                  </label>
-                  <input
-                    type="text"
-                    name="site_web"
-                    value={formData.site_web}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded text-sm"
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Adresse</label>
-                <input
-                  type="text"
-                  name="adresse"
-                  value={formData.adresse}
-                  onChange={handleChange}
-                  placeholder="Adresse"
-                  className="w-full p-2 rounded text-sm"
-                />
               </div>
 
               <div>
@@ -357,9 +383,7 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                           menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                         }}
                       />
-
                     </div>
-
                     <div className="grid grid-cols-2 px-4 py-1 border-b">
                       <label className="block text-sm font-medium text-gray-700 my-2">Ville</label>
                       <Select
@@ -382,97 +406,14 @@ const ModalEditFournisseur = ({ isOpen, onClose, fournisseurToEdit, updateFourni
                   </>
                 )}
               </div>
-              {formData.type === "societe" && (
-                <>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIREN</label>
-                    <input
-                      type="text"
-                      name="numero_siren"
-                      value={formData.numero_siren}
-                      onChange={handleChange}
-                      placeholder="Numéro SIREN"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro SIRET</label>
-                    <input
-                      type="text"
-                      name="numero_siret"
-                      value={formData.numero_siret}
-                      onChange={handleChange}
-                      placeholder="Numéro SIRET"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                </>
-              )}
               <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Piece d'identité</label>
+                <label className="block text-sm font-medium text-gray-700 my-2">Adresse</label>
                 <input
                   type="text"
-                  name="piece_identite"
-                  value={formData.piece_identite}
+                  name="adresse"
+                  value={formData.adresse}
                   onChange={handleChange}
-                  placeholder="Piece d'identité"
-                  className="w-full p-2 rounded text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Affilation TVA</label>
-                <select
-                  name="affilation_tva"
-                  value={formData.affilation_tva}
-                  onChange={handleChange}
-                  className="w-full p-2 rounded text-sm">
-                  <option value="non">Non</option>
-                  <option value="oui">Oui</option>
-                </select>
-              </div>
-              {formData.affilation_tva === "oui" && (
-                <div className="grid grid-cols-2 px-4 py-1 border-b">
-                  <label className="block text-sm font-medium text-gray-700 my-2">Numero TVA</label>
-                  <input
-                    type="text"
-                    name="numero_tva"
-                    value={formData.numero_tva}
-                    onChange={handleChange}
-                    placeholder="Numero TVA"
-                    className="w-full p-2 rounded text-sm"
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Cabisse</label>
-                <input
-                  type="text"
-                  name="cabisse"
-                  value={formData.cabisse}
-                  onChange={handleChange}
-                  placeholder="Cabisse"
-                  className="w-full p-2 rounded text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Assurance</label>
-                <input
-                  type="text"
-                  name="assurance"
-                  value={formData.assurance}
-                  onChange={handleChange}
-                  placeholder="Assurance"
-                  className="w-full p-2 rounded text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 px-4 py-1 border-b">
-                <label className="block text-sm font-medium text-gray-700 my-2">Contrats</label>
-                <input
-                  type="text"
-                  name="contrats"
-                  value={formData.contrats}
-                  onChange={handleChange}
-                  placeholder="contrats"
+                  placeholder="Adresse"
                   className="w-full p-2 rounded text-sm"
                 />
               </div>

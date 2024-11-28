@@ -26,6 +26,7 @@ import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
 import Fournisseurs  from "../DevisFacure/views/Fournisseurs.jsx";
 import ProspectDetail from "../DevisFacure/views/ProspectDetail";
+import FournisseurDetail from "../DevisFacure/views/FournisseurDetail";
 import EditUser from "../DevisFacure/views/ModifierClient";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
@@ -557,7 +558,7 @@ export default function MainPage() {
                   </li>
                   <li className="mr-5  mt-2 pb-2">
                     <NavLink
-                      to={`${entity}/GestionClientsFournisseurs/fornisseurs`}
+                      to={`${entity}/GestionClientsFournisseurs/fournisseurs`}
                       className={({ isActive }) =>
                         isActive
                           ? "mr-2 border-b-4 border-yellow-500 pb-2"
@@ -667,7 +668,7 @@ export default function MainPage() {
               <Route path="/gestionEntity" element={<GestionEntity />} />
               <Route path=":entity/GestionDevisFactures/devis" element={<Devis />} />
               <Route path=":entity/GestionDevisFactures/facture" element={<Facture />} />
-              <Route path=":entity/GestionClientsFournisseurs/fornisseurs" element={<Fournisseurs />} />
+              <Route path=":entity/GestionClientsFournisseurs/fournisseurs" element={<Fournisseurs />} />
               <Route path=":entity/GestionDevisFactures/services" element={<Services />} />
               <Route path=":entity/GestionClientsFournisseurs/prospect" element={<Prospect />} />
             </Routes>
@@ -678,6 +679,7 @@ export default function MainPage() {
               <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
               <Route path="/edit/:id" element={<EditUser />} />
               <Route path=":entity/GestionClientsFournisseurs/prospect/:id" element={<ProspectDetail />} />
+              <Route path=":entity/GestionClientsFournisseurs/fournisseurs/:id" element={<FournisseurDetail />} />
             </Routes>
 
             <Routes>
