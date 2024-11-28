@@ -5,8 +5,10 @@ import axios from 'axios';
 import { BASE_URL } from "../contextes/ApiUrls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faXmark, faFile, faFilePdf, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faXmark, faFile, faFilePdf, faImages, faPenToSquare, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Notiflix from 'notiflix';
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const ProspectDetail = () => {
   const { id } = useParams();
@@ -140,7 +142,7 @@ const ProspectDetail = () => {
       });
   
       if (response) {
-        setRefresh(!refresh);
+        setRefreshClientFiles(!refreshClientFiles);
       }
       Notiflix.Report.success(
         'Succès',
@@ -180,6 +182,7 @@ const ProspectDetail = () => {
   
         if (response.status === 200) {
           setRefresh(!refresh);
+          Notiflix.Notify.success("Fichier mis à jour");
           if (field === "cabisse") setCabisse(`https://bg.societe-manage.com/public/storage/${response.data.Cabisse}`);
           if (field === "Assurance") setAssurance(`https://bg.societe-manage.com/public/storage/${response.data.Assurance}`);
           if (field === "piece_identite") setPieceIdentite(`https://bg.societe-manage.com/public/storage/${response.data.piece_identite}`);
@@ -245,7 +248,6 @@ const ProspectDetail = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(response);
       if (response.status === 201) {
         Notiflix.Notify.success("Fichier enregistré avec succès !");
         setRefreshClientFiles(!refreshClientFiles);
@@ -316,8 +318,8 @@ const ProspectDetail = () => {
         </div>
         ) : (
           <div className='w-full'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3'>
-              <div className='p-3 shadow-md cursor-pointer'>
+            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-3'>
+              <div className='p-3 shadow-md '>
                 {Cabisse && (Cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Cabisse)) ? (
                   <>
                     <p
@@ -340,32 +342,33 @@ const ProspectDetail = () => {
                       ) : null}
                       Assurances
                     </p>
-                    <label className="text-blue-500 underline cursor-pointer ml-2 mt-4">
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "cabisse")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
                   <>
-                    <h1 className='font-bold text-center'>Cabisse</h1>
-                    <label className="text-blue-500 underline cursor-pointer">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e, "cabisse")}
-                    />
-                    Ajouter un fichier
-                  </label>
+                    <h1 className='font-bold text-center'>Cabisse
+                      <label className="text-blue-500 cursor-pointer ml-4">
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => handleUpload(e, "cabisse")}
+                      />
+                      <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                    </label>
+                    </h1>
                   </>
                 )}
               </div>
 
 
-              <div className='p-3 shadow-md cursor-pointer'>
+              <div className='p-3 shadow-md'>
                 {assurance && (assurance.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance)) ? (
                   <>
                     <p
@@ -388,31 +391,32 @@ const ProspectDetail = () => {
                       ) : null}
                       Assurances
                     </p>
-                    <label className="text-blue-500 underline cursor-pointer ml-2 mt-4">
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "assurance")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
                   <>
-                    <h1 className='font-bold text-center'>Assurance</h1>
-                    <label className="text-blue-500 underline cursor-pointer">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e, "assurance")}
-                    />
-                    Ajouter un fichier
-                  </label>
+                    <h1 className='font-bold text-center'>Assurance 
+                      <label className="text-blue-500 cursor-pointer ml-4">
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => handleUpload(e, "assurance")}
+                      />
+                      <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                    </label>
+                    </h1>
                   </>
                 )}
               </div>
 
-              <div className='p-3 shadow-md cursor-pointer'>
+              <div className='p-3 shadow-md'>
                 {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
                   <>
                     <p
@@ -435,30 +439,30 @@ const ProspectDetail = () => {
                       ) : null}
                       Pièce d'identité
                     </p>
-                    <label className="text-blue-500 underline cursor-pointer ml-2 mt-4">
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "piece_identite")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
                   <>
-                    <h1 className='font-bold text-center'>Pièce d'identité</h1>
-                    <label className="text-blue-500 underline cursor-pointer">
+                    <h1 className='font-bold text-center'>Pièce d'identité 
+                      <label className="text-blue-500 cursor-pointer ml-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "piece_identite")}
                       />
-                      Ajouter un fichier
-                    </label>
+                      <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                    </label></h1>
                   </>
                 )}
               </div>
-              <div className='p-3 shadow-md cursor-pointer'>
+              <div className='p-3 shadow-md'>
                 {Contrats && (Contrats.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Contrats)) ? (
                   <>
                     <p
@@ -481,32 +485,33 @@ const ProspectDetail = () => {
                       ) : null}
                       Contrats
                     </p>
-                    <label className="text-blue-500 underline cursor-pointer ml-2 mt-4">
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "contrats")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
                   <>
-                    <h1 className='font-bold text-center'>Contrats</h1>
-                    <label className="text-blue-500 underline cursor-pointer">
+                    <h1 className='font-bold text-center'>Contrats
+                    <label className="text-blue-500 cursor-pointer ml-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "contrats")}
                       />
-                      Ajouter un fichier
+                      <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
                     </label>
+                    </h1>
                   </>
                 )}
               </div>
 
             </div>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 border-l-4 border-blue-500'>
+            <div className='grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-l-4 border-blue-500'>
               <div className='p-3 shadow-md divide-y divide-gray-200'>
                 {type_client === "societe" && (
                   <>
@@ -587,11 +592,20 @@ const ProspectDetail = () => {
               </div>
               ) : (
                 <>
-                  <div className='w-full p-2 h-[400px] max-h-[500px] overflow-auto'>
+                  <div className='w-full px-2 py-0'>
+                    <div className='px-3 py-0 divide-y divide-gray-200'>
+                      <div className="grid grid-cols-[4fr,3fr,1fr] px-4 py-2 font-bold bg-slate-50 shadow-sm">
+                        <div>Fichier</div>
+                        <div>Date</div>
+                        <div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='w-full px-2 py-0 h-[400px] max-h-[500px] overflow-auto'>
                   {ClientFiles.length > 0 ? (
-                    <div className='p-3 shadow-md divide-y divide-gray-200'>
+                    <div className='px-3 py-0 shadow-md divide-y divide-gray-200'>
                       {ClientFiles.map((ClientFile) => (
-                        <div key={ClientFile.id} className="grid grid-cols-2 px-4 py-2">
+                        <div key={ClientFile.id} className="grid grid-cols-[4fr,3fr,1fr] px-4 py-2">
                           <div
                             className="cursor-pointer hover:scale-105 transition-all"
                             onClick={() => {
@@ -612,7 +626,8 @@ const ProspectDetail = () => {
                             ) : null}
                             {ClientFile.designation}
                           </div>
-                          <div></div>
+                          <div>{format(new Date(ClientFile.updated_at), "dd MMMM yyyy | HH.mm", {locale: fr, })}</div>
+                          <div className='text-right cursor-pointer'><FontAwesomeIcon icon={faTrashAlt} className='text-red-500' onClick={() => DeleteFile(ClientFile.id)}/> </div>
                         </div>
                       ))}
 

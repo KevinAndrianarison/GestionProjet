@@ -1,28 +1,27 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState} from 'react';
 import React from 'react';
 import axios from 'axios';
 import { BASE_URL } from "../contextes/ApiUrls";
-import { ShowContext } from "../../contexte/useShow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faXmark, faFile, faFilePdf, faImages } from '@fortawesome/free-solid-svg-icons';
-import { Worker, Viewer } from "@react-pdf-viewer/core";
-import "@react-pdf-viewer/core/lib/styles/index.css";
+import { faCheck, faXmark, faFile, faFilePdf, faImages, faPenToSquare, faPlus, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { fr } from "date-fns/locale";
+import { format } from "date-fns";
+import Notiflix from 'notiflix';
 
 const FournisseurDetail = () => {
   const { id } = useParams();
-  const { setShowSpinner, showAdmin } = useContext(ShowContext);
   const [alt, setAlt] = useState('');
 
   const [refresh, setRefresh] = useState(false);
   const [refreshFournisseurFiles, setRefreshFournisseurFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [IsLoadingFournisseurFiles, setIsLoadingFournisseurFiles] = useState(false);
-  const [FournisseurFiles, setFournisseurFiles] = useState([]);
+  const [isLoadingFournisseurFiles, setIsLoadingFournisseurFiles] = useState(false);
+  const [fournisseurFiles, setFournisseurFiles] = useState([]);
   const [showAddFile, setShowAddFile] = useState(false);
   const [designation_file, setDesignationFile] = useState("");
-  const [fournisseur_file, setFournisseur_file] = useState(null)
+  const [fournisseur_file, setFournisseurFile] = useState(null)
 
   const [type_Fournisseur, setTypeFournisseur] = useState("societe");
   const [tel_societe, setTel_societe] = useState("");
@@ -47,7 +46,7 @@ const FournisseurDetail = () => {
   const [ville, setVille] = useState(null);
   const [pays, setPays] = useState(null);
   const [pdfUrl, setPdfurl] = useState('');
-  const [ImgUrl, setImgUrl] = useState('');
+  const [imgUrl, setImgUrl] = useState('');
 
   const fetchData = async () => {
     const tokenString = localStorage.getItem("token");
@@ -85,6 +84,7 @@ const FournisseurDetail = () => {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du fournisseur", error);
+      Notiflix.Notify.failure("Erreur lors de la récupération des données du fournisseur:");
     } finally {
       setIsLoading(false);
     }
@@ -106,6 +106,7 @@ const FournisseurDetail = () => {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du fournisseur :::::", error);
+      Notiflix.Notify.failure("Erreur lors de la récupération des pièces jointes du fournisseur:");
     } finally {
       setIsLoadingFournisseurFiles(false);
     }
@@ -115,6 +116,9 @@ const FournisseurDetail = () => {
     const file = e.target.files[0];
 
     if (file) {
+      if (!AllowedFile(file)) {
+        return;
+      }
       const formData = new FormData();
       formData.append(field, file);
 
@@ -131,6 +135,7 @@ const FournisseurDetail = () => {
 
         if (response.status === 200) {
           setRefresh(!refresh);
+          Notiflix.Notify.success("Fichier mis à jour");
           if (field === "cabisse") setCabisse(`https://bg.societe-manage.com/public/storage/${response.data.cabisse}`);
           if (field === "assurance") setAssurance(`https://bg.societe-manage.com/public/storage/${response.data.assurance}`);
           if (field === "piece_identite") setPieceIdentite(`https://bg.societe-manage.com/public/storage/${response.data.piece_identite}`);
@@ -139,9 +144,56 @@ const FournisseurDetail = () => {
         }
       } catch (error) {
         console.error("Erreur lors de l'upload :", error);
+        Notiflix.Notify.failure("Erreur lors de l'upload");
       }
     }
   };
+
+  const DeleteFile = async (IdFile) => {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    const confirmDelete = () => {
+      return new Promise((resolve) => {
+        Notiflix.Confirm.show(
+          'Confirmer',
+          'Êtes-vous sûr de vouloir supprimer ?',
+          'Oui',
+          'Non',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+    };
+    const confirmed = await confirmDelete();
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${BASE_URL}fournisseurs/fournisseur-files/${IdFile}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response) {
+        setRefreshFournisseurFiles(!refreshFournisseurFiles);
+      }
+      Notiflix.Report.success(
+        'Succès',
+        'Fichier supprimé avec succès.',
+        'Fermer'
+      );
+    } catch (error) {
+      console.error('Erreur lors de la suppression des données :', error);
+      Notiflix.Report.failure(
+        'Echec',
+        'Echec lors de la suppression du fichier.',
+        'Fermer'
+      );
+    }
+  }
 
   useEffect(() => {
     fetchData();
@@ -150,6 +202,32 @@ const FournisseurDetail = () => {
   useEffect(() => {
     fetchDataFournisseurFiles();
   }, [refreshFournisseurFiles]);
+
+  const HideAddFile = () => {
+    setDesignationFile("");
+    setClient_file(null);
+    setShowAddFile(false);
+  }
+
+
+  const AllowedFile = (file) => {
+    const allowedFileTypes = /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i;
+    const maxFileSize = 2 * 1024 * 1024;
+  
+    if (!allowedFileTypes.test(file.name)) {
+      Notiflix.Notify.warning(
+        "Le fichier doit être un PDF ou une image valide (jpg, jpeg, png, gif, bmp, svg, webp)."
+      );
+      return false;
+    }
+  
+    if (file.size > maxFileSize) {
+      Notiflix.Notify.warning("Le fichier ne doit pas dépasser 2 Mo.");
+      return false;
+    }
+  
+    return true;
+  };
 
   const handleSaveFournisseurFile = async () => {
     if (!designation_file || !fournisseur_file) {
@@ -174,16 +252,16 @@ const FournisseurDetail = () => {
       });
       console.log(response);
       if (response.status === 201) {
-        alert("Fichier enregistré avec succès !");
+        Notiflix.Notify.success("Fichier enregistré avec succès !");
         setRefreshFournisseurFiles(!refreshFournisseurFiles);
-        setDesignationFile("");
-        setFournisseur_file(null);
+        HideAddFile();
+        setShowAddFile(false);
       } else {
-        alert("Erreur lors de l'enregistrement du fichier.");
+        Notiflix.Notify.failure("Erreur lors de l'enregistrement du fichier.");
       }
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
-      alert("Une erreur s'est produite lors de l'enregistrement.");
+      Notiflix.Notify.failure("Une erreur s'est produite lors de l'enregistrement.");
     }
   };
 
@@ -209,7 +287,7 @@ const FournisseurDetail = () => {
         </>
       )}
 
-      {ImgUrl && (
+      {imgUrl && (
         <>
           <div className='fixed w-full h-full top-0 left-0 z-30 bg-opacity-55 bg-black' onClick={(e) => setImgUrl('')}></div>
           <div className='z-50 fixed w-[1200px] max-w-[90%] max-h-[75vh] top-[45%] left-[50%] translate-x-[-50%] translate-y-[-50%] shadow-md'>
@@ -218,7 +296,7 @@ const FournisseurDetail = () => {
               <h1 className='text-white'><FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />{alt}</h1>
             </div>
             <div className='overflow-auto max-h-[80vh] text-center bg-white align-middle'>
-              <img src={ImgUrl} alt={alt} className="w-full" />
+              <img src={imgUrl} alt={alt} className="w-full" />
             </div>
           </div>
         </>
@@ -239,8 +317,7 @@ const FournisseurDetail = () => {
         ) : (
           <div className='w-full'>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3'>
-              <div className='p-3 shadow-md cursor-pointer'>
-                <h1 className='font-bold text-center'>Cabisse</h1>
+              <div className='p-3 shadow-md '>
                 {cabisse && (cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) ? (
                   <>
                     <p
@@ -257,82 +334,86 @@ const FournisseurDetail = () => {
                       }}
                     >
                       {cabisse.endsWith('.pdf') ? (
-                        <embed src={cabisse} type="application/pdf" className="w-full h-40" />
-                      ) : (
-                        <img src={cabisse} alt="cabisse" className="w-full h-40 object-cover" />
-                      )}
+                        <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse) ? (
+                        <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                      ) : null}
                       Cabisse
                     </p>
-                    <a
-                      href={cabisse}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline block mt-2"
-                    >
-                      Voir le fichier
-                    </a>
-                    <label className="text-blue-500 underline cursor-pointer">
+                    <label className="text-blue-500 cursor-pointer">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "cabisse")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
-                  <label className="text-blue-500 underline cursor-pointer">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e, "cabisse")}
-                    />
-                    Ajouter un fichier
-                  </label>
+                  <>
+                    <h1 className='font-bold text-center'>Cabisse
+                      <label className="text-blue-500 cursor-pointer ml-4">
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, "cabisse")}
+                        />
+                        <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                      </label>
+                    </h1>
+                  </>
                 )}
               </div>
 
-
-              <div className='p-3 shadow-md cursor-pointer'>
-                <h1 className='font-bold text-center'>Assurance</h1>
+              <div className='p-3 shadow-md'>
                 {assurance && (assurance.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance)) ? (
                   <>
-                    {assurance.endsWith('.pdf') ? (
-                      <embed src={assurance} type="application/pdf" className="w-full h-40" />
-                    ) : (
-                      <img src={assurance} alt="Assurance" className="w-full h-40 object-cover" />
-                    )}
-                    <a
-                      href={assurance}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline block mt-2"
+                    <p
+                      className="cursor-pointer hover:scale-105 transition-all mb-4"
+                      onClick={() => {
+                        const fileUrl = `${assurance}`;
+
+                        if (assurance.endsWith('.pdf')) {
+                          showPdf(fileUrl);
+                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance)) {
+                          showImg(fileUrl);
+                          setAlt('Pièce d\'identité');
+                        }
+                      }}
                     >
-                      Voir le fichier
-                    </a>
-                    <label className="text-blue-500 underline cursor-pointer">
+                      {assurance.endsWith('.pdf') ? (
+                        <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance) ? (
+                        <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                      ) : null}
+                      Assurances
+                    </p>
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "assurance")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
-                  <label className="text-blue-500 underline cursor-pointer">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e, "assurance")}
-                    />
-                    Ajouter un fichier
-                  </label>
+                  <>
+                    <h1 className='font-bold text-center'>Assurance
+                      <label className="text-blue-500 cursor-pointer ml-4">
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, "assurance")}
+                        />
+                        <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                      </label>
+                    </h1>
+                  </>
                 )}
               </div>
 
-              <div className='p-3 shadow-md cursor-pointer'>
-                <h1 className='font-bold text-center'>Pièce d'identité</h1>
+              <div className='p-3 shadow-md'>
                 {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
                   <>
                     <p
@@ -355,54 +436,74 @@ const FournisseurDetail = () => {
                       ) : null}
                       Pièce d'identité
                     </p>
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => handleUpload(e, "piece_identite")}
+                      />
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
+                    </label>
                   </>
                 ) : (
-                  <label className="text-blue-500 underline cursor-pointer">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e, "piece_identite")}
-                    />
-                    Ajouter un fichier
-                  </label>
+                  <>
+                    <h1 className='font-bold text-center'>Pièce d'identité
+                      <label className="text-blue-500 cursor-pointer ml-4">
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, "piece_identite")}
+                        />
+                        <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                      </label></h1>
+                  </>
                 )}
               </div>
-
-              <div className='p-3 shadow-md cursor-pointer'>
-                <h1 className='font-bold text-center'>Contrats</h1>
+              <div className='p-3 shadow-md'>
                 {contrats && (contrats.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats)) ? (
                   <>
-                    {contrats.endsWith('.pdf') ? (
-                      <embed src={contrats} type="application/pdf" className="w-full h-40" />
-                    ) : (
-                      <img src={contrats} alt="Contrats" className="w-full h-40 object-cover" />
-                    )}
-                    <a
-                      href={contrats}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline block mt-2"
+                    <p
+                      className="cursor-pointer hover:scale-105 transition-all mb-4"
+                      onClick={() => {
+                        const fileUrl = `${contrats}`;
+
+                        if (contrats.endsWith('.pdf')) {
+                          showPdf(fileUrl);
+                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats)) {
+                          showImg(fileUrl);
+                          setAlt('Pièce d\'identité');
+                        }
+                      }}
                     >
-                      Voir le fichier
-                    </a>
-                    <label className="text-blue-500 underline cursor-pointer">
+                      {contrats.endsWith('.pdf') ? (
+                        <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats) ? (
+                        <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                      ) : null}
+                      Contrats
+                    </p>
+                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
                       <input
                         type="file"
                         className="hidden"
                         onChange={(e) => handleUpload(e, "contrats")}
                       />
-                      Modifier le fichier
+                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
                     </label>
                   </>
                 ) : (
-                  <label className="text-blue-500 underline cursor-pointer">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e, "contrats")}
-                    />
-                    Ajouter un fichier
-                  </label>
+                  <>
+                    <h1 className='font-bold text-center'>Contrats
+                      <label className="text-blue-500 cursor-pointer ml-4">
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, "contrats")}
+                        />
+                        <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                      </label>
+                    </h1>
+                  </>
                 )}
               </div>
 
@@ -475,7 +576,7 @@ const FournisseurDetail = () => {
                 </div>
               </div>
               <div className='border-l-4 border-blue-500 shadow-md'>
-                {IsLoadingFournisseurFiles ? (
+                {isLoadingFournisseurFiles ? (
                   <div className="w-full  border-0 mt-2">
                     <div className="flex flex-col space-y-3">
                       <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
@@ -488,33 +589,42 @@ const FournisseurDetail = () => {
                   </div>
                 ) : (
                   <>
+                    <div className='w-full px-2 py-0'>
+                      <div className='px-3 py-0 divide-y divide-gray-200'>
+                        <div className="grid grid-cols-[4fr,3fr,1fr] px-4 py-2 font-bold bg-slate-50 shadow-sm">
+                          <div>Fichier</div>
+                          <div>Date</div>
+                          <div></div>
+                        </div>
+                      </div>
+                    </div>
                     <div className='w-full p-2 h-[400px] max-h-[500px] overflow-auto'>
-                      {FournisseurFiles.length > 0 ? (
+                      {fournisseurFiles.length > 0 ? (
                         <div className='p-3 shadow-md divide-y divide-gray-200'>
-                          {FournisseurFiles.map((FournisseurFile) => (
-                            <div key={FournisseurFile.id} className="grid grid-cols-2 px-4 py-2">
+                          {fournisseurFiles.map((fournisseurFile) => (
+                            <div key={fournisseurFile.id} className="grid grid-cols-[4fr,3fr,1fr] px-4 py-2">
                               <div
                                 className='cursor-pointer hover:scale-105 transition-all'
                                 onClick={() => {
-                                  const fileUrl = `https://bg.societe-manage.com/public/storage/${FournisseurFile.file}`;
+                                  const fileUrl = `https://bg.societe-manage.com/public/storage/${fournisseurFile.file}`;
 
-                                  if (FournisseurFile.file.endsWith('.pdf')) {
+                                  if (fournisseurFile.file.endsWith('.pdf')) {
                                     showPdf(fileUrl);
-                                  } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(FournisseurFile.file)) {
+                                  } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(fournisseurFile.file)) {
                                     showImg(fileUrl);
-                                    setAlt(FournisseurFile.designation);
+                                    setAlt(fournisseurFile.designation);
                                   }
                                 }}
                               >
-                                {FournisseurFile.file.endsWith('.pdf') ? (
+                                {fournisseurFile.file.endsWith('.pdf') ? (
                                   <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
-                                ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(FournisseurFile.file) ? (
+                                ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(fournisseurFile.file) ? (
                                   <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
                                 ) : null}
-                                {FournisseurFile.designation}
+                                {fournisseurFile.designation}
                               </div>
-                              <div></div>
-                            </div>
+                              <div>{format(new Date(fournisseurFile.updated_at), "dd MMMM yyyy | HH.mm", { locale: fr, })}</div>
+                              <div className='text-right cursor-pointer'><FontAwesomeIcon icon={faTrashAlt} className='text-red-500' onClick={() => DeleteFile(fournisseurFile.id)} /> </div>                            </div>
                           ))}
                         </div>
                       ) : (
@@ -542,7 +652,7 @@ const FournisseurDetail = () => {
                                   <input
                                     type="file"
                                     className="hidden"
-                                    onChange={(e) => setFournisseur_file(e.target.files[0])}
+                                    onChange={(e) => setFournisseurFile(e.target.files[0])}
                                   />
                                   {fournisseur_file ? (
                                     <>
@@ -559,14 +669,14 @@ const FournisseurDetail = () => {
                             </div>
                             <div className='p-2'>
                               <button className='px-2 py-1 bg-blue-400 text-white' title='Enregistrer' onClick={handleSaveFournisseurFile} disabled={!fournisseur_file}><FontAwesomeIcon icon={faCheck} /></button>
-                              <button className='px-2 py-1 bg-red-400 text-white ml-2' title='Annuler' onClick={() => setShowAddFile(false)}><FontAwesomeIcon icon={faXmark} /></button>
+                              <button className='px-2 py-1 bg-red-400 text-white ml-2' title='Annuler' onClick={HideAddFile}><FontAwesomeIcon icon={faXmark} /></button>
                             </div>
                           </div>
                         </>
                       ) : (
                         <button
                           onClick={() => setShowAddFile(true)}
-                          className='bg-blue-500 px-6 py-2 text-white hover:scale-105 transition-all'
+                          className='bg-blue-500 px-6 py-2 text-white hover:scale-105 rounded-md transition-all'
                         >
                           Ajouter un fichier
                         </button>
