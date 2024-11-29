@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+
 const Fournisseurs = () => {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [page, setPage] = useState(1);
@@ -266,17 +267,17 @@ const Fournisseurs = () => {
                     <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.nom_societe}</Link></td>
                     <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.nom}</Link></td>
                     <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.telephone}</Link></td>
-                    <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.email}</Link></td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                 <td className="border-y py-2 px-4"><Link to={`${fournisseur.id}`}>{fournisseur.email}</Link></td>
                     <td className="border-y py-2 px-4">
                       <Link to={`${fournisseur.id}`}> {fournisseurs.file}
                         <div className="text-center" title="Nombre de pièces jointes">
                           {(() => {
                             let nb_link = 0;
-                            let nb_linkShow = '';
+                            let nb_linkShow = '';                                                          
                             if (fournisseur.assurance) { nb_link += 1; }
-                            if (fournisseur.cabisse) { nb_link += 1; }
+                            if (fournisseur.cabisse) { nb_link += 1; }                                                       
                             if (fournisseur.piece_identite) { nb_link += 1; }
-                            if (fournisseur.contrats) { nb_link += 1; }
+                            if (fournisseur.contrats) { nb_link += 1; }                                                                                                  
                             nb_link += fournisseur.files?.length || 0;
                             nb_linkShow = (nb_link > 9) ? '+9' : nb_link;
                             return (
