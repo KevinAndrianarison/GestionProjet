@@ -1,32 +1,36 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import React from 'react';
 import axios from 'axios';
 import { BASE_URL } from "../contextes/ApiUrls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faXmark, faFile, faFilePdf, faImages, faPenToSquare, faPlus, faTrashAlt, faEdit, faBuilding, faHome, faLaptop } from '@fortawesome/free-solid-svg-icons';
-import { fr } from "date-fns/locale";
-import { format } from "date-fns";
+import { faCheck, faXmark, faFile, faFilePdf, faImages, faPenToSquare, faTrashAlt, faPlus, faBuilding, faHome, faLaptop, faEdit } from '@fortawesome/free-solid-svg-icons';
 import Notiflix from 'notiflix';
-import ModalEditFornisseur from './ModalEditFornisseur';
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import Modal from './Modal';
+import useGeonames from '../contextes/useGeonames';
+import Select from 'react-select';
+import { UrlContext } from "../../contexte/useUrl";
+import { ShowContext } from "../../contexte/useShow";
+import { useNavigate } from 'react-router-dom';
 
 const FournisseurDetail = () => {
   const { id } = useParams();
-  const [alt, setAlt] = useState('');
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const closeModal = () => setIsEditModalOpen(false);
+
+  const { countriesAndCities, loading, error } = useGeonames();
 
   const [refresh, setRefresh] = useState(false);
   const [refreshFournisseurFiles, setRefreshFournisseurFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingFournisseurFiles, setIsLoadingFournisseurFiles] = useState(false);
-  const [fournisseurFiles, setFournisseurFiles] = useState([]);
+  const [IsLoadingFournisseurFiles, setIsLoadingFournisseurFiles] = useState(false);
+  const [FournisseurFiles, setFournisseurFiles] = useState([]);
   const [showAddFile, setShowAddFile] = useState(false);
   const [designation_file, setDesignationFile] = useState("");
-  const [fournisseur_file, setFournisseurFile] = useState(null)
+  const [fournisseur_file, setFournisseur_file] = useState(null)
 
-  const [type_Fournisseur, setTypeFournisseur] = useState("societe");
+  const [type_fournisseur, setTypeFournisseur] = useState("societe");
   const [tel_societe, setTel_societe] = useState("");
   const [email_societe, setEmail_societe] = useState("");
   const [nom_societe, setNomSociete] = useState("");
@@ -38,18 +42,114 @@ const FournisseurDetail = () => {
 
   const [piece_identite, setPieceIdentite] = useState("");
   const [assurance, setAssurance] = useState("");
-  const [cabisse, setCabisse] = useState("");
-  const [contrats, setContrats] = useState("");
+  const [Cabisse, setCabisse] = useState("");
+  const [Contrats, setContrats] = useState("");
 
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [sexe, setSexe] = useState("");
   const [telephone, setTelephone] = useState("");
   const [adresse, setAdresse] = useState("");
-  const [ville, setVille] = useState(null);
-  const [pays, setPays] = useState(null);
+  const [ville, setVille] = useState({ value: '', label: '' });
+  const [pays, setPays] = useState({ value: '', label: '' });
   const [pdfUrl, setPdfurl] = useState('');
-  const [imgUrl, setImgUrl] = useState('');
+  const [ImgUrl, setImgUrl] = useState('');
+  const [alt, setAlt] = useState('');
+  const [isFirstModalOpen, setFirstModalOpen] = useState(false);
+  const [filteredCities, setFilteredCities] = useState([]);
+  const { setShowSpinner, showAdmin } = useContext(ShowContext);
+
+
+  const handleCountryChange = (selectedCountry) => {
+    setPays(selectedCountry);
+    setVille({ value: '', label: '' });
+    const country = countriesAndCities.find((c) => c.pays === selectedCountry.value);
+    setFilteredCities(country ? country.villes : []);
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setShowSpinner(true);
+    let errors = [];
+
+
+    if (type_fournisseur === "societe") {
+      if (!nom_societe) errors.push("Le nom de la société est requis.");
+      if (!email_societe || !validateEmail(email_societe))
+        errors.push("L'adresse email de la société est invalide.");
+      if (!adresse) errors.push("L'adresse est requise.");
+      if (!pays) errors.push("Le pays est requis.");
+      if (!ville) errors.push("La ville est requise.");
+      if (!nom) errors.push("Le nom du contact est requis.");
+      if (!email || !validateEmail(email))
+        errors.push("L'adresse email du contact est invalide.");
+      if (!telephone) errors.push("Le numéro de téléphone du contact est requis.");
+    } else {
+      if (!nom) errors.push("Le nom complet est requis.");
+      if (!email || !validateEmail(email))
+        errors.push("L'adresse email est invalide.");
+      if (!telephone) errors.push("Le numéro de téléphone est requis.");
+      if (!pays) errors.push("Le pays est requis.");
+      if (!ville) errors.push("La ville est requise.");
+      if (!adresse) errors.push("L'adresse est requise.");
+    }
+
+    if (errors.length > 0) {
+      setShowSpinner(false);
+      Notiflix.Notify.failure(errors.join("\n"));
+      return;
+    }
+
+    const formData = {
+      nom_societe: type_fournisseur === "societe" ? nom_societe : "",
+      email_societe: type_fournisseur === "societe" ? email_societe : "",
+      affilation_tva: String(affiliation_tva),
+      numero_tva,
+      tel_societe,
+      numero_siren,
+      numero_siret,
+      nom,
+      email,
+      sexe,
+      telephone,
+      site_web,
+      adresse,
+      ville: ville?.value,
+      pays: pays?.value,
+      type: type_fournisseur,
+    };
+
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+    try {
+      const response = await axios.put(`${BASE_URL}fournisseurs/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      Notiflix.Notify.success("Fournisseur modifié avec succès !");
+
+      setShowSpinner(false);
+
+      setRefresh(!refresh);
+
+      setFirstModalOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+      if (error.response?.data?.message) {
+        Notiflix.Notify.failure(error.response.data.message);
+      } else {
+        Notiflix.Notify.failure("Une erreur inattendue s'est produite. Veuillez réessayer.");
+      }
+      setShowSpinner(false);
+    }
+  };
+
 
   const fetchData = async () => {
     const tokenString = localStorage.getItem("token");
@@ -71,8 +171,10 @@ const FournisseurDetail = () => {
         setTelephone(response.data.telephone);
         setSiteWeb(response.data.site_web);
         setAdresse(response.data.adresse);
-        setPays(response.data.pays);
-        setVille(response.data.ville);
+
+        setPays({ value: response.data.pays, label: response.data.pays });
+        setVille({ value: response.data.ville, label: response.data.ville });
+
         setNumeroSiren(response.data.numero_siren);
         setTypeFournisseur(response.data.type);
         setEmail_societe(response.data.email);
@@ -86,7 +188,7 @@ const FournisseurDetail = () => {
         setContrats(`https://bg.societe-manage.com/public/storage/${response.data.contrats}`);
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des données du fournisseur", error);
+      console.error("Erreur lors de la récupération des données du fournisseur:", error);
       Notiflix.Notify.failure("Erreur lors de la récupération des données du fournisseur:");
     } finally {
       setIsLoading(false);
@@ -108,49 +210,13 @@ const FournisseurDetail = () => {
         setFournisseurFiles(response.data);
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des données du fournisseur :::::", error);
+      console.error("Erreur lors de la récupération des données du fournisseur:", error);
       Notiflix.Notify.failure("Erreur lors de la récupération des pièces jointes du fournisseur:");
     } finally {
       setIsLoadingFournisseurFiles(false);
     }
   };
 
-  const handleUpload = async (e, field) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      if (!AllowedFile(file)) {
-        return;
-      }
-      const formData = new FormData();
-      formData.append(field, file);
-
-      try {
-        const tokenString = localStorage.getItem("token");
-        const token = JSON.parse(tokenString);
-
-        const response = await axios.post(`${BASE_URL}fournisseurs/${id}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "X-HTTP-Method-Override": "PUT",
-          },
-        });
-
-        if (response.status === 200) {
-          setRefresh(!refresh);
-          Notiflix.Notify.success("Fichier mis à jour");
-          if (field === "cabisse") setCabisse(`https://bg.societe-manage.com/public/storage/${response.data.cabisse}`);
-          if (field === "assurance") setAssurance(`https://bg.societe-manage.com/public/storage/${response.data.assurance}`);
-          if (field === "piece_identite") setPieceIdentite(`https://bg.societe-manage.com/public/storage/${response.data.piece_identite}`);
-          if (field === "contrats") setContrats(`https://bg.societe-manage.com/public/storage/${response.data.contrats}`);
-          console.log(response.data);
-        }
-      } catch (error) {
-        console.error("Erreur lors de l'upload :", error);
-        Notiflix.Notify.failure("Erreur lors de l'upload");
-      }
-    }
-  };
 
   const deleteFournisseur = async () => {
     const confirmDelete = () => {
@@ -243,6 +309,42 @@ const FournisseurDetail = () => {
     }
   }
 
+  const handleUpload = async (e, field) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      if (!AllowedFile(file)) {
+        return;
+      }
+      const formData = new FormData();
+      formData.append(field, file);
+      setIsLoading(true);
+      try {
+        const tokenString = localStorage.getItem("token");
+        const token = JSON.parse(tokenString);
+
+        const response = await axios.post(`${BASE_URL}fournisseurs/${id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-HTTP-Method-Override": "PUT",
+          },
+        });
+
+        if (response.status === 200) {
+          setRefresh(!refresh);
+          Notiflix.Notify.success("Fichier mis à jour");
+          if (field === "cabisse") setCabisse(`https://bg.societe-manage.com/public/storage/${response.data.Cabisse}`);
+          if (field === "Assurance") setAssurance(`https://bg.societe-manage.com/public/storage/${response.data.Assurance}`);
+          if (field === "piece_identite") setPieceIdentite(`https://bg.societe-manage.com/public/storage/${response.data.piece_identite}`);
+          if (field === "Contrats") setContrats(`https://bg.societe-manage.com/public/storage/${response.data.Contrats}`);
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'upload :", error);
+        Notiflix.Notify.failure("Erreur lors de l'upload");
+      }
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [refresh]);
@@ -250,13 +352,6 @@ const FournisseurDetail = () => {
   useEffect(() => {
     fetchDataFournisseurFiles();
   }, [refreshFournisseurFiles]);
-
-  const HideAddFile = () => {
-    setDesignationFile("");
-    setFournisseurFile(null);
-    setShowAddFile(false);
-  }
-
 
   const AllowedFile = (file) => {
     const allowedFileTypes = /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i;
@@ -279,10 +374,15 @@ const FournisseurDetail = () => {
 
   const handleSaveFournisseurFile = async () => {
     if (!designation_file || !fournisseur_file) {
-      alert("Veuillez fournir une désignation et sélectionner un fichier.");
+      Notiflix.Notify.warning("Veuillez fournir une désignation et sélectionner un fichier.");
       return;
     }
 
+    if (!AllowedFile(fournisseur_file)) {
+      return;
+    }
+
+    setIsLoadingFournisseurFiles(true);
     const formData = new FormData();
     formData.append("designation", designation_file);
     formData.append("file", fournisseur_file);
@@ -298,7 +398,6 @@ const FournisseurDetail = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(response);
       if (response.status === 201) {
         Notiflix.Notify.success("Fichier enregistré avec succès !");
         setRefreshFournisseurFiles(!refreshFournisseurFiles);
@@ -310,19 +409,23 @@ const FournisseurDetail = () => {
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
       Notiflix.Notify.failure("Une erreur s'est produite lors de l'enregistrement.");
-      setIsLoadingClientFiles(false);
+      setIsLoadingFournisseurFiles(false);
     }
   };
 
   const showPdf = (url) => {
-    console.log("Afficher le PDF :", url);
-    setPdf(url);
+    setPdfurl(url);
   };
 
-  const showImg = (url) => {
-    console.log("Afficher l'image :", url);
+  const showImg = (url, alt) => {
     setImgUrl(url);
   };
+
+  const HideAddFile = () => {
+    setDesignationFile("");
+    setFournisseur_file(null);
+    setShowAddFile(false);
+  }
 
   return (
     <>
@@ -336,7 +439,7 @@ const FournisseurDetail = () => {
         </>
       )}
 
-      {imgUrl && (
+      {ImgUrl && (
         <>
           <div className='fixed w-full h-full top-0 left-0 z-30 bg-opacity-55 bg-black' onClick={(e) => setImgUrl('')}></div>
           <div className='z-50 fixed w-[1200px] max-w-[90%] max-h-[75vh] top-[45%] left-[50%] translate-x-[-50%] translate-y-[-50%] shadow-md'>
@@ -345,15 +448,302 @@ const FournisseurDetail = () => {
               <h1 className='text-white'><FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />{alt}</h1>
             </div>
             <div className='overflow-auto max-h-[80vh] text-center bg-white align-middle'>
-              <img src={imgUrl} alt={alt} className="w-full" />
+              <img src={ImgUrl} alt={alt} className="w-full" />
             </div>
           </div>
         </>
       )}
-      <h1 className='mb-4 font-bold'>Détail sur la fiche Fournisseur :
-        {type_Fournisseur === 'societe'
+
+      <Modal
+        isOpen={isFirstModalOpen}
+        onClose={() => {
+          setFirstModalOpen(false); setRefresh(!refresh);
+        }}>
+        <h2 className="text-sm font-semibold mb-2">Modifier le fournisseur :</h2>
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 bg-white">
+          <div className="sm:col-span-1 p-1">
+            {/* Option Société */}
+            <div
+              onClick={() => setTypeFournisseur("societe")}
+              className={`cursor-pointer px-4 py-2 border rounded-lg ${type_fournisseur === "societe"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-900"
+                }`}
+            >
+              Société
+            </div>
+          </div>
+          <div className="sm:col-span-1 p-1">
+            {/* Option Particulier */}
+            <div
+              onClick={() => setTypeFournisseur("Auto-Entrepreneur")}
+              className={`cursor-pointer px-4 py-2 border rounded-lg ${type_fournisseur === "Auto-Entrepreneur"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-900"
+                }`}
+            >
+              Auto-Entrepreneur
+            </div>
+          </div>
+          <div className="sm:col-span-1 p-1">
+            {/* Option Particulier */}
+            <div
+              onClick={() => setTypeFournisseur("particulier")}
+              className={`cursor-pointer px-4 py-2 border rounded-lg ${type_fournisseur === "particulier"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-900"
+                }`}
+            >
+              Particulier
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="max-h-[55vh] overflow-y-auto px-4">
+            {type_fournisseur === "societe" && (
+              <>
+                <hr className="my-2"></hr>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Dénomination de la société
+                    </label>
+                    <input
+                      type="text"
+                      value={nom_societe}
+                      onChange={(e) => setNomSociete(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Site Web
+                    </label>
+                    <input
+                      type="text"
+                      value={site_web}
+                      onChange={(e) => setSiteWeb(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Email de la société
+                    </label>
+                    <input
+                      type="text"
+                      value={email_societe}
+                      onChange={(e) => setEmail_societe(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Téléphone de la société
+                    </label>
+                    <input
+                      type="text"
+                      value={tel_societe}
+                      onChange={(e) => setTel_societe(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Numéro Siren
+                    </label>
+                    <input
+                      type="text"
+                      value={numero_siren}
+                      onChange={(e) => setNumeroSiren(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Numéro SIRET
+                    </label>
+                    <input
+                      type="text"
+                      value={numero_siret}
+                      onChange={(e) => setNumeroSiret(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Affiliation TVA
+                    </label>
+                    <select
+                      value={affiliation_tva}
+                      onChange={(e) => setaffiliation_tva(e.target.value === "true")}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    >
+                      <option value="true">Oui</option>
+                      <option value="false">Non</option>
+                    </select>
+                  </div>
+
+                  {affiliation_tva && (
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium leading-6 text-gray-900">
+                        Numéro TVA
+                      </label>
+                      <input
+                        type="text"
+                        value={numero_tva}
+                        onChange={(e) => setnumero_tva(e.target.value)}
+                        className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                      />
+                    </div>
+                  )}
+
+                </div>
+                <hr className="my-4"></hr>
+              </>
+            )}
+
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  {type_fournisseur === "societe" ? "Nom complet du contact" : "Nom complet"}
+                </label>
+                <input
+                  type="text"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  {type_fournisseur === "societe" ? "Email du contact" : "Adresse e-mail"}
+                </label>
+                <input
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  {type_fournisseur === "societe" ? "Téléphone du contact" : "Numéro de téléphone"}
+                </label>
+                <input
+                  type="text"
+                  value={telephone}
+                  onChange={(e) => setTelephone(e.target.value)}
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  Genre
+                </label>
+                <select
+                  value={sexe}
+                  onChange={(e) => setSexe(e.target.value)}
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                >
+                  <option value=""></option>
+                  <option value="Masculin">Masculin</option>
+                  <option value="Féminin">Féminin</option>
+                  <option value="Non Precisé">Non Precisé</option>
+                </select>
+              </div>
+            </div>
+
+            <hr className="my-2"></hr>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
+              {loading && <p>Chargement...</p>}
+              {error && <p>{error}</p>}
+
+              {!loading && !error && (
+                <>
+                  {/* Select pour les pays */}
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Pays
+                    </label>
+                    <Select value={pays}
+                      options={countriesAndCities.map((country) => ({
+                        value: country.pays,
+                        label: country.pays,
+                      }))}
+                      onChange={handleCountryChange}
+                      placeholder="Sélectionnez un pays"
+                      className="basic-select"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
+                    />
+                  </div>
+
+                  {/* Select pour les villes */}
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Ville
+                    </label>
+                    <Select
+                      options={filteredCities.map((city) => ({
+                        value: city,
+                        label: city,
+                      }))}
+                      value={ville}
+                      onChange={(selectedOption) => setVille(selectedOption)}
+                      placeholder="Sélectionnez une ville"
+                      className="basic-select z-30"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="sm:col-span-1">
+                <label className="block text-sm font-medium leading-6 text-gray-900">
+                  Adresse
+                </label>
+                <input
+                  type="text"
+                  value={adresse}
+                  onChange={(e) => setAdresse(e.target.value)}
+                  className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="w-[300px] max-w-[100%] py-2 mt-5">
+            <button
+              type="submit"
+              className="bg-blue-500 px-3 block w-full rounded-md border-0 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+              Enregistrer
+            </button>
+          </div>
+        </form>
+
+      </Modal>
+      <h1 className='mb-4 font-bold'>Détail sur la fiche fournisseur :
+        {type_fournisseur === 'societe'
           ? (<><FontAwesomeIcon icon={faBuilding} className='mx-2' /> Société</>)
-          : type_Fournisseur === 'particulier'
+          : type_fournisseur === 'particulier'
             ? (<><FontAwesomeIcon icon={faHome} className='mx-2' /> Particulier</>)
             : (<><FontAwesomeIcon icon={faLaptop} className='mx-2' /> Auto-Entrepreneur</>)}
       </h1>
@@ -380,27 +770,27 @@ const FournisseurDetail = () => {
         ) : (
           <div className='w-full'>
             <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-3'>
-              {type_Fournisseur === 'societe' && (
+              {type_fournisseur === 'societe' && (
                 <>
                   <div className='p-3 shadow-md '>
-                    {cabisse && (cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) ? (
+                    {Cabisse && (Cabisse.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Cabisse)) ? (
                       <>
                         <p
                           className="cursor-pointer hover:scale-105 transition-all mb-4"
                           onClick={() => {
-                            const fileUrl = `${cabisse}`;
+                            const fileUrl = `${Cabisse}`;
 
-                            if (cabisse.endsWith('.pdf')) {
+                            if (Cabisse.endsWith('.pdf')) {
                               showPdf(fileUrl);
-                            } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse)) {
+                            } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Cabisse)) {
                               showImg(fileUrl);
                               setAlt('Pièce d\'identité');
                             }
                           }}
                         >
-                          {cabisse.endsWith('.pdf') ? (
+                          {Cabisse.endsWith('.pdf') ? (
                             <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
-                          ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(cabisse) ? (
+                          ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Cabisse) ? (
                             <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
                           ) : null}
                           Cabisse
@@ -478,74 +868,26 @@ const FournisseurDetail = () => {
                   </>
                 )}
               </div>
-              {(type_Fournisseur === 'particulier' || type_Fournisseur === 'auto_entrepreneur') && (
 
               <div className='p-3 shadow-md'>
-                {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
+                {Contrats && (Contrats.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Contrats)) ? (
                   <>
                     <p
                       className="cursor-pointer hover:scale-105 transition-all mb-4"
                       onClick={() => {
-                        const fileUrl = `${piece_identite}`;
+                        const fileUrl = `${Contrats}`;
 
-                        if (piece_identite.endsWith('.pdf')) {
+                        if (Contrats.endsWith('.pdf')) {
                           showPdf(fileUrl);
-                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) {
+                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Contrats)) {
                           showImg(fileUrl);
                           setAlt('Pièce d\'identité');
                         }
                       }}
                     >
-                      {piece_identite.endsWith('.pdf') ? (
+                      {Contrats.endsWith('.pdf') ? (
                         <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
-                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite) ? (
-                        <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
-                      ) : null}
-                      Pièce d'identité
-                    </p>
-                    <label className="text-blue-500 cursor-pointer ml-2 mt-4">
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleUpload(e, "piece_identite")}
-                      />
-                      <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
-                    </label>
-                  </>
-                ) : (
-                  <>
-                    <h1 className='font-bold text-center'>Pièce d'identité
-                      <label className="text-blue-500 cursor-pointer ml-4">
-                        <input
-                          type="file"
-                          className="hidden"
-                          onChange={(e) => handleUpload(e, "piece_identite")}
-                        />
-                        <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
-                      </label></h1>
-                  </>
-                )}
-              </div>
-              )}
-              <div className='p-3 shadow-md'>
-                {contrats && (contrats.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats)) ? (
-                  <>
-                    <p
-                      className="cursor-pointer hover:scale-105 transition-all mb-4"
-                      onClick={() => {
-                        const fileUrl = `${contrats}`;
-
-                        if (contrats.endsWith('.pdf')) {
-                          showPdf(fileUrl);
-                        } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats)) {
-                          showImg(fileUrl);
-                          setAlt('Pièce d\'identité');
-                        }
-                      }}
-                    >
-                      {contrats.endsWith('.pdf') ? (
-                        <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
-                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(contrats) ? (
+                      ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(Contrats) ? (
                         <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
                       ) : null}
                       Contrats
@@ -574,18 +916,63 @@ const FournisseurDetail = () => {
                   </>
                 )}
               </div>
+              {(type_fournisseur === 'particulier' || type_fournisseur === 'auto_entrepreneur') && (
 
+                <div className='p-3 shadow-md'>
+                  {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
+                    <>
+                      <p
+                        className="cursor-pointer hover:scale-105 transition-all mb-4"
+                        onClick={() => {
+                          const fileUrl = `${piece_identite}`;
+
+                          if (piece_identite.endsWith('.pdf')) {
+                            showPdf(fileUrl);
+                          } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) {
+                            showImg(fileUrl);
+                            setAlt('Pièce d\'identité');
+                          }
+                        }}
+                      >
+                        {piece_identite.endsWith('.pdf') ? (
+                          <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
+                        ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite) ? (
+                          <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
+                        ) : null}
+                        Pièce d'identité
+                      </p>
+                      <label className="text-blue-500 cursor-pointer ml-2 mt-4">
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, "piece_identite")}
+                        />
+                        <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
+                      </label>
+                    </>
+                  ) : (
+                    <>
+                      <h1 className='font-bold text-center'>Pièce d'identité
+                        <label className="text-blue-500 cursor-pointer ml-4">
+                          <input
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => handleUpload(e, "piece_identite")}
+                          />
+                          <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                        </label></h1>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 border-l-4 border-blue-500'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 border-l-4 border-blue-500'>
               <div className='p-3 shadow-md divide-y divide-gray-200'>
                 <div className="grid grid-cols-2 px-4 py-2">
-                  <div className="font-normal pr-2"><button className='w-full bg-blue-500 py-2 text-white' onClick={() => setIsEditModalOpen(true)}><FontAwesomeIcon icon={faEdit} className='mr-2' />Modifier</button></div>
+                  <div className="font-normal pr-2"><button className='w-full bg-blue-500 py-2 text-white' onClick={(e) => setFirstModalOpen(true)}><FontAwesomeIcon icon={faEdit} className='mr-2' />Modifier</button></div>
                   <div className='pl-2'><button className='w-full bg-red-500 py-2 text-white' onClick={deleteFournisseur}><FontAwesomeIcon icon={faTrashAlt} className='mr-2' />Effacer</button></div>
                 </div>
-                {isEditModalOpen && (
-                  <ModalEditFornisseur onClose={closeModal} />
-                )}
-                {type_Fournisseur === "societe" && (
+                {type_fournisseur === "societe" && (
                   <>
                     <div className="grid grid-cols-2 px-4 py-2">
                       <div className="font-normal">Nom société :</div>
@@ -621,15 +1008,15 @@ const FournisseurDetail = () => {
                   </>
                 )}
                 <div className="grid grid-cols-2 px-4 py-2">
-                  <div className="font-normal">{type_Fournisseur === "societe" ? "Nom complet du contact" : "Nom complet"} :</div>
+                  <div className="font-normal">{type_fournisseur === "societe" ? "Nom complet du contact" : "Nom complet"} :</div>
                   <div>{nom}</div>
                 </div>
                 <div className="grid grid-cols-2 px-4 py-2">
-                  <div className="font-normal">{type_Fournisseur === "societe" ? "Email du contact" : "Adresse e-mail"} :</div>
+                  <div className="font-normal">{type_fournisseur === "societe" ? "Email du contact" : "Adresse e-mail"} :</div>
                   <div>{email}</div>
                 </div>
                 <div className="grid grid-cols-2 px-4 py-2">
-                  <div className="font-normal">{type_Fournisseur === "societe" ? "Téléphone du contact" : "Numéro de téléphone"} :</div>
+                  <div className="font-normal">{type_fournisseur === "societe" ? "Téléphone du contact" : "Numéro de téléphone"} :</div>
                   <div>{telephone}</div>
                 </div>
                 <div className="grid grid-cols-2 px-4 py-2">
@@ -639,11 +1026,11 @@ const FournisseurDetail = () => {
 
                 <div className="grid grid-cols-2 px-4 py-2">
                   <div className="font-normal">Pays :</div>
-                  <div>{pays}</div>
+                  <div>{pays.value}</div>
                 </div>
                 <div className="grid grid-cols-2 px-4 py-2">
                   <div className="font-normal">Ville :</div>
-                  <div>{ville}</div>
+                  <div>{ville.value}</div>
                 </div>
                 <div className="grid grid-cols-2 px-4 py-2">
                   <div className="font-normal">Adresse :</div>
@@ -651,7 +1038,7 @@ const FournisseurDetail = () => {
                 </div>
               </div>
               <div className='border-l-4 border-blue-500 shadow-md'>
-                {isLoadingFournisseurFiles ? (
+                {IsLoadingFournisseurFiles ? (
                   <div className="w-full  border-0 mt-2">
                     <div className="flex flex-col space-y-3">
                       <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
@@ -673,34 +1060,36 @@ const FournisseurDetail = () => {
                         </div>
                       </div>
                     </div>
-                    <div className='w-full p-2 h-[400px] max-h-[500px] overflow-auto'>
-                      {fournisseurFiles.length > 0 ? (
-                        <div className='p-3 shadow-md divide-y divide-gray-200'>
-                          {fournisseurFiles.map((fournisseurFile) => (
-                            <div key={fournisseurFile.id} className="grid grid-cols-[4fr,3fr,1fr] px-4 py-2">
+                    <div className='w-full px-2 py-0 h-[400px] max-h-[500px] overflow-auto'>
+                      {FournisseurFiles.length > 0 ? (
+                        <div className='px-3 py-0 shadow-md divide-y divide-gray-200'>
+                          {FournisseurFiles.map((FournisseurFile) => (
+                            <div key={FournisseurFile.id} className="grid grid-cols-[4fr,3fr,1fr] px-4 py-2">
                               <div
-                                className='cursor-pointer hover:scale-105 transition-all'
+                                className="cursor-pointer hover:scale-105 transition-all"
                                 onClick={() => {
-                                  const fileUrl = `https://bg.societe-manage.com/public/storage/${fournisseurFile.file}`;
+                                  const fileUrl = `https://bg.societe-manage.com/public/storage/${FournisseurFile.file}`;
 
-                                  if (fournisseurFile.file.endsWith('.pdf')) {
+                                  if (FournisseurFile.file.endsWith('.pdf')) {
                                     showPdf(fileUrl);
-                                  } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(fournisseurFile.file)) {
+                                  } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(FournisseurFile.file)) {
                                     showImg(fileUrl);
-                                    setAlt(fournisseurFile.designation);
+                                    setAlt(FournisseurFile.designation);
                                   }
                                 }}
                               >
-                                {fournisseurFile.file.endsWith('.pdf') ? (
+                                {FournisseurFile.file.endsWith('.pdf') ? (
                                   <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600' />
-                                ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(fournisseurFile.file) ? (
+                                ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(FournisseurFile.file) ? (
                                   <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500' />
                                 ) : null}
-                                {fournisseurFile.designation}
+                                {FournisseurFile.designation}
                               </div>
-                              <div>{format(new Date(fournisseurFile.updated_at), "dd MMMM yyyy | HH.mm", { locale: fr, })}</div>
-                              <div className='text-right cursor-pointer'><FontAwesomeIcon icon={faTrashAlt} className='text-red-500' onClick={() => DeleteFile(fournisseurFile.id)} /> </div>                            </div>
+                              <div>{format(new Date(FournisseurFile.updated_at), "dd MMMM yyyy | HH.mm", { locale: fr, })}</div>
+                              <div className='text-right cursor-pointer'><FontAwesomeIcon icon={faTrashAlt} className='text-red-500' onClick={() => DeleteFile(FournisseurFile.id)} /> </div>
+                            </div>
                           ))}
+
                         </div>
                       ) : (
                         <p className='p-2'><i>Aucun autre fichier enregistré</i></p>
@@ -727,7 +1116,7 @@ const FournisseurDetail = () => {
                                   <input
                                     type="file"
                                     className="hidden"
-                                    onChange={(e) => setFournisseurFile(e.target.files[0])}
+                                    onChange={(e) => setFournisseur_file(e.target.files[0])}
                                   />
                                   {fournisseur_file ? (
                                     <>
@@ -751,7 +1140,7 @@ const FournisseurDetail = () => {
                       ) : (
                         <button
                           onClick={() => setShowAddFile(true)}
-                          className='bg-blue-500 px-6 py-2 text-white hover:scale-105 rounded-md transition-all'
+                          className='bg-blue-500 px-6 py-2 text-white hover:scale-105 transition-all'
                         >
                           Ajouter un fichier
                         </button>
