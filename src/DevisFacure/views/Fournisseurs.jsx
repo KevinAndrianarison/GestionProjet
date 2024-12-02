@@ -226,7 +226,7 @@ const Fournisseurs = () => {
         <table className="min-w-full">
           <thead className='bg-slate-100'>
             <tr>
-              <th className="text-left py-2 px-4 text-xs font-bold">Typeeee jkjjjj</th>
+              <th className="text-left py-2 px-4 text-xs font-bold">Type test</th>
               <th className="text-left py-2 px-4 text-xs font-bold">Nom société</th>
               <th className="text-left py-2 px-4 text-xs font-bold">Nom du contact</th>
               <th className="text-left py-2 px-4 text-xs font-bold">Téléphone du contact</th>
