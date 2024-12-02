@@ -1,28 +1,82 @@
 import { useState, useEffect } from 'react';
-import ModalFactureIn from './ModalFactureIn';
-import ModalEditFactureIn from './ModalEditFactureIn';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit, faEllipsisV, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import Swal from 'sweetalert2';
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
+import Select from 'react-select';
+import { monthOptions, yearOptions } from './MoisAnneeSelect'
+import Modal from './Modal';
+import Notiflix from 'notiflix';
 
 const Facture = () => {
   const [factures, setFactures] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 4; // Nombre de factures par page
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [factureToEdit, setFactureToEdit] = useState(null);
+  const itemsPerPage = 20;
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const [numero, setNumero] = useState('');
+  const [montant_ht, setMontantHT] = useState('');
+  const [montant_ttc, setMontantTTC] = useState('');
+  const [prix_tva, setPrixTVA] = useState('');
+  const [pourcentage_tva, setPourcentageTVA] = useState('');
+  const [date_facturation, setDateFacturation] = useState('');
+  const [date_enregistrement, setDateEnregistrement] = useState('');
+  const [type_assigner, setTypeAssigner] = useState('');
+  const [validation, setValidation] = useState('');
+  const [piece_jointe, setPieceJointe] = useState('');
+  const [devise, setDevise] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const resetFactureFields = () => {
+    setNumero('');
+    setMontantHT('');
+    setMontantTTC('');
+    setPrixTVA('');
+    setPourcentageTVA('');
+    setDateFacturation('');
+    setDateEnregistrement('');
+    setTypeAssigner('');
+    setValidation('');
+    setPieceJointe('');
+  };
+
+  const handleAddFacture = () => {
+    setErrorMessage('');
+
+    const newFacture = {
+      numero,
+      montant_ht,
+      montant_ttc,
+      prix_tva,
+      pourcentage_tva,
+      date_facturation,
+      date_enregistrement,
+      type_assigner,
+      devise,
+      piece_jointe
+    };
+    addFacture(newFacture);
+    resetFactureFields();
+    handleCloseModal();
+  };
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
 
   useEffect(() => {
     const fetchFactures = async () => {
       const tokenString = localStorage.getItem("token");
       let token = JSON.parse(tokenString);
       try {
-        const response = await axios.get(`${BASE_URL}factures`, {
+        const response = await axios.get(`${BASE_URL}factures/entrants`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -33,6 +87,7 @@ const Facture = () => {
         }
       } catch (error) {
         console.error("Erreur lors du chargement des factures :", error);
+        Notiflix.Notify.failure("Erreur lors de la récupération des données:");
       }
     };
     fetchFactures();
@@ -43,7 +98,7 @@ const Facture = () => {
     const token = JSON.parse(tokenString);
 
     try {
-      const response = await axios.post(`${BASE_URL}factures`, newFacture, {
+      const response = await axios.post(`${BASE_URL}factures/entrants`, newFacture, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -53,12 +108,11 @@ const Facture = () => {
 
       if (response.status === 200) {
         setFactures([...factures, response.data]);
-        setIsModalOpen(false);
-        // Swal.fire('Succès!', 'Facture ajoutée avec succès!', 'success');
+        setModalOpen(false);
       }
+      Notiflix.Notify.success("Fournisseur ajouté avec succès !");
     } catch (error) {
       console.error("Erreur lors de l'ajout de la facture :", error);
-      Swal.fire("Erreur", "Impossible d'ajouter la facture.", "error");
     }
   };
 
@@ -104,7 +158,7 @@ const Facture = () => {
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
     try {
-      const response = await axios.delete(`${BASE_URL}factures/${factureId}`, {
+      const response = await axios.delete(`${BASE_URL}factures/entrants/${factureId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -120,7 +174,9 @@ const Facture = () => {
     }
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  
+
+  const closeModal = () => setModalOpen(false);
 
   const openEditModal = (facture) => {
     setFactureToEdit(facture);
@@ -154,56 +210,90 @@ const Facture = () => {
   return (
     <div>
       <div className="w-full mb-3 ">
-        <button onClick={() => setFirstModalOpen(true)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Nouveau Client
+        <button onClick={handleOpenModal}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          Nouvelle facture
         </button>
       </div>
 
-      <div className="flex flex-wrap align-center">
-        <div className="w-full md:w-10/12 sm:w-10/12">
+      <div className="flex flex-wrap justify-between items-center p-1">
+        <div className="flex w-full md:w-auto justify-between">
           <h1 className="text-sm" style={{ fontFamily: "Righteous" }}>Tous les factures</h1>
         </div>
 
-        <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
-          <div className="flex mb-4 m-auto">
-            <button
-              onClick={handlePrev}
-              disabled={page === 1}
-              className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-            >
-              Prev
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={page >= Math.ceil(factures.length / itemsPerPage)}
-              className={`px-4 py-1 border rounded ${page >= Math.ceil(factures.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-            >
-              Next
-            </button>
+        <div className="flex items-center space-x-4 w-full md:w-auto">
+          <div className='flex flex-col items-start'>
+            <h3>Choisir un mois :</h3>
+            <Select
+              options={monthOptions}
+              isMulti
+              name="colors"
+              className="basic-multi-select text-xs"
+              classNamePrefix="select"
+            />
+          </div>
+          <div className='flex flex-col items-start'>
+            <h3>Choisir une année :</h3>
+            <Select options={yearOptions} className="text-xs " />
+          </div>
+          <div className="flex items-center">
+            <FontAwesomeIcon
+              icon={faMagnifyingGlass}
+              className="h-4 mt-3 text-blue-600"
+            />
           </div>
         </div>
       </div>
 
+      <div className="flex flex-wrap justify-between items-center p-2">
+        <div className="">
+          <button
+            onClick={handlePrev}
+            disabled={page === 1}
+            className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+          >
+            Prev
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={page >= Math.ceil(factures.length / itemsPerPage)}
+            className={`px-4 py-1 border rounded ${page >= Math.ceil(factures.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
+          >
+            Next
+          </button>
+        </div>
+
+        <div className="flex justify-end p-4">
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Télécharger
+          </button>
+        </div>
+      </div>
+
+
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
-          <thead>
+          <thead className='bg-slate-100'>
             <tr>
-              <th className="text-left p-6 text-sm font-bold">Numéro</th>
-              <th className="text-left p-6 text-sm font-bold">Prix total HT</th>
-              <th className="text-left p-6 text-sm font-bold">TVA</th>
-              <th className="text-left p-6 text-sm font-bold">Prix total TTC</th>
-              <th className="text-left p-6 text-sm font-bold">Pièce jointe</th>
+              <th className="text-left p-2 font-bold">Numéro</th>
+              <th className="text-left p-2 font-bold">Prix total HT</th>
+              <th className="text-left p-2 font-bold">TVA</th>
+              <th className="text-left p-2 font-bold">Prix total TTC</th>
+              <th className="text-left p-2 font-bold">Pièce jointe</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {currentFactures.map((facture) => (
               <tr key={facture.id}>
-                <td className="border-y py-5 px-6">{facture.numero}</td>
-                <td className="border-y py-5 px-6">{facture.montant_ht}</td>
-                <td className="border-y py-5 px-6">{facture.prix_tva}</td>
-                <td className="border-y py-5 px-6">{facture.montant_ttc}</td>
-                <td className="border-y py-5 px-6">{facture.piece_jointe}</td>
-                <td className="border-y py-5 px-6 w-[25px] relative">
+                <td className="border-y p-2 ">{facture.numero}</td>
+                <td className="border-y p-2 ">{facture.montant_ht}</td>
+                <td className="border-y p-2 ">{facture.prix_tva}</td>
+                <td className="border-y p-2 ">{facture.montant_ttc}</td>
+                <td className="border-y p-2 ">{facture.piece_jointe}</td>
+                <td className="border-y p-2  w-[25px] relative">
                   <button
                     onClick={() => {
                       toggleActions(facture.id)
@@ -245,19 +335,143 @@ const Facture = () => {
         )}
       </div>
 
-      <ModalFactureIn
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        addFacture={addFacture}
-      />
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+        <h2 className="text-xl mx-2 my-2 ">Nouvelle facture</h2>
+        <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
+          <div className="">
+            <div>
+              {errorMessage && (
+                <span className="text-red-600 text-sm">{errorMessage}</span>
+              )}
+            </div>
+            <div className="">
+              <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-lg w-full'>
+                <div className="border rounded-t-xl">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro de facture</label>
+                    <input
+                      type="text"
+                      value={numero}
+                      onChange={(e) => setNumero(e.target.value)}
+                      placeholder="numero de facture"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
+                    <input
+                      type="text"
+                      value={montant_ht}
+                      onChange={(e) => setMontantHT(e.target.value)}
+                      placeholder="Montant HT"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
+                    <input
+                      type="text"
+                      value={pourcentage_tva}
+                      onChange={(e) => setPourcentageTVA(e.target.value)}
+                      placeholder="Pourcentage TVA"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">prix TVA</label>
+                    <input
+                      type="text"
+                      value={prix_tva}
+                      onChange={(e) => setPrixTVA(e.target.value)}
+                      placeholder="prix_tva"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Montant TTC</label>
+                    <input
+                      type="text"
+                      value={montant_ttc}
+                      onChange={(e) => setMontantTTC(e.target.value)}
+                      placeholder="Montant TTC"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Date de facturation</label>
+                    <input
+                      type="date"
+                      value={date_facturation}
+                      onChange={(e) => setDateFacturation(e.target.value)}
+                      placeholder="Date de facturation"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">date_enregistrement</label>
+                    <input
+                      type="text"
+                      value={date_enregistrement}
+                      onChange={(e) => setDateEnregistrement(e.target.value)}
+                      placeholder="date_enregistrement"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">type_assigner</label>
+                    <input
+                      type="text"
+                      value={type_assigner}
+                      onChange={(e) => setTypeAssigner(e.target.value)}
+                      placeholder="type_assigner"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">validation</label>
+                    <input
+                      type="text"
+                      value={validation}
+                      onChange={(e) => setValidation(e.target.value)}
+                      placeholder="validation"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">Devise</label>
+                    <input
+                      type="text"
+                      value={devise}
+                      onChange={(e) => setDevise(e.target.value)}
+                      placeholder="devise"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium text-gray-700 my-2">piece_jointe</label>
+                    <input
+                      type="text"
+                      value={piece_jointe}
+                      onChange={(e) => setPieceJointe(e.target.value)}
+                      placeholder="piece_jointe"
+                      className="w-full p-2 rounded text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="lg:col-span-1 mt-2">
+                <button
+                  type="button"
+                  onClick={handleAddFacture}
+                  className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600">
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
 
-      <ModalEditFactureIn
-        isOpen={isEditModalOpen}
-        onClose={closeEditModal}
-        factureToEdit={factureToEdit}
-        updateFacture={updateFacture}
-      />
-
+      </Modal>
     </div>
   );
 };
