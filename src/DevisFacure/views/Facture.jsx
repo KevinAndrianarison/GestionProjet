@@ -153,23 +153,19 @@ const Facture = () => {
 
   return (
     <div>
-      <header>
-        <h1 className="text-2xl">Toutes les factures</h1>
-      </header>
+      <div className="w-full mb-3 ">
+        <button onClick={() => setFirstModalOpen(true)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          Nouveau Client
+        </button>
+      </div>
 
-      <div className="flex flex-wrap my-5">
+      <div className="flex flex-wrap align-center">
         <div className="w-full md:w-10/12 sm:w-10/12">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-            >
-              Nouvelle facture
-            </button>
-          </div>
+          <h1 className="text-sm" style={{ fontFamily: "Righteous" }}>Tous les factures</h1>
         </div>
+
         <div className="w-full md:w-2/12 sm:w-2/12 ml-auto">
-          <div className="flex m-auto space-x-3">
+          <div className="flex mb-4 m-auto">
             <button
               onClick={handlePrev}
               disabled={page === 1}
@@ -187,6 +183,7 @@ const Facture = () => {
           </div>
         </div>
       </div>
+
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
           <thead>

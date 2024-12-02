@@ -15,7 +15,6 @@ import { TaskContextProvider } from "./contexte/useTask.jsx";
 import { ComsContextProvider } from "./contexte/useComs.jsx";
 import { EtapeContextProvider } from "./contexte/useEtape.jsx";
 import { BrowserRouter } from "react-router-dom";
-import { EditProvider } from './DevisFacure/contextes/EditContext.jsx';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -29,9 +28,7 @@ createRoot(document.getElementById("root")).render(
                   <EtapeContextProvider>
                     <TaskContextProvider>
                       <ComsContextProvider>
-                        <EditProvider>
                           <App />
-                        </EditProvider>
                       </ComsContextProvider>
                     </TaskContextProvider>
                   </EtapeContextProvider>
