@@ -11,14 +11,14 @@ import Notiflix from 'notiflix';
 const Facture = () => {
   const [factures, setFactures] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 2;
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [numero, setNumero] = useState('');
 
   const [montant_ht, setMontantHT] = useState('');
-  const [montant_ttc, setMontantTTC] = useState(0);
+  const [montant_httc, setMontantTTC] = useState(0);
   const [prix_tva, setPrixTVA] = useState(0);
   const [pourcentage_tva, setPourcentageTVA] = useState('');
 
@@ -29,6 +29,41 @@ const Facture = () => {
   const [piece_jointe, setPieceJointe] = useState('');
   const [devise, setDevise] = useState('');
   const [factureToEdit, setFactureToEdit] = useState({});
+
+  const [selectedMonths, setSelectedMonths] = useState([]);
+  const [selectedYear, setSelectedYear] = useState('');
+
+  const handleMonthChange = (selected) => {
+    setSelectedMonths(selected);
+  };
+
+  const handleYearChange = (selected) => {
+    setSelectedYear(selected ? selected.value : '');
+  };
+
+  const filteredFactures = factures.filter((facture) => {
+    // Vérifie si la date de facturation est valide
+    if (!facture.date_facturation) {
+      console.warn('Date de facturation manquante pour la facture:', facture);
+      return false;
+    }
+  
+    const factureDate = new Date(facture.date_facturation);
+    const factureMonth = factureDate.getMonth() + 1; // Mois ajusté (1-12)
+    const factureYear = factureDate.getFullYear();
+  
+    // Vérification du mois et de l'année
+    const monthMatch = 
+      selectedMonths.length === 0 ||
+      selectedMonths.some((month) => Number(month.value) === factureMonth);
+  
+    const yearMatch = !selectedYear || Number(selectedYear) === factureYear;
+  
+    return monthMatch && yearMatch;
+  });
+  
+  
+  
 
   const resetFactureFields = () => {
     setFactureToEdit({});
@@ -48,7 +83,7 @@ const Facture = () => {
     const newFacture = {
       numero,
       montant_ht,
-      montant_ttc,
+      montant_httc,
       prix_tva,
       pourcentage_tva,
       date_facturation,
@@ -100,7 +135,7 @@ const Facture = () => {
       updateFacture(factureToEdit.id, {
         numero,
         montant_ht,
-        montant_ttc,
+        montant_httc,
         prix_tva,
         pourcentage_tva,
         date_facturation,
@@ -170,7 +205,7 @@ const Facture = () => {
     if (selectedFacture) {
       setNumero(selectedFacture.numero);
       setMontantHT(selectedFacture.montant_ht);
-      setMontantTTC(selectedFacture.montant_ttc);
+      setMontantTTC(selectedFacture.montant_httc);
       setPrixTVA(selectedFacture.prix_tva);
       setPourcentageTVA(selectedFacture.pourcentage_tva);
       setDateFacturation(selectedFacture.date_facturation);
@@ -233,7 +268,7 @@ const Facture = () => {
     }
   };
 
-  const currentFactures = factures.slice(
+  const currentFactures = filteredFactures.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
@@ -288,14 +323,20 @@ const Facture = () => {
             <Select
               options={monthOptions}
               isMulti
-              name="colors"
+              name="months"
               className="basic-multi-select text-xs"
               classNamePrefix="select"
+              onChange={handleMonthChange}
             />
           </div>
           <div className='flex flex-col items-start'>
             <h3>Choisir une année :</h3>
-            <Select options={yearOptions} className="text-xs " />
+            <Select
+              options={yearOptions}
+              className="text-xs"
+              onChange={handleYearChange}
+              isClearable 
+            />
           </div>
           <div className="flex items-center">
             <FontAwesomeIcon
@@ -348,45 +389,45 @@ const Facture = () => {
           </thead>
           <tbody>
             {currentFactures.map((facture) => (
-              <tr key={facture.id}>
-                <td className="border-y p-2 ">{facture.id}</td>
-                <td className="border-y p-2 ">{facture.montant_ht}</td>
-                <td className="border-y p-2 ">{facture.prix_tva}</td>
-                <td className="border-y p-2 ">{facture.montant_ttc}</td>
-                <td className="border-y p-2 ">{facture.piece_jointe}</td>
-                <td className="border-y p-2  w-[25px] relative">
-                  <button
-                    onClick={() => {
-                      toggleActions(facture.id)
-                    }}
-                    className="rounded hover:text-red-500"
-                  >
-                    <FontAwesomeIcon icon={faEllipsisV} />
-                  </button>
-                  {showActionsIdProsp === facture.id && (
-                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
-                      <button
-                        onClick={() => { handleEditClick(facture.id) }}
-                        className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
-                      >
-                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                        Modifier
-                      </button>
+                <tr key={facture.id}>
+                  <td className="border-y p-2 ">{facture.id}</td>
+                  <td className="border-y p-2 ">{facture.montant_ht}</td>
+                  <td className="border-y p-2 ">{facture.prix_tva}</td>
+                  <td className="border-y p-2 ">{facture.montant_httc}</td>
+                  <td className="border-y p-2 ">{facture.piece_jointe}</td>
+                  <td className="border-y p-2  w-[25px] relative">
+                    <button
+                      onClick={() => {
+                        toggleActions(facture.id)
+                      }}
+                      className="rounded hover:text-red-500"
+                    >
+                      <FontAwesomeIcon icon={faEllipsisV} />
+                    </button>
+                    {showActionsIdProsp === facture.id && (
+                      <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+                        <button
+                          onClick={() => { handleEditClick(facture.id) }}
+                          className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                        >
+                          <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                          Modifier
+                        </button>
 
-                      <button
-                        onClick={() => {
-                          handleDelete(facture.id)
-                        }}
-                        className="text-red-500 hover:text-red-700 flex items-center"
-                      >
-                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                        Effacer
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
+                        <button
+                          onClick={() => {
+                            handleDelete(facture.id)
+                          }}
+                          className="text-red-500 hover:text-red-700 flex items-center"
+                        >
+                          <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                          Effacer
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
         {factures.length === 0 && (
@@ -436,7 +477,7 @@ const Facture = () => {
                     <label className="block text-sm font-medium text-gray-700 my-2">Montant TTC</label>
                     <input
                       type="number"
-                      value={montant_ttc}
+                      value={montant_httc}
                       readOnly
                       onChange={(e) => setMontantTTC(e.target.value)}
                       placeholder="Montant TTC"
