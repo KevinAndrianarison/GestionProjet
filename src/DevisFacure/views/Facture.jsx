@@ -16,7 +16,6 @@ const Facture = () => {
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
-
   const [numero, setNumero] = useState('');
   const [montant_ht, setMontantHT] = useState('');
   const [montant_ttc, setMontantTTC] = useState('');
@@ -28,9 +27,10 @@ const Facture = () => {
   const [validation, setValidation] = useState('');
   const [piece_jointe, setPieceJointe] = useState('');
   const [devise, setDevise] = useState('');
-  const [errorMessage, setErrorMessage] = useState("");
+  const [factureToEdit, setFactureToEdit] = useState({});
 
   const resetFactureFields = () => {
+    setFactureToEdit({});
     setNumero('');
     setMontantHT('');
     setMontantTTC('');
@@ -44,8 +44,6 @@ const Facture = () => {
   };
 
   const handleAddFacture = () => {
-    setErrorMessage('');
-
     const newFacture = {
       numero,
       montant_ht,
@@ -65,9 +63,12 @@ const Facture = () => {
 
   const handleOpenModal = () => {
     setModalOpen(true);
+    setShowActionsIdProsp(false);
   };
 
   const handleCloseModal = () => {
+    resetFactureFields();
+    setFactureToEdit({});
     setModalOpen(false);
   };
 
@@ -93,6 +94,25 @@ const Facture = () => {
     fetchFactures();
   }, [refresh]);
 
+  const handleSaveFacture = () => {
+    if (factureToEdit?.id) {
+      updateFacture(factureToEdit.id, {
+        numero,
+        montant_ht,
+        montant_ttc,
+        prix_tva,
+        pourcentage_tva,
+        date_facturation,
+        date_enregistrement,
+        type_assigner,
+        devise,
+        piece_jointe,
+      });
+    } else {
+      handleAddFacture();
+    }
+  };
+
   const addFacture = async (newFacture) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
@@ -110,48 +130,78 @@ const Facture = () => {
         setFactures([...factures, response.data]);
         setModalOpen(false);
       }
-      Notiflix.Notify.success("Fournisseur ajouté avec succès !");
+      Notiflix.Notify.success("Facture ajoutée avec succès !");
     } catch (error) {
       console.error("Erreur lors de l'ajout de la facture :", error);
+      Notiflix.Notify.failure("Erreur lors de l'ajout de la facture.");
     }
   };
 
-  const updateFacture = async (updatedFacture) => {
+  const updateFacture = async (id, updatedFacture) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
+
     try {
-      const response = await axios.put(`${BASE_URL}factures/${updatedFacture.id}`, updatedFacture, {
+      const response = await axios.put(`${BASE_URL}factures/entrants/${id}`, updatedFacture, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
       if (response.status === 200) {
-        setFactures(
-          factures.map((facture) =>
-            facture.id === updatedFacture.id ? response.data : facture
+        setFactures((prevFactures) =>
+          prevFactures.map((facture) =>
+            facture.id === id ? { ...facture, ...updatedFacture } : facture
           )
         );
-        setRefresh(!refresh);
-        setIsEditModalOpen(false);
-        Swal.fire('Succès!', 'Facture mise à jour avec succès!', 'success');
+        handleCloseModal();
+        Notiflix.Notify.success("Facture modifiée avec succès !");
       }
     } catch (error) {
-      console.error("Erreur lors de la mise à jour de la facture :", error);
+      console.error("Erreur lors de la modification de la facture :", error);
+      Notiflix.Notify.failure("Erreur lors de la modification de la facture.");
+    }
+  };
+
+  const handleEditClick = async (id) => {
+    const selectedFacture = factures.find((facture) => facture.id === id);
+    if (selectedFacture) {
+      setNumero(selectedFacture.numero);
+      setMontantHT(selectedFacture.montant_ht);
+      setMontantTTC(selectedFacture.montant_ttc);
+      setPrixTVA(selectedFacture.prix_tva);
+      setPourcentageTVA(selectedFacture.pourcentage_tva);
+      setDateFacturation(selectedFacture.date_facturation);
+      setDateEnregistrement(selectedFacture.date_enregistrement);
+      setTypeAssigner(selectedFacture.type_assigner);
+      setValidation(selectedFacture.validation);
+      setDevise(selectedFacture.devise);
+      setPieceJointe(selectedFacture.piece_jointe);
+
+      setFactureToEdit(selectedFacture);
+      handleOpenModal();
     }
   };
 
   const handleDelete = async (factureId) => {
-    const confirmed = await Swal.fire({
-      title: 'Êtes-vous sûr ?',
-      text: "Cette action est irréversible.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler',
-    });
+    setShowActionsIdProsp((prevId) => (prevId === factureId ? null : factureId));
 
-    if (!confirmed.isConfirmed) {
+    const confirmDelete = () => {
+      return new Promise((resolve) => {
+        Notiflix.Confirm.show(
+          'Confirmer',
+          'Êtes-vous sûr de vouloir supprimer ?',
+          'Oui',
+          'Non',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+    };
+
+    const confirmed = await confirmDelete();
+    if (!confirmed) {
       return;
     }
 
@@ -165,28 +215,21 @@ const Facture = () => {
       });
       if (response.status === 200) {
         setFactures(factures.filter((facture) => facture.id !== factureId));
-        Swal.fire('Supprimée!', 'La facture a été supprimée.', 'success');
         setRefresh(!refresh);
       }
+      Notiflix.Report.success(
+        'Succès',
+        'Fournisseur supprimé avec succès.',
+        'Fermer'
+      );
     } catch (error) {
       console.error("Erreur lors de la suppression de la facture :", error);
-      Swal.fire('Erreur', "Une erreur est survenue lors de la suppression.", 'error');
+      Notiflix.Report.failure(
+        'Echec',
+        'Echec lors de la suppression du fournisseur.',
+        'Fermer'
+      );
     }
-  };
-
-  
-
-  const closeModal = () => setModalOpen(false);
-
-  const openEditModal = (facture) => {
-    setFactureToEdit(facture);
-    setIsEditModalOpen(true);
-    setShowActionsIdProsp(null);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setFactureToEdit(null);
   };
 
   const currentFactures = factures.slice(
@@ -205,7 +248,6 @@ const Facture = () => {
   const toggleActions = (id) => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
   };
-
 
   return (
     <div>
@@ -305,9 +347,7 @@ const Facture = () => {
                   {showActionsIdProsp === facture.id && (
                     <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
                       <button
-                        onClick={() => {
-                          openEditModal(facture)
-                        }}
+                        onClick={() => { handleEditClick(facture.id) }}
                         className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
                       >
                         <FontAwesomeIcon icon={faEdit} className="mr-2" />
@@ -336,14 +376,9 @@ const Facture = () => {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <h2 className="text-xl mx-2 my-2 ">Nouvelle facture</h2>
+        <h2 className="text-xl mx-2 my-2 ">{factureToEdit?.id ? "Modifier la facture" : "Nouvelle facture"}</h2>
         <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
           <div className="">
-            <div>
-              {errorMessage && (
-                <span className="text-red-600 text-sm">{errorMessage}</span>
-              )}
-            </div>
             <div className="">
               <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-lg w-full'>
                 <div className="border rounded-t-xl">
@@ -408,7 +443,7 @@ const Facture = () => {
                     />
                   </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">date_enregistrement</label>
+                    <label className="block text-sm font-medium text-gray-700 my-2">Date d'enregistrement</label>
                     <input
                       type="text"
                       value={date_enregistrement}
@@ -418,7 +453,7 @@ const Facture = () => {
                     />
                   </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">type_assigner</label>
+                    <label className="block text-sm font-medium text-gray-700 my-2">type assigner</label>
                     <input
                       type="text"
                       value={type_assigner}
@@ -462,9 +497,10 @@ const Facture = () => {
               <div className="lg:col-span-1 mt-2">
                 <button
                   type="button"
-                  onClick={handleAddFacture}
-                  className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600">
-                  Enregistrer
+                  onClick={handleSaveFacture}
+                  className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600"
+                >
+                  {factureToEdit?.id ? "Modifier" : "Enregistrer"}
                 </button>
               </div>
             </div>
