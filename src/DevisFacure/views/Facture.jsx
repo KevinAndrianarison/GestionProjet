@@ -438,7 +438,7 @@ const Facture = () => {
         <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
           <div className="">
             <div className="">
-              <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-lg w-full'>
+              <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
                 <div className="border rounded-t-xl">
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
@@ -540,7 +540,7 @@ const Facture = () => {
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
                     <input
-                      type="text"
+                      type="file"
                       value={piece_jointe}
                       onChange={(e) => setPieceJointe(e.target.value)}
                       placeholder="Piece jointe"
