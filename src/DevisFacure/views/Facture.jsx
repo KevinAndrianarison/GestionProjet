@@ -11,7 +11,7 @@ import Notiflix from 'notiflix';
 const Facture = () => {
   const [factures, setFactures] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 2;
+  const itemsPerPage = 20;
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -47,23 +47,21 @@ const Facture = () => {
       console.warn('Date de facturation manquante pour la facture:', facture);
       return false;
     }
-  
+
     const factureDate = new Date(facture.date_facturation);
-    const factureMonth = factureDate.getMonth() + 1; // Mois ajusté (1-12)
+    const factureMonth = factureDate.getMonth() + 1;
     const factureYear = factureDate.getFullYear();
-  
+
     // Vérification du mois et de l'année
-    const monthMatch = 
+    const monthMatch =
       selectedMonths.length === 0 ||
       selectedMonths.some((month) => Number(month.value) === factureMonth);
-  
+
     const yearMatch = !selectedYear || Number(selectedYear) === factureYear;
-  
+
     return monthMatch && yearMatch;
   });
-  
-  
-  
+
 
   const resetFactureFields = () => {
     setFactureToEdit({});
@@ -335,7 +333,7 @@ const Facture = () => {
               options={yearOptions}
               className="text-xs"
               onChange={handleYearChange}
-              isClearable 
+              isClearable
             />
           </div>
           <div className="flex items-center">
@@ -389,45 +387,45 @@ const Facture = () => {
           </thead>
           <tbody>
             {currentFactures.map((facture) => (
-                <tr key={facture.id}>
-                  <td className="border-y p-2 ">{facture.id}</td>
-                  <td className="border-y p-2 ">{facture.montant_ht}</td>
-                  <td className="border-y p-2 ">{facture.prix_tva}</td>
-                  <td className="border-y p-2 ">{facture.montant_httc}</td>
-                  <td className="border-y p-2 ">{facture.piece_jointe}</td>
-                  <td className="border-y p-2  w-[25px] relative">
-                    <button
-                      onClick={() => {
-                        toggleActions(facture.id)
-                      }}
-                      className="rounded hover:text-red-500"
-                    >
-                      <FontAwesomeIcon icon={faEllipsisV} />
-                    </button>
-                    {showActionsIdProsp === facture.id && (
-                      <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
-                        <button
-                          onClick={() => { handleEditClick(facture.id) }}
-                          className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
-                        >
-                          <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                          Modifier
-                        </button>
+              <tr key={facture.id}>
+                <td className="border-y p-2 ">{facture.id}</td>
+                <td className="border-y p-2 ">{facture.montant_ht}</td>
+                <td className="border-y p-2 ">{facture.prix_tva}</td>
+                <td className="border-y p-2 ">{facture.montant_httc}</td>
+                <td className="border-y p-2 ">{facture.piece_jointe}</td>
+                <td className="border-y p-2  w-[25px] relative">
+                  <button
+                    onClick={() => {
+                      toggleActions(facture.id)
+                    }}
+                    className="rounded hover:text-red-500"
+                  >
+                    <FontAwesomeIcon icon={faEllipsisV} />
+                  </button>
+                  {showActionsIdProsp === facture.id && (
+                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+                      <button
+                        onClick={() => { handleEditClick(facture.id) }}
+                        className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
+                      >
+                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                        Modifier
+                      </button>
 
-                        <button
-                          onClick={() => {
-                            handleDelete(facture.id)
-                          }}
-                          className="text-red-500 hover:text-red-700 flex items-center"
-                        >
-                          <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                          Effacer
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                      <button
+                        onClick={() => {
+                          handleDelete(facture.id)
+                        }}
+                        className="text-red-500 hover:text-red-700 flex items-center"
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                        Effacer
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
         {factures.length === 0 && (
@@ -563,7 +561,6 @@ const Facture = () => {
             </div>
           </div>
         </form>
-
       </Modal>
     </div>
   );
