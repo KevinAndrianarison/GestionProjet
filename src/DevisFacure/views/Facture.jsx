@@ -42,7 +42,6 @@ const Facture = () => {
   };
 
   const filteredFactures = factures.filter((facture) => {
-    // Vérifie si la date de facturation est valide
     if (!facture.date_facturation) {
       console.warn('Date de facturation manquante pour la facture:', facture);
       return false;
@@ -52,7 +51,6 @@ const Facture = () => {
     const factureMonth = factureDate.getMonth() + 1;
     const factureYear = factureDate.getFullYear();
 
-    // Vérification du mois et de l'année
     const monthMatch =
       selectedMonths.length === 0 ||
       selectedMonths.some((month) => Number(month.value) === factureMonth);
@@ -128,7 +126,18 @@ const Facture = () => {
     fetchFactures();
   }, [refresh]);
 
+  const validateForm = () => {
+    if (!montant_ht || !montant_httc || !prix_tva) {
+      Notiflix.Notify.failure('Tous les champs doivent être remplis.');
+      return false;
+    }
+    return true;
+  };
+
+
   const handleSaveFacture = () => {
+    if (!validateForm()) return;
+
     if (factureToEdit?.id) {
       updateFacture(factureToEdit.id, {
         numero,
@@ -151,11 +160,33 @@ const Facture = () => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
 
+    const formData = new FormData();
+
+    formData.append("numero", newFacture.numero);
+    formData.append("montant_ht", newFacture.montant_ht);
+    formData.append("montant_httc", newFacture.montant_httc);
+    formData.append("prix_tva", newFacture.prix_tva);
+    formData.append("pourcentage_tva", newFacture.pourcentage_tva);
+    formData.append("date_facturation", newFacture.date_facturation);
+    formData.append("date_enregistrement", newFacture.date_enregistrement);
+    formData.append("type_assigner", newFacture.type_assigner);
+    formData.append("devise", newFacture.devise);
+
+    if (newFacture.piece_jointe) {
+      formData.append("piece_jointe", newFacture.piece_jointe);
+    }
+
+    if (piece_jointe instanceof File) {
+      console.log("C'est un fichier !");
+    } else {
+      console.log("Ce n'est pas un fichier.");
+    }
+
     try {
-      const response = await axios.post(`${BASE_URL}factures/entrants`, newFacture, {
+      const response = await axios.post(`${BASE_URL}factures/entrants`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
       });
       setRefresh(!refresh);
@@ -165,28 +196,48 @@ const Facture = () => {
         setModalOpen(false);
       }
       Notiflix.Notify.success("Facture ajoutée avec succès !");
+
     } catch (error) {
       console.error("Erreur lors de l'ajout de la facture :", error);
       Notiflix.Notify.failure("Erreur lors de l'ajout de la facture.");
     }
   };
 
-  const updateFacture = async (id, updatedFacture) => {
+
+
+  const updateFacture = async (id, formData) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
 
     try {
-      const response = await axios.put(`${BASE_URL}factures/entrants/${id}`, updatedFacture, {
+      const updatedFormData = new FormData();
+
+      updatedFormData.append("numero", formData.numero);
+      updatedFormData.append("montant_ht", formData.montantHT);
+      updatedFormData.append("montant_httc", formData.montantTTC);
+      updatedFormData.append("prix_tva", formData.prixTVA);
+      updatedFormData.append("pourcentage_tva", formData.pourcentageTVA);
+      updatedFormData.append("date_facturation", formData.dateFacturation);
+      updatedFormData.append("date_enregistrement", formData.dateEnregistrement);
+      updatedFormData.append("type_assigner", formData.typeAssigner);
+      updatedFormData.append("validation", formData.validation);
+      updatedFormData.append("devise", formData.devise);
+
+      if (formData.pieceJointe) {
+        updatedFormData.append("piece_jointe", formData.pieceJointe);
+      }
+
+      const response = await axios.put(`${BASE_URL}factures/entrants/${id}`, updatedFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
       });
 
       if (response.status === 200) {
         setFactures((prevFactures) =>
           prevFactures.map((facture) =>
-            facture.id === id ? { ...facture, ...updatedFacture } : facture
+            facture.id === id ? { ...facture, ...formData } : facture
           )
         );
         handleCloseModal();
@@ -197,6 +248,7 @@ const Facture = () => {
       Notiflix.Notify.failure("Erreur lors de la modification de la facture.");
     }
   };
+
 
   const handleEditClick = async (id) => {
     const selectedFacture = factures.find((facture) => facture.id === id);
@@ -541,8 +593,7 @@ const Facture = () => {
                     <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
                     <input
                       type="file"
-                      value={piece_jointe}
-                      onChange={(e) => setPieceJointe(e.target.value)}
+                      onChange={(e) => setPieceJointe(e.target.files[0])}
                       placeholder="Piece jointe"
                       className="w-full p-2 rounded text-sm"
                     />
