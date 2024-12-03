@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faEdit, faEllipsisV, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import Swal from 'sweetalert2';
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Select from 'react-select';
@@ -17,10 +16,12 @@ const Facture = () => {
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [numero, setNumero] = useState('');
+
   const [montant_ht, setMontantHT] = useState('');
-  const [montant_ttc, setMontantTTC] = useState('');
-  const [prix_tva, setPrixTVA] = useState('');
+  const [montant_ttc, setMontantTTC] = useState(0);
+  const [prix_tva, setPrixTVA] = useState(0);
   const [pourcentage_tva, setPourcentageTVA] = useState('');
+
   const [date_facturation, setDateFacturation] = useState('');
   const [date_enregistrement, setDateEnregistrement] = useState('');
   const [type_assigner, setTypeAssigner] = useState('');
@@ -249,6 +250,24 @@ const Facture = () => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
   };
 
+  const calculTtcTva = () => {
+    const ht = parseFloat(montant_ht) || 0;
+    const tva = parseFloat(pourcentage_tva) || 0;
+    const calculatedPrixTVA = ht * (tva / 100);
+    const calculatedMontantTTC = ht + calculatedPrixTVA;
+    setPrixTVA(calculatedPrixTVA.toFixed(2));
+    setMontantTTC(calculatedMontantTTC.toFixed(2));
+  };
+
+  useEffect(() => {
+    if (montant_ht !== "" || pourcentage_tva !== "") {
+      calculTtcTva();
+    } else {
+      setPrixTVA("0.00");
+      setMontantTTC("0.00");
+    }
+  }, [montant_ht, pourcentage_tva]);
+
   return (
     <div>
       <div className="w-full mb-3 ">
@@ -330,7 +349,7 @@ const Facture = () => {
           <tbody>
             {currentFactures.map((facture) => (
               <tr key={facture.id}>
-                <td className="border-y p-2 ">{facture.numero}</td>
+                <td className="border-y p-2 ">{facture.id}</td>
                 <td className="border-y p-2 ">{facture.montant_ht}</td>
                 <td className="border-y p-2 ">{facture.prix_tva}</td>
                 <td className="border-y p-2 ">{facture.montant_ttc}</td>
@@ -383,21 +402,11 @@ const Facture = () => {
               <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-lg w-full'>
                 <div className="border rounded-t-xl">
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Numéro de facture</label>
-                    <input
-                      type="text"
-                      value={numero}
-                      onChange={(e) => setNumero(e.target.value)}
-                      placeholder="numero de facture"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
                     <input
-                      type="text"
+                      type="number"
                       value={montant_ht}
-                      onChange={(e) => setMontantHT(e.target.value)}
+                      onChange={(e) => { setMontantHT(e.target.value); calculTtcTva(); }}
                       placeholder="Montant HT"
                       className="w-full p-2 rounded text-sm"
                     />
@@ -405,9 +414,9 @@ const Facture = () => {
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
                     <input
-                      type="text"
+                      type="number"
                       value={pourcentage_tva}
-                      onChange={(e) => setPourcentageTVA(e.target.value)}
+                      onChange={(e) => { setPourcentageTVA(e.target.value); calculTtcTva(); }}
                       placeholder="Pourcentage TVA"
                       className="w-full p-2 rounded text-sm"
                     />
@@ -415,8 +424,9 @@ const Facture = () => {
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">prix TVA</label>
                     <input
-                      type="text"
+                      type="number"
                       value={prix_tva}
+                      readOnly
                       onChange={(e) => setPrixTVA(e.target.value)}
                       placeholder="prix_tva"
                       className="w-full p-2 rounded text-sm"
@@ -425,8 +435,9 @@ const Facture = () => {
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Montant TTC</label>
                     <input
-                      type="text"
+                      type="number"
                       value={montant_ttc}
+                      readOnly
                       onChange={(e) => setMontantTTC(e.target.value)}
                       placeholder="Montant TTC"
                       className="w-full p-2 rounded text-sm"
@@ -445,7 +456,7 @@ const Facture = () => {
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Date d'enregistrement</label>
                     <input
-                      type="text"
+                      type="date"
                       value={date_enregistrement}
                       onChange={(e) => setDateEnregistrement(e.target.value)}
                       placeholder="date_enregistrement"
@@ -453,42 +464,47 @@ const Facture = () => {
                     />
                   </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">type assigner</label>
-                    <input
-                      type="text"
+                    <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
+                    <select
                       value={type_assigner}
                       onChange={(e) => setTypeAssigner(e.target.value)}
-                      placeholder="type_assigner"
                       className="w-full p-2 rounded text-sm"
-                    />
+                    >
+                      <option value=""></option>
+                      <option value="societe">Société</option>
+                      <option value="particulier">Particulier</option>
+                      <option value="auto_entrepreneur">Auto-entrepreneur</option>
+                    </select>
                   </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">validation</label>
-                    <input
-                      type="text"
+                    <label className="block text-sm font-medium text-gray-700 my-2">Validation</label>
+                    <select
                       value={validation}
                       onChange={(e) => setValidation(e.target.value)}
-                      placeholder="validation"
                       className="w-full p-2 rounded text-sm"
-                    />
+                    >
+                      <option value="false">Non</option>
+                      <option value="true">Oui</option>
+                    </select>
                   </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                     <label className="block text-sm font-medium text-gray-700 my-2">Devise</label>
-                    <input
-                      type="text"
+                    <select
                       value={devise}
                       onChange={(e) => setDevise(e.target.value)}
-                      placeholder="devise"
                       className="w-full p-2 rounded text-sm"
-                    />
+                    >
+                      <option value="eur">EUR</option>
+                      <option value="usd">USD</option>
+                    </select>
                   </div>
                   <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">piece_jointe</label>
+                    <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
                     <input
                       type="text"
                       value={piece_jointe}
                       onChange={(e) => setPieceJointe(e.target.value)}
-                      placeholder="piece_jointe"
+                      placeholder="Piece jointe"
                       className="w-full p-2 rounded text-sm"
                     />
                   </div>
