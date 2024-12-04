@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit, faEllipsisV, faMagnifyingGlass, faImage } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Select from 'react-select';
@@ -33,6 +33,13 @@ const Facture = () => {
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedYear, setSelectedYear] = useState('');
 
+
+  const [selectedImage, setSelectedImage] = useState("");
+
+  const handleImageClick = (imageUrl) => {
+    window.open(imageUrl, "_blank");
+  };
+  
   const handleMonthChange = (selected) => {
     setSelectedMonths(selected);
   };
@@ -84,6 +91,7 @@ const Facture = () => {
     resetFactureFields();
     setFactureToEdit({});
     setModalOpen(false);
+    setSelectedImage(""); // Réinitialiser l'image sélectionnée
   };
 
   useEffect(() => {
@@ -356,6 +364,7 @@ const Facture = () => {
 
     return true;
   };
+console.log("mmmmmmmmmmm", factures[4]);
 
   return (
     <div>
@@ -390,12 +399,6 @@ const Facture = () => {
               className="text-xs"
               onChange={handleYearChange}
               isClearable
-            />
-          </div>
-          <div className="flex items-center">
-            <FontAwesomeIcon
-              icon={faMagnifyingGlass}
-              className="h-4 mt-3 text-blue-600"
             />
           </div>
         </div>
@@ -448,7 +451,21 @@ const Facture = () => {
                 <td className="border-y p-2 ">{facture.montant_ht}</td>
                 <td className="border-y p-2 ">{facture.prix_tva}</td>
                 <td className="border-y p-2 ">{facture.montant_httc}</td>
-                <td className="border-y p-2 ">{facture.piece_jointe}</td>
+                <td className="border-y p-2">
+              {facture.piece_jointe ? (
+                /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(facture.piece_jointe) ? (
+                  <FontAwesomeIcon
+                    icon={faImage}
+                    onClick={() => handleImageClick(`https://bg.societe-manage.com/public/storage/factures_entrants/23_04_12_2024_06_26_15/piece_jointe.pdf`)}
+                    className="text-blue-500 cursor-pointer"
+                  />
+                ) : (
+                  <span>Fichier attaché</span>
+                )
+              ) : (
+                "Aucune pièce jointe"
+              )}
+            </td>
                 <td className="border-y p-2  w-[25px] relative">
                   <button
                     onClick={() => {
@@ -488,7 +505,6 @@ const Facture = () => {
           <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
         )}
       </div>
-
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <h2 className="text-xl mx-2 my-2 ">{factureToEdit?.id ? "Modifier la facture" : "Nouvelle facture"}</h2>
         <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
