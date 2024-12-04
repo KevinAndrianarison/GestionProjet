@@ -75,24 +75,6 @@ const Facture = () => {
     setPieceJointe('');
   };
 
-  const handleAddFacture = () => {
-    const newFacture = {
-      numero,
-      montant_ht,
-      montant_httc,
-      prix_tva,
-      pourcentage_tva,
-      date_facturation,
-      date_enregistrement,
-      type_assigner,
-      devise,
-      piece_jointe
-    };
-    addFacture(newFacture);
-    resetFactureFields();
-    handleCloseModal();
-  };
-
   const handleOpenModal = () => {
     setModalOpen(true);
     setShowActionsIdProsp(false);
@@ -137,31 +119,34 @@ const Facture = () => {
 
   const handleSaveFacture = () => {
     if (!validateForm()) return;
-
+  
+    const factureData = {
+      numero,
+      montant_ht,
+      montant_httc,
+      prix_tva,
+      pourcentage_tva,
+      date_facturation,
+      date_enregistrement,
+      type_assigner,
+      devise,
+      validation,
+      piece_jointe,
+    };
+  
     if (factureToEdit?.id) {
-      updateFacture(factureToEdit.id, {
-        numero,
-        montant_ht,
-        montant_httc,
-        prix_tva,
-        pourcentage_tva,
-        date_facturation,
-        date_enregistrement,
-        type_assigner,
-        devise,
-        piece_jointe,
-      });
+      updateFacture(factureToEdit.id, factureData);
     } else {
-      handleAddFacture();
+      addFacture(factureData);
     }
   };
+  
 
   const addFacture = async (newFacture) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-
+  
     const formData = new FormData();
-
     formData.append("numero", newFacture.numero);
     formData.append("montant_ht", newFacture.montant_ht);
     formData.append("montant_httc", newFacture.montant_httc);
@@ -171,17 +156,11 @@ const Facture = () => {
     formData.append("date_enregistrement", newFacture.date_enregistrement);
     formData.append("type_assigner", newFacture.type_assigner);
     formData.append("devise", newFacture.devise);
-
+  
     if (newFacture.piece_jointe) {
       formData.append("piece_jointe", newFacture.piece_jointe);
     }
-
-    if (piece_jointe instanceof File) {
-      console.log("C'est un fichier !");
-    } else {
-      console.log("Ce n'est pas un fichier.");
-    }
-
+  
     try {
       const response = await axios.post(`${BASE_URL}factures/entrants`, formData, {
         headers: {
@@ -189,51 +168,45 @@ const Facture = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
+  
       setRefresh(!refresh);
-
+  
       if (response.status === 200) {
         setFactures([...factures, response.data]);
         setModalOpen(false);
       }
       Notiflix.Notify.success("Facture ajoutée avec succès !");
-
     } catch (error) {
       console.error("Erreur lors de l'ajout de la facture :", error);
       Notiflix.Notify.failure("Erreur lors de l'ajout de la facture.");
     }
+    finally {
+      setModalOpen(false);
+    }
   };
-
-
+  
+  
+  console.log("Facture à modifier :", factureToEdit);
 
   const updateFacture = async (id, formData) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-
-    try {
-      const updatedFormData = new FormData();
-
-      updatedFormData.append("numero", formData.numero);
-      updatedFormData.append("montant_ht", formData.montantHT);
-      updatedFormData.append("montant_httc", formData.montantTTC);
-      updatedFormData.append("prix_tva", formData.prixTVA);
-      updatedFormData.append("pourcentage_tva", formData.pourcentageTVA);
-      updatedFormData.append("date_facturation", formData.dateFacturation);
-      updatedFormData.append("date_enregistrement", formData.dateEnregistrement);
-      updatedFormData.append("type_assigner", formData.typeAssigner);
-      updatedFormData.append("validation", formData.validation);
-      updatedFormData.append("devise", formData.devise);
-
-      if (formData.pieceJointe) {
-        updatedFormData.append("piece_jointe", formData.pieceJointe);
+  
+    const updatedFormData = new FormData();
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== undefined && formData[key] !== null) {
+        updatedFormData.append(key, formData[key]);
       }
-
-      const response = await axios.put(`${BASE_URL}factures/entrants/${id}`, updatedFormData, {
+    });
+  
+    try {
+      const response = await axios.post(`${BASE_URL}factures/entrants/${id}`, updatedFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
+          "X-HTTP-Method-Override": "PUT",
         },
       });
-
+  
       if (response.status === 200) {
         setFactures((prevFactures) =>
           prevFactures.map((facture) =>
@@ -242,12 +215,15 @@ const Facture = () => {
         );
         handleCloseModal();
         Notiflix.Notify.success("Facture modifiée avec succès !");
+      } else {
+        throw new Error("Échec de la mise à jour de la facture");
       }
     } catch (error) {
       console.error("Erreur lors de la modification de la facture :", error);
       Notiflix.Notify.failure("Erreur lors de la modification de la facture.");
     }
   };
+  
 
 
   const handleEditClick = async (id) => {
@@ -352,6 +328,34 @@ const Facture = () => {
       setMontantTTC("0.00");
     }
   }, [montant_ht, pourcentage_tva]);
+
+
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && AllowedFile(file)) {
+      setPieceJointe(file);
+    }
+  };
+  
+
+  const AllowedFile = (file) => {
+    const allowedFileTypes = /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i;
+    const maxFileSize = 2 * 1024 * 1024;
+
+    if (!allowedFileTypes.test(file.name)) {
+      Notiflix.Notify.warning(
+        "Le fichier doit être un PDF ou une image valide (jpg, jpeg, png, gif, bmp, svg, webp)."
+      );
+      return false;
+    }
+
+    if (file.size > maxFileSize) {
+      Notiflix.Notify.warning("Le fichier ne doit pas dépasser 2 Mo.");
+      return false;
+    }
+
+    return true;
+  };
 
   return (
     <div>
@@ -593,8 +597,7 @@ const Facture = () => {
                     <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
                     <input
                       type="file"
-                      onChange={(e) => setPieceJointe(e.target.files[0])}
-                      placeholder="Piece jointe"
+                      onChange={(e) => handleUpload(e, "piece_jointe")} placeholder="Piece jointe"
                       className="w-full p-2 rounded text-sm"
                     />
                   </div>
