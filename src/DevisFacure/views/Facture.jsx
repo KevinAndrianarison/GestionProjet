@@ -46,10 +46,10 @@ const Facture = () => {
   };
 
   const filteredFactures = factures.filter((facture) => {
-    if (!facture.date_facturation) {
-      console.warn('Date de facturation manquante pour la facture:', facture);
-      return false;
-    }
+    // if (!facture.date_facturation) {
+    //   console.warn('Date de facturation manquante pour la facture:', facture);
+    //   return false;
+    // }
 
     const factureDate = new Date(facture.date_facturation);
     const factureMonth = factureDate.getMonth() + 1;
@@ -92,8 +92,6 @@ const Facture = () => {
     resetFactureFields();
     setFactureToEdit({});
     setModalOpen(false);
-    setSelectedImage(""); // Réinitialiser l'image sélectionnée
-
   };
 
 
@@ -225,6 +223,7 @@ const Facture = () => {
             facture.id === id ? { ...facture, ...formData } : facture
           )
         );
+        setRefresh(!refresh);
         handleCloseModal();
         Notiflix.Notify.success("Facture modifiée avec succès !");
       } else {
@@ -364,7 +363,6 @@ const Facture = () => {
 
     return true;
   };
-  const fileUrl = factures.piece_jointe;
 
   return (
     <div>
