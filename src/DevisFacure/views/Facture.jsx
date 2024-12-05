@@ -597,7 +597,7 @@ const Facture = () => {
         {(imgUrl || pdfUrl) ? (
           <div className="mb-4">
             {fileName && (
-              <div className="text-base font-semibold mb-2 text-gray-700">
+              <div className="text-sm font-semibold mb-2 text-gray-700">
                 {fileName}
               </div>
             )}
