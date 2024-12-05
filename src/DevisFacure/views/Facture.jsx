@@ -106,7 +106,6 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
-          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des factures :", error);
@@ -191,7 +190,6 @@ const Facture = () => {
     }
   };
 
-  console.log("Facture à modifier :", factureToEdit);
 
   const updateFacture = async (id, formData) => {
     const tokenString = localStorage.getItem("token");
@@ -210,8 +208,6 @@ const Facture = () => {
     } else if (formData.piece_jointe) {
       console.log("La pièce jointe n'est pas un fichier valide :", formData.piece_jointe);
     }
-
-    console.log('FormData avant envoi:', updatedFormData);
 
     try {
       const response = await axios.post(`${BASE_URL}factures/entrants/${id}`, updatedFormData, {
@@ -721,6 +717,7 @@ const Facture = () => {
                           onChange={(e) => setDevise(e.target.value)}
                           className="w-full p-2 rounded text-sm"
                         >
+                          <option value=""></option>
                           <option value="eur">EUR</option>
                           <option value="usd">USD</option>
                         </select>
