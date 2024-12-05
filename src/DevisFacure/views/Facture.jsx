@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV, faMagnifyingGlass, faImage } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit, faEllipsisV, faImage } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Select from 'react-select';
@@ -32,14 +32,11 @@ const Facture = () => {
 
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedYear, setSelectedYear] = useState('');
+  const [pdfUrl, setPdfurl] = useState('');
+  const [imgUrl, setImgUrl] = useState('');
+  const [alt, setAlt] = useState('');
 
 
-  const [selectedImage, setSelectedImage] = useState("");
-
-  const handleImageClick = (imageUrl) => {
-    window.open(imageUrl, "_blank");
-  };
-  
   const handleMonthChange = (selected) => {
     setSelectedMonths(selected);
   };
@@ -87,12 +84,18 @@ const Facture = () => {
     setShowActionsIdProsp(false);
   };
 
+
   const handleCloseModal = () => {
+    setModalOpen(false);
+    setImgUrl('');
+    setPdfurl('');
     resetFactureFields();
     setFactureToEdit({});
     setModalOpen(false);
     setSelectedImage(""); // Réinitialiser l'image sélectionnée
+
   };
+
 
   useEffect(() => {
     const fetchFactures = async () => {
@@ -106,6 +109,7 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
+          setPieceJointe(`https://bg.societe-manage.com/public/storage/${response.data.piece_jointe}`);
           console.log(response.data);
         }
       } catch (error) {
@@ -127,7 +131,7 @@ const Facture = () => {
 
   const handleSaveFacture = () => {
     if (!validateForm()) return;
-  
+
     const factureData = {
       numero,
       montant_ht,
@@ -141,19 +145,19 @@ const Facture = () => {
       validation,
       piece_jointe,
     };
-  
+
     if (factureToEdit?.id) {
       updateFacture(factureToEdit.id, factureData);
     } else {
       addFacture(factureData);
     }
   };
-  
+
 
   const addFacture = async (newFacture) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-  
+
     const formData = new FormData();
     formData.append("numero", newFacture.numero);
     formData.append("montant_ht", newFacture.montant_ht);
@@ -164,11 +168,11 @@ const Facture = () => {
     formData.append("date_enregistrement", newFacture.date_enregistrement);
     formData.append("type_assigner", newFacture.type_assigner);
     formData.append("devise", newFacture.devise);
-  
+
     if (newFacture.piece_jointe) {
       formData.append("piece_jointe", newFacture.piece_jointe);
     }
-  
+
     try {
       const response = await axios.post(`${BASE_URL}factures/entrants`, formData, {
         headers: {
@@ -176,9 +180,9 @@ const Facture = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       setRefresh(!refresh);
-  
+
       if (response.status === 200) {
         setFactures([...factures, response.data]);
         setModalOpen(false);
@@ -192,21 +196,21 @@ const Facture = () => {
       setModalOpen(false);
     }
   };
-  
-  
+
+
   console.log("Facture à modifier :", factureToEdit);
 
   const updateFacture = async (id, formData) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-  
+
     const updatedFormData = new FormData();
     Object.keys(formData).forEach((key) => {
       if (formData[key] !== undefined && formData[key] !== null) {
         updatedFormData.append(key, formData[key]);
       }
     });
-  
+
     try {
       const response = await axios.post(`${BASE_URL}factures/entrants/${id}`, updatedFormData, {
         headers: {
@@ -214,7 +218,7 @@ const Facture = () => {
           "X-HTTP-Method-Override": "PUT",
         },
       });
-  
+
       if (response.status === 200) {
         setFactures((prevFactures) =>
           prevFactures.map((facture) =>
@@ -231,8 +235,6 @@ const Facture = () => {
       Notiflix.Notify.failure("Erreur lors de la modification de la facture.");
     }
   };
-  
-
 
   const handleEditClick = async (id) => {
     const selectedFacture = factures.find((facture) => facture.id === id);
@@ -248,7 +250,6 @@ const Facture = () => {
       setValidation(selectedFacture.validation);
       setDevise(selectedFacture.devise);
       setPieceJointe(selectedFacture.piece_jointe);
-
       setFactureToEdit(selectedFacture);
       handleOpenModal();
     }
@@ -344,7 +345,6 @@ const Facture = () => {
       setPieceJointe(file);
     }
   };
-  
 
   const AllowedFile = (file) => {
     const allowedFileTypes = /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i;
@@ -364,7 +364,7 @@ const Facture = () => {
 
     return true;
   };
-console.log("mmmmmmmmmmm", factures[4]);
+  const fileUrl = factures.piece_jointe;
 
   return (
     <div>
@@ -431,7 +431,6 @@ console.log("mmmmmmmmmmm", factures[4]);
         </div>
       </div>
 
-
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
           <thead className='bg-slate-100'>
@@ -452,20 +451,33 @@ console.log("mmmmmmmmmmm", factures[4]);
                 <td className="border-y p-2 ">{facture.prix_tva}</td>
                 <td className="border-y p-2 ">{facture.montant_httc}</td>
                 <td className="border-y p-2">
-              {facture.piece_jointe ? (
-                /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(facture.piece_jointe) ? (
-                  <FontAwesomeIcon
-                    icon={faImage}
-                    onClick={() => handleImageClick(`https://bg.societe-manage.com/public/storage/factures_entrants/23_04_12_2024_06_26_15/piece_jointe.pdf`)}
-                    className="text-blue-500 cursor-pointer"
-                  />
-                ) : (
-                  <span>Fichier attaché</span>
-                )
-              ) : (
-                "Aucune pièce jointe"
-              )}
-            </td>
+                  {facture.piece_jointe ? (
+                    /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(facture.piece_jointe) ? (
+                      <FontAwesomeIcon
+                        icon={faImage}
+                        onClick={() => {
+                          const fileUrl = `https://bg.societe-manage.com/public/storage/${facture.piece_jointe}`;
+
+                          if (fileUrl.endsWith('.pdf')) {
+                            setPdfurl(fileUrl);
+                            setImgUrl('');
+                          } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(fileUrl)) {
+                            setImgUrl(fileUrl);
+                            setPdfurl('');
+                            setAlt('Pièce d\'identité');
+                          }
+                          setModalOpen(true);
+                        }}
+
+                        className="text-blue-500 cursor-pointer"
+                      />
+                    ) : (
+                      <span>Fichier attaché</span>
+                    )
+                  ) : (
+                    "Aucune pièce jointe"
+                  )}
+                </td>
                 <td className="border-y p-2  w-[25px] relative">
                   <button
                     onClick={() => {
@@ -505,132 +517,154 @@ console.log("mmmmmmmmmmm", factures[4]);
           <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
         )}
       </div>
+
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <h2 className="text-xl mx-2 my-2 ">{factureToEdit?.id ? "Modifier la facture" : "Nouvelle facture"}</h2>
-        <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
-          <div className="">
-            <div className="">
-              <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
-                <div className="border rounded-t-xl">
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
-                    <input
-                      type="number"
-                      value={montant_ht}
-                      onChange={(e) => { setMontantHT(e.target.value); calculTtcTva(); }}
-                      placeholder="Montant HT"
-                      className="w-full p-2 rounded text-sm"
-                    />
+        {(imgUrl || pdfUrl) ? (
+          <div className="mb-4">
+            {imgUrl && (
+              <img
+                src={imgUrl}
+                alt={alt || "Aperçu du fichier"}
+                className="w-full max-h-96 object-contain rounded-lg shadow-md"
+              />
+            )}
+            {pdfUrl && (
+              <iframe
+                src={pdfUrl}
+                title="Aperçu PDF"
+                width="100%"
+                height="500px"
+                className="rounded-lg shadow-md"
+              />
+            )}
+          </div>) : (
+          <>
+            <h2 className="text-xl mx-2 my-2 ">{factureToEdit?.id ? "Modifier la facture" : "Nouvelle facture"}</h2>
+            <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
+              <div className="">
+                <div className="">
+                  <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
+                    <div className="border rounded-t-xl">
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
+                        <input
+                          type="number"
+                          value={montant_ht}
+                          onChange={(e) => { setMontantHT(e.target.value); calculTtcTva(); }}
+                          placeholder="Montant HT"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
+                        <input
+                          type="number"
+                          value={pourcentage_tva}
+                          onChange={(e) => { setPourcentageTVA(e.target.value); calculTtcTva(); }}
+                          placeholder="Pourcentage TVA"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">prix TVA</label>
+                        <input
+                          type="number"
+                          value={prix_tva}
+                          readOnly
+                          onChange={(e) => setPrixTVA(e.target.value)}
+                          placeholder="prix_tva"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Montant TTC</label>
+                        <input
+                          type="number"
+                          value={montant_httc}
+                          readOnly
+                          onChange={(e) => setMontantTTC(e.target.value)}
+                          placeholder="Montant TTC"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Date de facturation</label>
+                        <input
+                          type="date"
+                          value={date_facturation}
+                          onChange={(e) => setDateFacturation(e.target.value)}
+                          placeholder="Date de facturation"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Date d'enregistrement</label>
+                        <input
+                          type="date"
+                          value={date_enregistrement}
+                          onChange={(e) => setDateEnregistrement(e.target.value)}
+                          placeholder="date_enregistrement"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
+                        <select
+                          value={type_assigner}
+                          onChange={(e) => setTypeAssigner(e.target.value)}
+                          className="w-full p-2 rounded text-sm"
+                        >
+                          <option value=""></option>
+                          <option value="societe">Société</option>
+                          <option value="particulier">Particulier</option>
+                          <option value="auto_entrepreneur">Auto-entrepreneur</option>
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Validation</label>
+                        <select
+                          value={validation}
+                          onChange={(e) => setValidation(e.target.value)}
+                          className="w-full p-2 rounded text-sm"
+                        >
+                          <option value="false">Non</option>
+                          <option value="true">Oui</option>
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Devise</label>
+                        <select
+                          value={devise}
+                          onChange={(e) => setDevise(e.target.value)}
+                          className="w-full p-2 rounded text-sm"
+                        >
+                          <option value="eur">EUR</option>
+                          <option value="usd">USD</option>
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
+                        <input
+                          type="file"
+                          onChange={(e) => handleUpload(e, "piece_jointe")} placeholder="Piece jointe"
+                          className="w-full p-2 rounded text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
-                    <input
-                      type="number"
-                      value={pourcentage_tva}
-                      onChange={(e) => { setPourcentageTVA(e.target.value); calculTtcTva(); }}
-                      placeholder="Pourcentage TVA"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">prix TVA</label>
-                    <input
-                      type="number"
-                      value={prix_tva}
-                      readOnly
-                      onChange={(e) => setPrixTVA(e.target.value)}
-                      placeholder="prix_tva"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Montant TTC</label>
-                    <input
-                      type="number"
-                      value={montant_httc}
-                      readOnly
-                      onChange={(e) => setMontantTTC(e.target.value)}
-                      placeholder="Montant TTC"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Date de facturation</label>
-                    <input
-                      type="date"
-                      value={date_facturation}
-                      onChange={(e) => setDateFacturation(e.target.value)}
-                      placeholder="Date de facturation"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Date d'enregistrement</label>
-                    <input
-                      type="date"
-                      value={date_enregistrement}
-                      onChange={(e) => setDateEnregistrement(e.target.value)}
-                      placeholder="date_enregistrement"
-                      className="w-full p-2 rounded text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
-                    <select
-                      value={type_assigner}
-                      onChange={(e) => setTypeAssigner(e.target.value)}
-                      className="w-full p-2 rounded text-sm"
+                  <div className="lg:col-span-1 mt-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveFacture}
+                      className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600"
                     >
-                      <option value=""></option>
-                      <option value="societe">Société</option>
-                      <option value="particulier">Particulier</option>
-                      <option value="auto_entrepreneur">Auto-entrepreneur</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Validation</label>
-                    <select
-                      value={validation}
-                      onChange={(e) => setValidation(e.target.value)}
-                      className="w-full p-2 rounded text-sm"
-                    >
-                      <option value="false">Non</option>
-                      <option value="true">Oui</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Devise</label>
-                    <select
-                      value={devise}
-                      onChange={(e) => setDevise(e.target.value)}
-                      className="w-full p-2 rounded text-sm"
-                    >
-                      <option value="eur">EUR</option>
-                      <option value="usd">USD</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                    <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
-                    <input
-                      type="file"
-                      onChange={(e) => handleUpload(e, "piece_jointe")} placeholder="Piece jointe"
-                      className="w-full p-2 rounded text-sm"
-                    />
+                      {factureToEdit?.id ? "Modifier" : "Enregistrer"}
+                    </button>
                   </div>
                 </div>
               </div>
-              <div className="lg:col-span-1 mt-2">
-                <button
-                  type="button"
-                  onClick={handleSaveFacture}
-                  className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600"
-                >
-                  {factureToEdit?.id ? "Modifier" : "Enregistrer"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
+            </form>
+            </>)}
       </Modal>
     </div>
   );
