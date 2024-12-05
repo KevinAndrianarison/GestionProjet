@@ -85,7 +85,6 @@ const Facture = () => {
     setShowActionsIdProsp(false);
   };
 
-
   const handleCloseModal = () => {
     setModalOpen(false);
     setImgUrl('');
@@ -94,7 +93,6 @@ const Facture = () => {
     setFactureToEdit({});
     setModalOpen(false);
   };
-
 
   useEffect(() => {
     const fetchFactures = async () => {
@@ -126,7 +124,6 @@ const Facture = () => {
     return true;
   };
 
-
   const handleSaveFacture = () => {
     if (!validateForm()) return;
 
@@ -150,7 +147,6 @@ const Facture = () => {
       addFacture(factureData);
     }
   };
-
 
   const addFacture = async (newFacture) => {
     const tokenString = localStorage.getItem("token");
@@ -194,7 +190,6 @@ const Facture = () => {
       handleCloseModal();
     }
   };
-
 
   console.log("Facture à modifier :", factureToEdit);
 
@@ -243,7 +238,6 @@ const Facture = () => {
       Notiflix.Notify.failure("Erreur lors de la modification de la facture.");
     }
   };
-
 
   const handleEditClick = async (id) => {
     const selectedFacture = factures.find((facture) => facture.id === id);
@@ -347,13 +341,19 @@ const Facture = () => {
     }
   }, [montant_ht, pourcentage_tva]);
 
-
   const handleUpload = (e) => {
     const file = e.target.files[0];
     if (file && AllowedFile(file)) {
       setPieceJointe(file);
     }
   };
+
+  const fileName = imgUrl
+    ? imgUrl.split('/').pop() // Extraire le nom de l'image depuis l'URL
+    : pdfUrl
+      ? pdfUrl.split('/').pop() // Extraire le nom du PDF depuis l'URL
+      : "Fichier inconnu";
+
 
   const AllowedFile = (file) => {
     const allowedFileTypes = /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i;
@@ -382,20 +382,18 @@ const Facture = () => {
         const monthOption = monthOptions.find(option => option.value === month.value);
         return monthOption ? monthOption.label : '';
       })
-      .join(", ");
+      .join("_");
 
-    const selectedMonthText = selectedMonthLabels ? `${selectedMonthLabels}` : 'Tous les mois';
+    const selectedMonthText = selectedMonthLabels || 'tous_les_mois';
 
     doc.setFontSize(18);
-    doc.text(`Factures ${selectedMonthText} ${selectedYear ? `${selectedYear}` : ''}`, 15, 20);
+    doc.text(`Factures ${selectedMonthText} ${selectedYear || ''}`, 15, 20);
 
-    filteredFactures;
-
-    const tableData = filteredFactures.map(facture => [
-      facture.montant_ht,
-      facture.prix_tva,
-      facture.montant_httc,
-    ]);
+    const tableData = filteredFactures.map(facture => ({
+      montant_ht: facture.montant_ht,
+      prix_tva: facture.prix_tva,
+      montant_httc: facture.montant_httc,
+    }));
 
     const columns = [
       { title: "Montant HT", dataKey: "montant_ht" },
@@ -403,11 +401,42 @@ const Facture = () => {
       { title: "Montant TTC", dataKey: "montant_httc" },
     ];
 
-    doc.autoTable(columns, tableData, { startY: 30 });
+    const totalPagesExp = "{total_pages_count_string}";
 
-    const fileName = `factures-${selectedMonthText.trim()}${selectedYear ? `-${selectedYear}` : ''}.pdf`;
+    doc.autoTable({
+      head: [columns.map(col => col.title)],
+      body: tableData.map(row => Object.values(row)),
+      startY: 30,
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+      didDrawPage: function () {
+        const pageSize = doc.internal.pageSize;
+        const pageHeight = pageSize.height;
+        const pageWidth = pageSize.width;
+
+        const pageNumber = doc.internal.getNumberOfPages();
+        const pageText = `Page ${pageNumber} / ${totalPagesExp}`;
+        doc.setFontSize(10);
+        doc.setTextColor(169, 169, 169); // RGB pour le gris
+        const textWidth = doc.getStringUnitWidth(pageText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+        const textX = (pageWidth - textWidth) / 1.6;
+        const textY = pageHeight - 10;
+        doc.text(pageText, textX, textY);
+      },
+    });
+
+    if (typeof doc.putTotalPages === "function") {
+      doc.putTotalPages(totalPagesExp);
+    }
+
+    const fileName = `factures_${selectedMonthText.trim()}${selectedYear ? `_${selectedYear}` : ''}.pdf`;
+
     doc.save(fileName);
   };
+
 
   return (
     <div>
@@ -567,6 +596,12 @@ const Facture = () => {
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         {(imgUrl || pdfUrl) ? (
           <div className="mb-4">
+            {fileName && (
+              <div className="text-lg font-semibold mb-2 text-gray-700">
+                {fileName}
+              </div>
+            )}
+
             {imgUrl && (
               <img
                 src={imgUrl}
@@ -574,6 +609,7 @@ const Facture = () => {
                 className="w-full max-h-96 object-contain rounded-lg shadow-md"
               />
             )}
+
             {pdfUrl && (
               <iframe
                 src={pdfUrl}
@@ -583,7 +619,8 @@ const Facture = () => {
                 className="rounded-lg shadow-md"
               />
             )}
-          </div>) : (
+          </div>
+        ) : (
           <>
             <h2 className="text-xl mx-2 my-2 ">{factureToEdit?.id ? "Modifier la facture" : "Nouvelle facture"}</h2>
             <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
