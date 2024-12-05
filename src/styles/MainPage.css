@@ -11,7 +11,7 @@
 }
 
 .titles {
-  font-family: "";
+  font-family: "righteous";
   font-size: 1.3em;
   color: white;
 }
@@ -38,11 +38,13 @@
   font-weight: bold;
 }
 
-.iconeResponsive {
+.iconeResponsive{
   width: 1vw;
   height: 2vh;
   cursor: pointer;
+
 }
+
 
 .faSignOutAlt {
   position: absolute;
@@ -67,7 +69,7 @@
   cursor: pointer;
   color: rgba(0, 0, 0, 0.747);
 }
-.sous_entete {
+.sous_entete{
   display: flex;
 }
 
@@ -75,7 +77,7 @@
   .description {
     display: none;
   }
-  .sous_entete {
+  .sous_entete{
     display: none;
   }
   .title {
@@ -88,7 +90,9 @@
   .Page {
     font-size: 12px;
   }
-  .iconeResponsive {
+  .iconeResponsive{
     width: 5vw;
+  
   }
 }
+

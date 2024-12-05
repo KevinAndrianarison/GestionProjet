@@ -23,7 +23,8 @@ export function EtapeContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setListEtape(response.data);
+        setListEtape(enrichDataWithChamps(response.data));
+        // setListEtape(response.data);
       })
       .catch((err) => {
         console.error(err);
@@ -40,12 +41,35 @@ export function EtapeContextProvider({ children }) {
         },
       })
       .then((response) => {
-        setListEtape(response.data);
+        setListEtape(enrichDataWithChamps(response.data));
+        // setListEtape(response.data);
       })
       .catch((err) => {
         console.error(err);
       });
   }
+
+  const enrichDataWithChamps = (rawData) => {
+    const enrichedData = JSON.parse(JSON.stringify(rawData));
+
+    return enrichedData.map((etape) => {
+      const champsVisibles =
+        etape.projet?.champs?.filter((champ) => champ.visible === 1) || [];
+      etape.taches.forEach((tache) => {
+        const valeursMap = {};
+        tache.applic_champs?.forEach((applicChamp) => {
+          valeursMap[applicChamp.gest_proj_champ_id] = applicChamp.valeur;
+        });
+        tache.champsVisibles = champsVisibles.map((champ) => ({
+          id: champ.id,
+          label: champ.label,
+          valeur: valeursMap[champ.id] || null,
+        }));
+      });
+
+      return etape;
+    });
+  };
 
   return (
     <EtapeContext.Provider

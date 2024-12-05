@@ -16,7 +16,9 @@ import {
   faStar,
   faBars,
   faXmark,
-  faPerson
+  faPerson,
+  faFolderTree,
+  faTimesRectangle
 } from "@fortawesome/free-solid-svg-icons";
 import AllprojectPage from "./AllprojectPage";
 import Devis from "../DevisFacure/views/Devis";
@@ -31,6 +33,7 @@ import EditUser from "../DevisFacure/views/ModifierClient";
 import Prospect from "../DevisFacure/views/Prospect";
 import Services from "../DevisFacure/views/Services";
 import GestionUserPage from "./GestionUserPage";
+import GestionStructurePage from "./GestionStructurePage";
 import { GestionEntity } from "./GestionEntity";
 import MyProfil from "./MyProfil";
 import InfoSociete from "./InfoSociete";
@@ -121,7 +124,7 @@ export default function MainPage() {
 
   function switchToGestRH() {
     localStorage.setItem("navBar", JSON.stringify("Gestion RH"));
-    navigate(`${entity}/GestionClientsFournisseurs/GestionRH/`);
+    navigate(`${entity}/GestionClientsFournisseurs/GestionRH/TousEmployes`);
     setDescrNavBar(
       " Bienvenue dans votre espace RH, pour une gestion simple et <b>efficace<b> de votre équipe !  "
     );
@@ -148,35 +151,35 @@ export default function MainPage() {
         className={`fixed bg-white backdrop-blur-sm p-6 rounded-lg shadow-lg opacity-10 top-0 left-0 transition-all ${showMenuMobile === false ?  "hidden w-0 h-0": "block w-full h-full"}`}>
       </div>*/}
       <header className="fixed w-full top-0 left-0 z-10">
-        <div className="flex justify-between w-full border-b-4 border-blue-500 py-2 md:py-1 flex-wrap bg-white m-0">
-          <div className="flex items-center cursor-pointer" onClick={() => navigate(`${entity}/GestionProjet/AllProject`)}>
+        <div className="flex justify-between w-full pt-2 md:py-0 flex-wrap bg-white m-0">
+          <div className="flex items-center cursor-pointer" onClick={switchToGestProj}>
             <div className="w-28 lg:w-32 xl:w-36 2xl:w-40 pl-4">
               <img src={logosofticeo} alt="Sofiticeo" />
             </div>
           </div>
           {(showAdmin || showUser) && (
             <div
-            className="input text-xs cursor-pointer text-gray-500 flex-wrap items-center hidden xl:flex p-0"
+            className="input text-xs cursor-pointer text-gray-500 flex-wrap items-center hidden md:flex p-0"
           >
             {/* Gestion de projet */}
             <div title="Gestion de projet"
               onClick={switchToGestProj}
-                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 1
-                    ? "bg-blue-100 text-blue-500"
+                    ? "bg-blue-500 text-white"
                     : "hover:bg-blue-50 hover:text-blue-500"
                 }`}
               >
                 <div
                   className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
-                    statusNavBar === 1 ? "bg-blue-500" : "bg-gray-300"
+                    statusNavBar === 1 ? "bg-white" : "bg-gray-300"
                   } transition-transform transform ${
                     statusNavBar === 1 ? "scale-110" : "scale-100"
                   }`}
                 >
                   <FontAwesomeIcon
                     icon={faDiagramProject}
-                    className="text-white text-xl w-3"
+                    className={`text-xl w-3 ${statusNavBar === 1 ? "text-blue-500" : "text-white"}`}
                   />
                 </div>
                 <span
@@ -184,88 +187,88 @@ export default function MainPage() {
                     statusNavBar === 1 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 1 && "Gestion de projet"}
+                  {statusNavBar === 1 && (<><h2 className="font-bold">Gestion de projet</h2></>)}
                 </span>
               </div>
             
               {/* Gestion de devis-facture */}
               <div title="Gestion de devis-facture"
                 onClick={switchToGestDevis}
-                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 2
-                    ? "bg-blue-100 text-blue-500"
+                    ? "bg-blue-500 text-white"
                     : "hover:bg-blue-50 hover:text-blue-500"
                 }`}
               >
                 <div
                   className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
-                    statusNavBar === 2 ? "bg-blue-500" : "bg-gray-300"
+                    statusNavBar === 2 ? "bg-white" : "bg-gray-300"
                   } transition-transform transform ${
                     statusNavBar === 2 ? "scale-110" : "scale-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faReceipt} className="text-white text-xl w-3" />
+                  <FontAwesomeIcon icon={faReceipt} className={`text-xl w-3 ${statusNavBar === 2 ? "text-blue-500" : "text-white"}`} />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
                     statusNavBar === 2 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 2 && "Gestion de devis-facture"}
+                  {statusNavBar === 2 && (<><h2 className="font-bold">Gestion de devis-facture</h2></>)}
                 </span>
               </div>
             
               {/* Gestion RH */}
               <div title="Gestion RH"
                 onClick={switchToGestRH}
-                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 3
-                    ? "bg-blue-100 text-blue-500"
+                    ? "bg-blue-500 text-white"
                     : "hover:bg-blue-50 hover:text-blue-500"
                 }`}
               >
                 <div
                   className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
-                    statusNavBar === 3 ? "bg-blue-500" : "bg-gray-300"
+                    statusNavBar === 3 ? "bg-white" : "bg-gray-300"
                   } transition-transform transform ${
                     statusNavBar === 3 ? "scale-110" : "scale-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faUsersGear} className="text-white text-xl w-3" />
+                  <FontAwesomeIcon icon={faUsersGear} className={`text-xl w-3 ${statusNavBar === 3 ? "text-blue-500" : "text-white"}`} />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
                     statusNavBar === 3 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 3 && "Gestion RH"}
+                  {statusNavBar === 3 && (<><h2 className="font-bold">Gestion RH</h2></>)}
                 </span>
               </div>
             
               {/* Gestion client */}
               <div title="Gestion client"
                 onClick={switchToGestClient}
-                className={`relative flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
+                className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 4
-                    ? "bg-blue-100 text-blue-500"
+                    ? "bg-blue-500 text-white"
                     : "hover:bg-blue-50 hover:text-blue-500"
                 }`}
               >
                 <div
                   className={`flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
-                    statusNavBar === 4 ? "bg-blue-500" : "bg-gray-300"
+                    statusNavBar === 4 ? "bg-white" : "bg-gray-300"
                   } transition-transform transform ${
                     statusNavBar === 4 ? "scale-110" : "scale-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faStar} className="text-white text-xl w-3" />
+                  <FontAwesomeIcon icon={faStar} className={`text-xl w-3 ${statusNavBar === 4 ? "text-blue-500" : "text-white"}`} />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
                     statusNavBar === 4 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 4 && "Gestion clients/Fournisseurs"}
+                  {statusNavBar === 4 && (<><h2 className="font-bold">Gestion clients/Fournisseurs</h2></>)}
                 </span>
               </div>
             </div>
@@ -275,14 +278,14 @@ export default function MainPage() {
           <div className="text-xs flex items-center text-gray-700">
             {(showAdmin || showUser) && (
               <>
-                <div className="mr-5 items-center hidden xl:flex">
+                <div className="mr-5 items-center hidden md:flex">
                   <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-sm"
                   >
                     <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="zazaz" />
                   </div>
                   <p className="input text-black font-bold ml-3">{user.nom}</p>
                 </div>
-                <div className="flex xl:hidden">
+                <div className="flex md:hidden">
                     {!showMenuMobile && (<FontAwesomeIcon icon={faBars} className="mr-5 mt-1 cursor-pointer w-16 h-5" onClick={() => setshowMenuMobile(true)}
                     />)}
                     {showMenuMobile && (<FontAwesomeIcon icon={faXmark} className="mr-5 mt-1 cursor-pointer w-16 h-5 text-red-600 z-30" onClick={() => setshowMenuMobile(false)}/>)}
@@ -310,11 +313,13 @@ export default function MainPage() {
           </div>
         </div>
         <div className="bg-blue-500 m-0 sous_entete items-start">
+          {/* 
           <div className="titles flex items-center text-white pl-4 whitespace-nowrap">
             {TitreNavBar} : 
           </div>
+          */}
           <span
-              className="pl-4 mt-2 text-white text-sm font-thin!important"
+              className="pl-4 mt-0 text-white text-[0.8em] text-sm font-thin!important"
               dangerouslySetInnerHTML={{ __html: DescrNavBar }}
             ></span>
         </div>
@@ -326,7 +331,7 @@ export default function MainPage() {
                   <div className="mr-5 items-center flex">
                     <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-md"
                     >
-                      <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="zazaz" />
+                      <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="Photo de profil" />
                     </div>
                     <p className="input text-black font-bold ml-3">{user.nom}</p>
                   </div>
@@ -471,7 +476,7 @@ export default function MainPage() {
                       to={`${entity}/GestionProjet/AllProject`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
@@ -479,24 +484,9 @@ export default function MainPage() {
                       Tous les projets 
                     </NavLink>
                   </li>
-
-                  {showAdmin && (
-                    <li className="mr-5  mt-2 pb-2">
-                      <NavLink
-                        to={`${entity}/AddUser`}
-                        className={({ isActive }) =>
-                          isActive
-                            ? "mr-2 border-b-4 border-yellow-500 pb-2 "
-                            : "mr-2 pb-2"
-                        }
-                      >
-                        <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
-                        Ajouter un nouveau employé
-                      </NavLink>
-                    </li>
-                  )}
                 </ul>
               )}
+
               {statusNavBar === 2 && (
                 <ul className="ulNavBar border-b-2">
                   <li className="mr-5 mt-2 pb-2">
@@ -504,7 +494,7 @@ export default function MainPage() {
                       to={`${entity}/GestionDevisFactures/services`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
@@ -518,7 +508,7 @@ export default function MainPage() {
                       to={`${entity}/GestionDevisFactures/devis`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
@@ -531,7 +521,7 @@ export default function MainPage() {
                       to={`${entity}/GestionDevisFactures/facture`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
@@ -541,6 +531,53 @@ export default function MainPage() {
                   </li>
                 </ul>
               )}
+              {statusNavBar === 3 && (
+                <ul className="ulNavBar border-b-2">
+                  {showAdmin && (
+                    <>
+                      <li className="mr-5  mt-2 pb-2">
+                        <NavLink
+                          to={`${entity}/GestionClientsFournisseurs/GestionRH/TousEmployes`}
+                          className={({ isActive }) =>
+                            isActive
+                              ? "mr-2 border-b-4 border-green-400 pb-2 "
+                              : "mr-2 pb-2"
+                          }
+                        >
+                          <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
+                          Tous les employés
+                        </NavLink>
+                      </li>
+                      <li className="mr-5  mt-2 pb-2">
+                        <NavLink
+                          to={`${entity}/GestionClientsFournisseurs/GestionRH/StructureEntity`}
+                          className={({ isActive }) =>
+                            isActive
+                              ? "mr-2 border-b-4 border-green-400 pb-2 "
+                              : "mr-2 pb-2"
+                          }
+                        >
+                          <FontAwesomeIcon icon={faFolderTree} className="mr-2" />
+                          Structure de la société
+                        </NavLink>
+                      </li>
+                      <li className="mr-5 mt-2 pb-2">
+                        <NavLink
+                          to={`${entity}/GestionClientsFournisseurs/GestionRH/TempsRapports`}
+                          className={({ isActive }) =>
+                            isActive
+                              ? "mr-2 border-b-4 border-green-400 pb-2 "
+                              : "mr-2 pb-2"
+                          }
+                        >
+                          <FontAwesomeIcon icon={faTimesRectangle} className="mr-2" />
+                          Temps et rapports
+                        </NavLink>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              )}
               {statusNavBar === 4 && (
                 <ul className="ulNavBar border-b-2">
                   <li className="mr-5  mt-2 pb-2">
@@ -548,20 +585,20 @@ export default function MainPage() {
                       to={`${entity}/GestionClientsFournisseurs/prospect`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
                       <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
-                      Prospects
+                      Clients
                     </NavLink>
                   </li>
                   <li className="mr-5  mt-2 pb-2">
                     <NavLink
-                      to={`${entity}/GestionClientsFournisseurs/fournisseurs`}
+                      to={`${entity}/GestionClientsFournisseurs/fornisseurs`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2"
+                          ? "mr-2 border-b-4 border-green-400 pb-2"
                           : "mr-2 pb-2"
                       }
                     >
@@ -580,7 +617,7 @@ export default function MainPage() {
                         to={`${entity}/Settings/entity`}
                         className={({ isActive }) =>
                           isActive
-                            ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                            ? "mr-2 border-b-4 border-green-400 pb-2 "
                             : "mr-2 pb-2"
                         }
                       >
@@ -594,7 +631,7 @@ export default function MainPage() {
                       to={`${entity}/Settings/Parametres/Devis`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
@@ -608,7 +645,7 @@ export default function MainPage() {
                       to={`${entity}/Settings/Parametres/Facturations`}
                       className={({ isActive }) =>
                         isActive
-                          ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                          ? "mr-2 border-b-4 border-green-400 pb-2 "
                           : "mr-2 pb-2"
                       }
                     >
@@ -622,7 +659,7 @@ export default function MainPage() {
                         to={`${entity}/Settings/MonProfil`}
                         className={({ isActive }) =>
                           isActive
-                            ? "mr-2 border-b-4 border-yellow-500 pb-2 "
+                            ? "mr-2 border-b-4 border-green-400 pb-2 "
                             : "mr-2 pb-2"
                         }
                       >
@@ -650,10 +687,16 @@ export default function MainPage() {
                     />
                   )}
                   {showAdmin && (
-                    <Route
-                      path=":entity/AddUser"
-                      element={<GestionUserPage />}
-                    />
+                    <>
+                      <Route
+                        path=":entity/GestionClientsFournisseurs/GestionRH/TousEmployes"
+                        element={<GestionUserPage />}
+                      />
+                      <Route
+                        path=":entity/GestionClientsFournisseurs/GestionRH/StructureEntity"
+                        element={<GestionStructurePage />}
+                      />
+                    </>
                   )}
                   {showAdmin && (
                     <>
@@ -668,7 +711,7 @@ export default function MainPage() {
               <Route path="/gestionEntity" element={<GestionEntity />} />
               <Route path=":entity/GestionDevisFactures/devis" element={<Devis />} />
               <Route path=":entity/GestionDevisFactures/facture" element={<Facture />} />
-              <Route path=":entity/GestionClientsFournisseurs/fournisseurs" element={<Fournisseurs />} />
+              <Route path=":entity/GestionClientsFournisseurs/fornisseurs" element={<Fournisseurs />} />
               <Route path=":entity/GestionDevisFactures/services" element={<Services />} />
               <Route path=":entity/GestionClientsFournisseurs/prospect" element={<Prospect />} />
             </Routes>
@@ -679,7 +722,7 @@ export default function MainPage() {
               <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
               <Route path="/edit/:id" element={<EditUser />} />
               <Route path=":entity/GestionClientsFournisseurs/prospect/:id" element={<ProspectDetail />} />
-              <Route path=":entity/GestionClientsFournisseurs/fournisseurs/:id" element={<FournisseurDetail />} />
+              <Route path=":entity/GestionClientsFournisseurs/fornisseurs/:id" element={<FournisseurDetail />} />
             </Routes>
 
             <Routes>

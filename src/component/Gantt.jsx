@@ -4,6 +4,7 @@ import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartGantt } from "@fortawesome/free-solid-svg-icons";
 import { TaskContext } from "../contexte/useTask";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function GanttChart() {
   const { ListTask, getAllTask } = useContext(TaskContext);
@@ -55,6 +56,18 @@ export default function GanttChart() {
         <FontAwesomeIcon icon={faChartGantt} className="mr-2 text-gray-500" />
         Diagramme de Gantt
       </h2>
+      {ListTask.length === 0 && (
+        <div className="contentMyproject  border-0 mt-2">
+          <div className="flex flex-col space-y-3">
+            <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
+            <div className="space-y-3">
+              <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+              <Skeleton className="h-4 w-[75%]" />
+              <Skeleton className=" h-4 w-[50%]" />
+            </div>
+          </div>
+        </div>
+      )}
       <div
         className="mt-2"
         id="gantt_here"

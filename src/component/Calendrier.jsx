@@ -28,6 +28,8 @@ export default function Calendrier() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [task, setTask] = useState("");
   const [workHours, setWorkHours] = useState("");
+
+  
   const { gettaskById, ListTaskById } = useContext(TaskContext);
   const { url } = useContext(UrlContext);
 
@@ -54,6 +56,7 @@ export default function Calendrier() {
         valeur: (workHours / VAR_HEURE_DE_TRAVAIL).toString(),
         date: date,
       };
+
       fetchPOSTCompteRendu(formdata);
     } else {
       formdata = {
@@ -114,8 +117,8 @@ export default function Calendrier() {
           }}
           className={
             isMensuel
-              ? "px-3 py-1 bg-yellow-500 cursor"
-              : "px-3 py-1 cursor-pointer"
+              ? "px-3 py-1 bg-yellow-500 cursor hidden"
+              : "px-3 py-1 cursor-pointer hidden"
           }
         >
           <FontAwesomeIcon icon={faFilter} /> Validation
@@ -123,7 +126,7 @@ export default function Calendrier() {
         <Tippy content="Faire un compte rendus">
           <FontAwesomeIcon
             icon={faFolderPlus}
-            className="ml-5 bg-white px-1 text-gray-500 py-1 rounded-3xl cursor-pointer focus:outline-none"
+            className="hidden ml-5 bg-white px-1 text-gray-500 py-1 rounded-3xl cursor-pointer focus:outline-none"
             onClick={openModal}
           />
         </Tippy>

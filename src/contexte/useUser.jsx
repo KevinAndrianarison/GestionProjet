@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import { UrlContext } from "../contexte/useUrl";
+import { ShowContext } from "../contexte/useShow";
 import axios from "axios";
 
 export const UserContext = createContext({
@@ -14,9 +15,12 @@ export function UserContextProvider({ children }) {
   const [iduser, setIduser] = useState("");
   const [Nomuser, setNomuser] = useState("");
   const [idRoleuser, setIdRoleuser] = useState("");
+
   const { url } = useContext(UrlContext);
+  const { setShowSkeletreonUser } = useContext(ShowContext);
 
   function getAllUser() {
+    setShowSkeletreonUser(true);
     setListeUser([]);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -32,10 +36,12 @@ export function UserContextProvider({ children }) {
       .then((response) => {
         if (response.data.utilisateurs.length !== 0) {
           setListeUser(response.data.utilisateurs);
+          setShowSkeletreonUser(false);
         }
       })
       .catch((err) => {
         console.error(err);
+        setShowSkeletreonUser(false);
       });
   }
 

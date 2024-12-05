@@ -25,6 +25,8 @@ export const ShowContext = createContext({
   showDeletechamps: false,
   showDeleteStatus: false,
   showModaleTask: false,
+  showSkeletreonUser: false,
+  showcreateJalon: false,
 });
 
 export function ShowContextProvider({ children }) {
@@ -39,6 +41,7 @@ export function ShowContextProvider({ children }) {
   const [showDeleteStatusTask, setShowDeleteStatusTask] = useState(false);
   const [showDeleteEntity, setShowDeleteEntity] = useState(false);
   const [showcreateTask, setShowcreateTask] = useState(false);
+  const [showcreateJalon, setShowcreateJalon] = useState(false);
   const [showDeleteTask, setShowDeleteTask] = useState(false);
   const [showDeleteEtape, setShowDeleteEtape] = useState(false);
   const [showDeletetask, setShowDeletetask] = useState(false);
@@ -54,6 +57,7 @@ export function ShowContextProvider({ children }) {
   const [showUser, setUser] = useState(false);
   const [showTask, setShowTask] = useState(false);
   const [showModaleTask, setShowModaleTask] = useState(false);
+  const [showSkeletreonUser, setShowSkeletreonUser] = useState(false);
 
   return (
     <ShowContext.Provider
@@ -84,7 +88,11 @@ export function ShowContextProvider({ children }) {
         showDeleteStatusTask,
         showDeletechamps,
         showModaleTask,
+        showSkeletreonUser,
+        showcreateJalon,
         setShowDeleteStatusTask,
+        setShowcreateJalon,
+        setShowSkeletreonUser,
         setShowDeletechamps,
         setShowDeletetask,
         setShowDeleteStatus,

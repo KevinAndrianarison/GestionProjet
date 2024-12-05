@@ -20,6 +20,7 @@ const ProspectDetail = () => {
   const { id } = useParams();
 
   const { countriesAndCities, loading, error } = useGeonames();
+  const navigate = useNavigate();
 
   const [refresh, setRefresh] = useState(false);
   const [refreshClientFiles, setRefreshClientFiles] = useState(false);
@@ -251,7 +252,7 @@ const ProspectDetail = () => {
           'Client supprimé avec succès.',
           'Fermer'
         );
-        window.location.href = '../';
+        navigate(-1);
       }
     } catch (error) {
       console.error('Erreur lors de la suppression des données :', error);
@@ -822,8 +823,56 @@ const ProspectDetail = () => {
                     </>
                   )}
                 </div>
+              </>) : (
+                <>
+                  <div className='p-3 shadow-md'>
+                    {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
+                      <>
+                        <p
+                          className="cursor-pointer hover:scale-105 transition-all mb-4"
+                          onClick={() => {
+                            const fileUrl = `${piece_identite}`;
 
-
+                            if (piece_identite.endsWith('.pdf')) {
+                              showPdf(fileUrl);
+                            } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) {
+                              showImg(fileUrl);
+                              setAlt('Pièce d\'identité');
+                            }
+                          }}
+                        >
+                          {piece_identite.endsWith('.pdf') ? (
+                            <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600'/>
+                          ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite) ? (
+                            <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500'/>
+                          ) : null}
+                          Pièce d'identité
+                        </p>
+                        <label className="text-blue-500 cursor-pointer ml-2 mt-4">
+                          <input
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => handleUpload(e, "piece_identite")}
+                          />
+                          <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
+                        </label>
+                      </>
+                    ) : (
+                      <>
+                        <h1 className='font-bold text-center'>Pièce d'identité 
+                          <label className="text-blue-500 cursor-pointer ml-4">
+                          <input
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => handleUpload(e, "piece_identite")}
+                          />
+                          <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
+                        </label></h1>
+                      </>
+                    )}
+                  </div>
+                </>
+                )}
                 <div className='p-3 shadow-md'>
                   {assurance && (assurance.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(assurance)) ? (
                     <>
@@ -919,56 +968,6 @@ const ProspectDetail = () => {
                     </>
                   )}
                 </div>
-              </>) : (
-                <>
-                  <div className='p-3 shadow-md'>
-                    {piece_identite && (piece_identite.endsWith('.pdf') || /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) ? (
-                      <>
-                        <p
-                          className="cursor-pointer hover:scale-105 transition-all mb-4"
-                          onClick={() => {
-                            const fileUrl = `${piece_identite}`;
-
-                            if (piece_identite.endsWith('.pdf')) {
-                              showPdf(fileUrl);
-                            } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite)) {
-                              showImg(fileUrl);
-                              setAlt('Pièce d\'identité');
-                            }
-                          }}
-                        >
-                          {piece_identite.endsWith('.pdf') ? (
-                            <FontAwesomeIcon icon={faFilePdf} className='mr-2 text-red-600'/>
-                          ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(piece_identite) ? (
-                            <FontAwesomeIcon icon={faImages} className='mr-2 text-blue-500'/>
-                          ) : null}
-                          Pièce d'identité
-                        </p>
-                        <label className="text-blue-500 cursor-pointer ml-2 mt-4">
-                          <input
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => handleUpload(e, "piece_identite")}
-                          />
-                          <FontAwesomeIcon icon={faPenToSquare} className='mr-2' /> Modifier le fichier
-                        </label>
-                      </>
-                    ) : (
-                      <>
-                        <h1 className='font-bold text-center'>Pièce d'identité 
-                          <label className="text-blue-500 cursor-pointer ml-4">
-                          <input
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => handleUpload(e, "piece_identite")}
-                          />
-                          <FontAwesomeIcon icon={faPlus} /> Ajouter un fichier
-                        </label></h1>
-                      </>
-                    )}
-                  </div>
-                </>
-                )}
             </div>
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 border-l-4 border-blue-500'>
               <div className='p-3 shadow-md divide-y divide-gray-200'>

@@ -78,7 +78,6 @@ function ProspectSCT() {
         });
         if (response.status === 200) {
           setProspects(response.data);
-          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
@@ -172,7 +171,6 @@ function ProspectSCT() {
   
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-    console.log(prospectToEdit);
     try {
       if(!prospectToEdit.id) {
         const response = await axios.post(`${url}/api/clients`, formData, {
@@ -360,8 +358,7 @@ function ProspectSCT() {
 
       <div className="w-full border rounded-lg shadow-md p-0 relative overflow-x-auto">
         <div className="divide-y divide-gray-200 p-0 bg-slate-100 font-bold z-0 min-w-[1000px]">
-          <div className="grid grid-cols-[2fr,5fr,5fr,4fr,4fr,3fr,1fr] px-4 py-2">
-            <div>Type</div>
+          <div className="grid grid-cols-[5fr,5fr,4fr,4fr,3fr,1fr] px-4 py-2">
             <div>Nom société</div>
             <div>Nom du contact</div>
             <div>Téléphone du contact</div>
@@ -391,16 +388,25 @@ function ProspectSCT() {
             <>
               {currentProspects.map((prospect) => (
                 <React.Fragment key={prospect.id}>
-                  <div className="grid grid-cols-[2fr,5fr,5fr,4fr,4fr,3fr,1fr] px-4 py-2 font-normal hover:shadow-md hover:bg-slate-50">
+                  <div className="grid grid-cols-[5fr,5fr,4fr,4fr,3fr,1fr] px-4 py-2 font-normal hover:shadow-md hover:bg-slate-50">
                     <Link to={`${prospect.id}`}>
-                      <div>{prospect.type === 'societe' 
-                        ? (<><FontAwesomeIcon icon={faBuilding} className='mx-2'/> Société</>)
-                        : type_client === 'particulier' 
-                        ? (<><FontAwesomeIcon icon={faHome} className='mx-2'/> Particulier</>)
-                        : (<><FontAwesomeIcon icon={faLaptop} className='mx-2'/> Auto-Entrepreneur</>)}
+                      <div>
+                      {prospect.type === 'societe' 
+                        ? (<>
+                          <h1 className="font-extrabold pb-1"><FontAwesomeIcon icon={faBuilding} className='mr-2'/>{prospect.nom_societe} (Société)</h1>
+                          <p>{prospect.email_societe}<br></br>{prospect.tel_societe}</p>
+                        </>)
+                        : prospect.type === 'particulier'
+                        ? (<>
+                            <h1 className="font-extrabold pb-1"><FontAwesomeIcon icon={faHome} className='mr-2'/>{prospect.nom} (Particulier)</h1>
+                            <p>{prospect.email}<br></br>{prospect.telephone}</p>
+                          </>)
+                        : (<>
+                          <h1 className="font-extrabold pb-1"><FontAwesomeIcon icon={faLaptop} className='mr-2'/>{prospect.nom} (Auto-Entrepreneur)</h1>
+                          <p>{prospect.email}<br></br>{prospect.telephone}</p>
+                        </>)}
                       </div>
                     </Link>
-                    <Link to={`${prospect.id}`}><div>{prospect.nom_societe}</div></Link>
                     <Link to={`${prospect.id}`}><div>{prospect.nom}</div></Link>
                     <Link to={`${prospect.id}`}><div>{prospect.telephone}</div></Link>
                     <Link to={`${prospect.id}`}><div>{prospect.email}</div></Link>

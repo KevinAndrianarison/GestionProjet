@@ -174,7 +174,7 @@ export default function SousProjet() {
             />
           </div>
           <div className="mt-2 ">
-            <label>Date de fin réel</label>
+            <label>Date limite</label>
             <input
               type="date"
               value={dateFin}
@@ -195,7 +195,7 @@ export default function SousProjet() {
             <h1 className="w-[20%] px-1">Nom</h1>
             <h1 className="w-[45%] px-1">Description</h1>
             <h1 className="w-[10%] hidden sm:block">Date debut</h1>
-            <h1 className="w-[10%] hidden sm:block">Date fin réel</h1>
+            <h1 className="w-[10%] hidden sm:block">Date limite</h1>
             <div className="flex justify-evenly w-[10%]">
               <h1 className="w-5 mr-1"></h1>
               <h1 className="w-5"></h1>

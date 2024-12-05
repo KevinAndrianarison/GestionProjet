@@ -26,6 +26,7 @@ export const TaskContext = createContext({
   dateDebutModale: "",
   dateFinModale: "",
   descriptionModale: "",
+  InfosProj: {},
 });
 export function TaskContextProvider({ children }) {
   const [ListTask, setListTask] = useState([]);
@@ -39,6 +40,7 @@ export function TaskContextProvider({ children }) {
   const [ListControleModale, setListControleModale] = useState([]);
   const [ListStatusTask, setListStatusTask] = useState([]);
   const [idTask, setIdTask] = useState("");
+  const [InfosProj, setInfosProj] = useState({});
   const [idStatus, setIdStatus] = useState("");
   const [titreTask, setTitreTask] = useState("");
   const [titreTaskModale, setTitreTaskModale] = useState("");
@@ -176,19 +178,75 @@ export function TaskContextProvider({ children }) {
     let token = JSON.parse(tokenString);
 
     axios
-      .get(`${url}/api/projets/taches/responsable-tache`, {
+      .get(`${url}/api/projets/taches/responsable-tache/${idProject}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setListTaskById(response.data);
+        setInfosProj(response.data.projet);
+        setListTaskById(transformData(response.data.tacheRespossableByProjet));
         setShowSpinner(false);
       })
       .catch((err) => {
         console.error(err);
         setShowSpinner(false);
       });
+  }
+
+  function gettaskByIdUser(id) {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/taches/responsable-tache/${idProject}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setInfosProj(response.data.projet);
+        setListTaskById(transformData(response.data.tacheRespossableByProjet));
+        setShowSpinner(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
+
+  function transformData(rawData) {
+    const result = [];
+
+    rawData.forEach((item) => {
+      const { feuillesTemps, tache } = item;
+      if (feuillesTemps.length === 0) {
+        result.push({
+          date: null,
+          idFeuilleTemps: null,
+          valider: null,
+          gest_proj_reponsable_tache_id: item.gest_proj_reponsable_tache_id,
+          task: tache.titre,
+          hours: null,
+          id: tache.id,
+        });
+      } else {
+        feuillesTemps.forEach((feuille) => {
+          result.push({
+            date: feuille.date,
+            idFeuilleTemps: feuille.id,
+            valider: feuille.valider,
+            gest_proj_reponsable_tache_id: item.gest_proj_reponsable_tache_id,
+            task: tache.titre,
+            hours: parseFloat(feuille.valeur),
+            id: tache.id,
+          });
+        });
+      }
+    });
+
+    return result;
   }
 
   function getComsTask() {
@@ -209,6 +267,22 @@ export function TaskContextProvider({ children }) {
       });
   }
 
+  function getFeuilledeTempsByResp() {
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    axios
+      .get(`${url}/api/projets/feuille-temps`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {})
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   function getOneTask(id) {
     setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
@@ -223,7 +297,7 @@ export function TaskContextProvider({ children }) {
       .then((response) => {
         setTitreTask(response.data.titre);
         setDateDebut(response.data.date_debut);
-        setDateFin(response.data.date_fin);
+        setDateFin(response.data.date_limite);
         setDescription(response.data.description);
         setListResp(response.data.responsables);
         setIdTask(response.data.id);
@@ -287,7 +361,11 @@ export function TaskContextProvider({ children }) {
         ListRespModale,
         ListControleModale,
         ListTaskComs,
+        InfosProj,
+        setInfosProj,
+        gettaskByIdUser,
         setListControleModale,
+        getFeuilledeTempsByResp,
         setTitreTaskModale,
         setListTaskComs,
         setListRespModale,

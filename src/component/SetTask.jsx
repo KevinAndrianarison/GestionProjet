@@ -10,6 +10,7 @@ import {
 import { useContext, useEffect, useRef, useState } from "react";
 import { ProjectContext } from "../contexte/useProject";
 import { TaskContext } from "../contexte/useTask";
+import { EtapeContext } from "../contexte/useEtape";
 import { Editor } from "@tinymce/tinymce-react";
 import axios from "axios";
 import { UrlContext } from "../contexte/useUrl";
@@ -37,6 +38,7 @@ export default function SetTask() {
   }, []);
 
   const { ListChefs, idProject } = useContext(ProjectContext);
+  const { getAlletapeByProjets } = useContext(EtapeContext);
 
   const {
     titreTask,
@@ -47,7 +49,6 @@ export default function SetTask() {
     setDateFin,
     idTask,
     getOneTask,
-    getAllTask,
     responsable,
     ListResp,
     getAllChamps,
@@ -170,6 +171,7 @@ export default function SetTask() {
           setMessageSucces("");
         }, 5000);
         getOneTask(idTask);
+        getAlletapeByProjets();
       })
       .catch((err) => {
         console.error(err);
@@ -197,6 +199,7 @@ export default function SetTask() {
         setUserIds([]);
         setSelected([]);
         getOneTask(idTask);
+        getAlletapeByProjets();
       })
       .catch((err) => {
         console.error(err);
@@ -236,6 +239,7 @@ export default function SetTask() {
           setMessageSucces("");
         }, 5000);
         getOneTask(idTask);
+        getAlletapeByProjets();
       })
       .catch((err) => {
         console.error(err);

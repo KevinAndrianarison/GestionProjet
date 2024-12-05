@@ -14,6 +14,7 @@ import { ProjectContextProvider } from "./contexte/useProject.jsx";
 import { TaskContextProvider } from "./contexte/useTask.jsx";
 import { ComsContextProvider } from "./contexte/useComs.jsx";
 import { EtapeContextProvider } from "./contexte/useEtape.jsx";
+import { DepartementProvider } from "./contexte/useDepartement.jsx";
 import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")).render(
@@ -21,21 +22,23 @@ createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <MessageContextProvider>
         <UrlContextProvider>
-          <ShowContextProvider>
-            <EntityContextProvider>
-              <UserContextProvider>
-                <ProjectContextProvider>
-                  <EtapeContextProvider>
-                    <TaskContextProvider>
-                      <ComsContextProvider>
-                          <App />
-                      </ComsContextProvider>
-                    </TaskContextProvider>
-                  </EtapeContextProvider>
-                </ProjectContextProvider>
-              </UserContextProvider>
-            </EntityContextProvider>
-          </ShowContextProvider>
+          <DepartementProvider>
+            <ShowContextProvider>
+              <EntityContextProvider>
+                <UserContextProvider>
+                    <ProjectContextProvider>
+                      <EtapeContextProvider>
+                        <TaskContextProvider>
+                          <ComsContextProvider>
+                            <App /> 
+                          </ComsContextProvider>
+                        </TaskContextProvider>
+                      </EtapeContextProvider>
+                    </ProjectContextProvider>
+                </UserContextProvider>
+              </EntityContextProvider>
+            </ShowContextProvider>
+          </DepartementProvider>
         </UrlContextProvider>
       </MessageContextProvider>
     </BrowserRouter>

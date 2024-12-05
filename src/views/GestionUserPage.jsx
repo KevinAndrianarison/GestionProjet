@@ -13,6 +13,7 @@ import { UrlContext } from "../contexte/useUrl";
 import { MessageContext } from "../contexte/useMessage";
 import { UserContext } from "../contexte/useUser";
 import Tippy from "@tippyjs/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import axios from "axios";
 
@@ -25,7 +26,8 @@ export default function GestionUserPage() {
   const [activeDropdown, setActiveDropdown] = useState("");
   const [grade, setGrade] = useState("");
 
-  const { setShowDeleteUser, setShowSpinner } = useContext(ShowContext);
+  const { setShowDeleteUser, setShowSpinner, showSkeletreonUser } =
+    useContext(ShowContext);
   const { url } = useContext(UrlContext);
   const { getAllUser, ListeUser, setIduser } = useContext(UserContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
@@ -314,10 +316,6 @@ export default function GestionUserPage() {
                       </Tippy>
                       {activeDropdown === index && (
                         <ul className="border dropdown-menu absolute z-10 right-2 mt-8 py-1 w-60 bg-white shadow-lg rounded-md">
-                          {/* <li className=" dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200">
-                            <FontAwesomeIcon icon={faBan} className="text-yellow-500 mr-2" />
-                            Bloquer
-                          </li> */}
                           {(list.grade === "membre" ||
                             list.grade === "invite") && (
                             <li
@@ -380,103 +378,146 @@ export default function GestionUserPage() {
                   </div>
                 )
             )}
+            {showSkeletreonUser && (
+              <div className="flex gap-4 border-0 mt-2">
+                <div className="w-[300px]">
+                  <Skeleton className="bg-gray-100 h-10 rounded" />
+                  <div className="space-y-3">
+                    <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                    <Skeleton className=" h-4 w-[50%]" />
+                  </div>
+                </div>
+                <div className="w-[300px]">
+                  <Skeleton className="bg-gray-100 h-10 rounded" />
+                  <div className="space-y-3">
+                    <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                    <Skeleton className=" h-4 w-[50%]" />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
+
         {showList && (
-          <div className="ListMembresList mt-5">
-            <div className="headList font-bold">
-              <li className="nomList">Nom complet</li>
-              <li className="adresseList">Adresse email</li>
-              <li className="posteList">Poste</li>
-              <li className="deleteList"></li>
-            </div>
-            <div className="bodyValue">
-              {ListeUser.map(
-                (list, index) =>
-                  list.role === "employe" && (
-                    <div key={list.id} className="BodyList">
-                      <li className="nomList">{list.nom}</li>
-                      <li className="adresseList">{list.email}</li>
-                      <li className="posteList">{list.poste}</li>
-                      <li className="deleteList  more relative">
-                        <Tippy content="Options">
-                          <FontAwesomeIcon
-                            icon={faEllipsis}
-                            className="w-5 h-5  cursor-pointer focus:outline-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleDropdown(index);
-                            }}
-                          />
-                        </Tippy>
-                        {activeDropdown === index && (
-                          <ul className="border dropdown-menu absolute z-10 right-0 py-1 w-60 bg-white shadow-lg rounded-md">
-                            {/* <li className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200">
-                          <FontAwesomeIcon icon={faBan} className=" text-yellow-500 mr-2" />
-                          Bloquer
-                        </li> */}
-                            {(list.grade === "membre" ||
-                              list.grade === "invite") && (
-                              <li
-                                onClick={() => {
-                                  setgradeChef(list.id);
-                                }}
-                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
-                              >
-                                <FontAwesomeIcon
-                                  icon={faRotate}
-                                  className="red-icon mr-2 text-gray-500"
-                                />
-                                Changer le grade en «<b>Chef</b>»
-                              </li>
-                            )}
-                            {(list.grade === "invite" ||
-                              list.grade === "chef") && (
-                              <li
-                                onClick={() => {
-                                  setgradeMembre(list.id);
-                                }}
-                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
-                              >
-                                <FontAwesomeIcon
-                                  icon={faRotate}
-                                  className="red-icon mr-2 text-gray-500"
-                                />
-                                Changer le grade en «<b>Membre</b>»
-                              </li>
-                            )}
-                            {(list.grade === "chef" ||
-                              list.grade === "membre") && (
-                              <li
-                                onClick={() => setgradeInvite(list.id)}
-                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
-                              >
-                                <FontAwesomeIcon
-                                  icon={faRotate}
-                                  className="red-icon mr-2 text-gray-500"
-                                />
-                                Changer le grade en «<b>Invité</b>»
-                              </li>
-                            )}
-                            <li
-                              onClick={() => {
-                                deleteuser(list.id);
+          <div>
+            {!showSkeletreonUser && (
+              <>
+              <div className="ListMembresList rounded border-blue-100 mt-5">
+                <div className="divide-y divide-gray-200 p-0 bg-blue-100 font-bold z-0 min-w-[1000px]">
+                  <div className="grid grid-cols-[5fr,5fr,4fr,4fr,1fr] px-4 py-2">
+                    <div>Employé</div>
+                    <div>Département</div>
+                    <div>Adresse email</div>
+                    <div>Téléphone</div>
+                    <div></div>
+                  </div>
+                </div>
+
+                {ListeUser.map(
+                  (list, index) =>
+                    list.role === "employe" && (
+                      <div key={list.id}  className="grid grid-cols-[5fr,5fr,4fr,4fr,1fr] px-4 py-2 font-normal hover:shadow-md hover:bg-slate-50">
+                        <div>{list.nom}</div>
+                        <div></div>
+                        <div>{list.email}</div>
+                        <div>{list.telephone}</div>
+                        <div className="deleteList more relative">
+                          <Tippy content="Options">
+                            <FontAwesomeIcon
+                              icon={faEllipsis}
+                              className="w-5 h-5 cursor-pointer focus:outline-none"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDropdown(index);
                               }}
-                              className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
-                            >
-                              <FontAwesomeIcon
-                                icon={faTrash}
-                                className="red-icon mr-2"
-                              />
-                              Supprimer
-                            </li>
-                          </ul>
-                        )}
-                      </li>
-                    </div>
-                  )
-              )}
-            </div>
+                            />
+                          </Tippy>
+                          {activeDropdown === index && (
+                            <ul className="border dropdown-menu absolute z-10 right-0 py-1 w-60 bg-white shadow-lg rounded-md">
+                              {(list.grade === "membre" ||
+                                list.grade === "invite") && (
+                                <li
+                                  onClick={() => {
+                                    setgradeChef(list.id);
+                                  }}
+                                  className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faRotate}
+                                    className="red-icon mr-2 text-gray-500"
+                                  />
+                                  Changer le grade en «<b>Chef</b>»
+                                </li>
+                              )}
+                              {(list.grade === "invite" ||
+                                list.grade === "chef") && (
+                                <li
+                                  onClick={() => {
+                                    setgradeMembre(list.id);
+                                  }}
+                                  className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faRotate}
+                                    className="red-icon mr-2 text-gray-500"
+                                  />
+                                  Changer le grade en «<b>Membre</b>»
+                                </li>
+                              )}
+                              {(list.grade === "chef" ||
+                                list.grade === "membre") && (
+                                <li
+                                  onClick={() => setgradeInvite(list.id)}
+                                  className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faRotate}
+                                    className="red-icon mr-2 text-gray-500"
+                                  />
+                                  Changer le grade en «<b>Invité</b>»
+                                </li>
+                              )}
+                              <li
+                                onClick={() => {
+                                  deleteuser(list.id);
+                                }}
+                                className="dropdown-item flex items-center px-3 py-2 cursor-pointer hover:bg-gray-200"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="red-icon mr-2"
+                                />
+                                Supprimer
+                              </li>
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    )
+                )}
+                {ListeUser.length === 0 && (
+                  <div className="emptyContent h-[85%]">
+                    <div className="w-40 h-40 empty"></div>
+                  </div>
+                )}
+                </div>
+              </>
+            )}
+            {showSkeletreonUser && (
+              <div className="contentMyproject  border-0 mt-2">
+                <div className="flex flex-col space-y-3">
+                  <Skeleton className="bg-gray-100 h-10 w-[90%] rounded" />
+                  <div className="space-y-3">
+                    <Skeleton className="bg-gray-100 h-5 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                    <Skeleton className=" h-4 w-[50%]" />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

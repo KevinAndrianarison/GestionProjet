@@ -9,6 +9,7 @@ import ConfirmCode from "./component/ConfirmCode";
 import LogoutComponent from "./component/LogoutComponent";
 import DeleteUser from "./component/DeleteUser";
 import CreateProject from "./component/CreateProject";
+import CreateJalon from "./component/CreateJalon";
 import DeleteProject from "./component/DeleteProject";
 import SetProject from "./component/SetProject";
 import SeRetirer from "./component/SeRetirer";
@@ -55,6 +56,7 @@ function App() {
     showDeleteStatusTask,
     showModaleTask,
     showDeletechamps,
+    showcreateJalon,
   } = useContext(ShowContext);
   const { getAllUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -97,6 +99,7 @@ function App() {
       {showLogout && <LogoutComponent />}
       {showDeleteUser && <DeleteUser />}
       {showcreateTask && <CreateProject />}
+      {showcreateJalon && <CreateJalon />}
       {showDeleteTask && <DeleteProject />}
       {showSetProject && <SetProject />}
       {showSeretirer && <SeRetirer />}

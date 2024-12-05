@@ -26,8 +26,10 @@ import { ProjectContext } from "../contexte/useProject";
 export default function CreateProject() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTermChef, setSearchTermChef] = useState("");
+  const [searchTermRess, setSearchTermRess] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [selectedChefs, setSelectedChefs] = useState([]);
+  const [selectedRess, setSelectedRess] = useState([]);
   const [
     selectedResponsablesHierarchiques,
     setSelectedResponsablesHierarchiques,
@@ -35,12 +37,15 @@ export default function CreateProject() {
   const [userIds, setUserIds] = useState([]);
   const [userIdsResp, setUserIdsResp] = useState([]);
   const [userIdsChef, setUserIdsChef] = useState([]);
+  const [userIdsRess, setUserIdsRess] = useState([]);
   const [isDropdownOpenMembers, setIsDropdownOpenMembers] = useState(false);
   const [isDropdownOpenChef, setIsDropdownOpenChef] = useState(false);
+  const [isDropdownOpenRess, setIsDropdownOpenRess] = useState(false);
   const [idProjectLoad, setIdProjectLoad] = useState("");
   const [titreProjet, setTitreProjet] = useState("");
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [filteredOptionsChefs, setFilteredOptionsChefs] = useState([]);
+  const [filteredOptionsRess, setFilteredOptionsRess] = useState([]);
   const [dateFin, setDateFin] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [ligneBudgetaire, setLigneBudgetaire] = useState("");
@@ -54,6 +59,7 @@ export default function CreateProject() {
   const [stepTwoDone, setStepTwoDone] = useState(false);
   const [stepThreeDone, setStepThreeDone] = useState(false);
   const [statusProjetId, setStatusProjetId] = useState("");
+  const [idClient, setIdClient] = useState("");
   const [filteredOptionsResponsables, setFilteredOptionsResponsables] =
     useState([]);
   const [searchTermResponsable, setSearchTermResponsable] = useState("");
@@ -62,7 +68,7 @@ export default function CreateProject() {
 
   const editorRef = useRef("");
 
-  const { ListeUser } = useContext(UserContext);
+  const { ListeUser, getAllUser } = useContext(UserContext);
   const { url } = useContext(UrlContext);
   const { setShowcreateTask, setShowSpinner } = useContext(ShowContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
@@ -73,6 +79,9 @@ export default function CreateProject() {
     categorie,
     ListStatus,
     getAllStatus,
+    getAllClients,
+    ListClient,
+    ListeRess,
   } = useContext(ProjectContext);
 
   const userString = localStorage.getItem("user");
@@ -93,7 +102,9 @@ export default function CreateProject() {
   }
 
   useEffect(() => {
+    getAllUser();
     getAllStatus();
+    getAllClients();
   }, []);
 
   function handleSearchChange(event) {
@@ -131,6 +142,17 @@ export default function CreateProject() {
     setFilteredOptionsChefs(options);
   }
 
+  function handleSearchChangeRess(event) {
+    setStepTwoDone(false);
+    const value = event.target.value;
+    setSearchTermRess(value);
+    setIsDropdownOpenRess(value !== "");
+    const options = ListeRess.filter((list) =>
+      list.valeur.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredOptionsRess(options);
+  }
+
   function handleOptionSelectChefs(option) {
     if (!selectedChefs.includes(option)) {
       setSelectedChefs([...selectedChefs, option]);
@@ -138,6 +160,15 @@ export default function CreateProject() {
     }
     setSearchTermChef("");
     setIsDropdownOpenChef(false);
+  }
+
+  function handleOptionSelectRess(option) {
+    if (!selectedRess.includes(option)) {
+      setSelectedRess([...selectedRess, option]);
+      setUserIdsRess([...userIdsRess, option.id]);
+    }
+    setSearchTermRess("");
+    setIsDropdownOpenRess(false);
   }
 
   function handleOptionSelect(option) {
@@ -166,8 +197,13 @@ export default function CreateProject() {
     setUserIds(userIds.filter((id) => id !== member.id));
   }
   function handleRemoveChefs(member) {
-    setSelectedMembers(selectedChefs.filter((m) => m !== member));
+    setSelectedChefs(selectedChefs.filter((m) => m !== member));
     setUserIdsChef(userIdsChef.filter((id) => id !== member.id));
+  }
+
+  function handleRemoveRess(member) {
+    setSelectedRess(selectedRess.filter((m) => m !== member));
+    setUserIdsRess(userIdsRess.filter((id) => id !== member.id));
   }
 
   function handleRemoveResp(member) {
@@ -265,6 +301,7 @@ export default function CreateProject() {
     addmembres(idProjectLoad);
     addChefs(idProjectLoad);
     addResp(idProjectLoad);
+    addRess(idProjectLoad);
     setStepTwoDone(true);
     if (stepOneDone && stepThreeDone) {
       setShowcreateTask(false);
@@ -292,25 +329,56 @@ export default function CreateProject() {
       });
   }
 
+  function addRess(id) {
+    let formData = {
+      gest_proj_projet_id: id,
+      gest_proj_materielle_ids: userIdsRess,
+    };
+    if (userIdsRess.length !== 0) {
+      axios
+        .post(`${url}/api/projets/materielles-projets`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+
+          setShowSpinner(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setShowSpinner(false);
+        });
+    }
+  }
+
   function createProjet() {
+    let idCLIENT;
+    if (!idClient) {
+      idCLIENT = ListClient[0].id;
+    }
+
     setShowSpinner(true);
     let statusIfNotselect;
     if (statusProjetId === "") {
       statusIfNotselect = ListStatus[0].id;
     }
+
     let formData = {
       nom: titreProjet,
       description: editorRef.current ? editorRef.current.getContent() : "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
-      date_fin: dateFin,
+      date_limite: dateFin,
       ligne_budgetaire: ligneBudgetaire,
       reference_client: refClient,
       client: clients,
       nb_jour: nbrJR,
       taux_j_moyen: TJM,
+      gest_fac_client_id: idClient || idCLIENT,
       gest_proj_statuts_projet_id: Number(statusProjetId) || statusIfNotselect,
     };
+
     axios
       .post(`${url}/api/projets`, formData, {
         headers: {
@@ -321,6 +389,7 @@ export default function CreateProject() {
         addmembres(response.data.projet.id);
         addChefs(response.data.projet.id);
         addResp(response.data.projet.id);
+        addRess(response.data.projet.id);
         if (categorie === "Tous les projets") {
           getAllproject();
         }
@@ -351,6 +420,10 @@ export default function CreateProject() {
       });
   }
   function createProjetAndCreateNew() {
+    let idCLIENT;
+    if (!idClient) {
+      idCLIENT = ListClient[0].id;
+    }
     setShowSpinner(true);
     let statusIfNotselect;
     if (statusProjetId === "") {
@@ -361,12 +434,13 @@ export default function CreateProject() {
       description: editorRef.current ? editorRef.current.getContent() : "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
-      date_fin: dateFin,
+      date_limite: dateFin,
       ligne_budgetaire: ligneBudgetaire,
       reference_client: refClient,
       client: clients,
       nb_jour: nbrJR,
       taux_j_moyen: TJM,
+      gest_fac_client_id: idClient || idCLIENT,
       gest_proj_statuts_projet_id: Number(statusProjetId) || statusIfNotselect,
     };
     axios
@@ -379,6 +453,7 @@ export default function CreateProject() {
         addmembres(response.data.projet.id);
         addChefs(response.data.projet.id);
         addResp(response.data.projet.id);
+        addRess(response.data.projet.id);
         if (categorie === "Tous les projets") {
           getAllproject();
         }
@@ -413,6 +488,11 @@ export default function CreateProject() {
   }
 
   function createProjetFirstStep() {
+    let idCLIENT;
+    if (!idClient) {
+      idCLIENT = ListClient[0].id;
+    }
+
     setShowSpinner(true);
     let statusIfNotselect;
     if (statusProjetId === "") {
@@ -423,10 +503,11 @@ export default function CreateProject() {
       description: editorRef.current ? editorRef.current.getContent() : "",
       entreprise_id: user.gest_com_entreprise_id,
       date_debut: dateDebut,
-      date_fin: dateFin,
+      date_limite: dateFin,
       ligne_budgetaire: ligneBudgetaire,
       reference_client: refClient,
       client: clients,
+      gest_fac_client_id: idClient || idCLIENT,
       gest_proj_statuts_projet_id: Number(statusProjetId) || statusIfNotselect,
     };
 
@@ -615,7 +696,7 @@ export default function CreateProject() {
                       }}
                     />
                   </div>
-                  <div className="flex justify-between flex-wrap">
+                  <div className="flex gap-2 flex-wrap">
                     <div className="w-80">
                       <div className="label mt-5">Ligne budgetaire :</div>
                       <input
@@ -625,7 +706,22 @@ export default function CreateProject() {
                         className="mt-2 input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                       />
                     </div>
-                    <div className="w-80">
+                    <div className="  w-80">
+                      <div className="label mt-5">Clients :</div>
+                      <select
+                        value={idClient}
+                        onChange={(e) => setIdClient(e.target.value)}
+                        className="input pl-3  mt-2 w-52 pr-3 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                      >
+                        {ListClient.map((list) => (
+                          <option key={list.id} value={list.id}>
+                            {list.nom_societe}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className=" hidden w-80">
                       <div className="label mt-5">Clients :</div>
                       <input
                         type="text"
@@ -634,7 +730,7 @@ export default function CreateProject() {
                         className="mt-2 input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                       />
                     </div>
-                    <div className="w-80">
+                    <div className="hidden w-80">
                       <div className="label mt-5">Référence client :</div>
                       <input
                         type="text"
@@ -873,6 +969,7 @@ export default function CreateProject() {
                       </div>
                     </div>
                   )}
+                  {/* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */}
 
                   <div className="section mt-5 flex items-center">
                     <div className="relative w-full">
@@ -939,6 +1036,77 @@ export default function CreateProject() {
                       </div>
                     </div>
                   )}
+                  {/* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */}
+
+                  {/* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */}
+
+                  <div className="section mt-5 flex items-center">
+                    <div className="relative w-full">
+                      <div className="label w-full">
+                        Ajouter des ressources matériels :
+                      </div>
+
+                      <div className="flex mt-2 items-center relative">
+                        <input
+                          type="text"
+                          placeholder="Rechercher..."
+                          className="input pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                          value={searchTermRess}
+                          onChange={handleSearchChangeRess}
+                        />
+                        <FontAwesomeIcon
+                          onClick={() => {
+                            setSearchTermRess("");
+                            setIsDropdownOpenRess(false);
+                          }}
+                          icon={faXmark}
+                          className=" h-3 w-3 relative text-gray-400 cursor-pointer right-5"
+                        />
+                      </div>
+
+                      {isDropdownOpenRess && (
+                        <div className="absolute max-h-[100px] overflow-y-auto  mt-1 w-full rounded-md bg-white shadow-lg z-10">
+                          {filteredOptionsRess.length > 0 ? (
+                            filteredOptionsRess.map((list, index) => (
+                              <div
+                                key={index}
+                                className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-200"
+                                onClick={() => handleOptionSelectRess(list)}
+                              >
+                                {list.valeur}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="px-4 py-2 text-sm text-gray-500">
+                              Aucune option disponible
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedRess.length > 0 && (
+                    <div>
+                      <div className="flex flex-wrap">
+                        {selectedRess.map((list, index) => (
+                          <div
+                            key={index}
+                            className="mr-5 input text-black w-60 mt-2 bg-gray-200 rounded-md px-4 py-2 flex justify-between items-center"
+                          >
+                            {list.valeur}
+                            <FontAwesomeIcon
+                              icon={faXmark}
+                              className="cursor-pointer text-red-500 hover:text-red-700"
+                              onClick={() => handleRemoveRess(list)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */}
+
                   {user.role === "admin" && (
                     <>
                       {!isCheckedMembres && (
@@ -974,68 +1142,6 @@ export default function CreateProject() {
                       Enregistrer
                     </button>
                   </div>
-
-                  {/* <div className="section mt-5 flex items-center">
-                        <div className="relative w-full">
-                          <div className="label w-full">
-                            Ajouter des ressources materielle :
-                          </div>
-          
-                          <div className="flex mt-2 items-center relative">
-                            <input
-                              type="text"
-                              placeholder="Rechercher..."
-                              className="input pl-3 pr-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-                              value={searchTerm}
-                              onChange={handleSearchChange}
-                            />
-                            <FontAwesomeIcon
-                              icon={faPlus}
-                              className="absolute right-3 text-gray-400 cursor-pointer transition duration-200 hover:text-[rgba(0, 184, 148,1.0)] hover:scale-125"
-                              onClick={() => handleOptionSelect({ email: searchTerm })}
-                            />
-                          </div>
-          
-                          {isDropdownOpen && (
-                            <div className="absolute mt-1 w-full rounded-md bg-white shadow-lg z-10">
-                              {filteredOptions.length > 0 ? (
-                                filteredOptions.map((user, index) => (
-                                  <div
-                                    key={index}
-                                    className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-200"
-                                    onClick={() => handleOptionSelect(user)}
-                                  >
-                                    {user.email}
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="px-4 py-2 text-sm text-gray-500">
-                                  Aucune option disponible
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div> */}
-                  {/* {selectedMembers.length > 0 && (
-                        <div className="">
-                          <div className="flex flex-wrap">
-                            {selectedMembers.map((member, index) => (
-                              <div
-                                key={index}
-                                className="mr-5 input text-black w-60 mt-2 bg-gray-200 rounded-md px-4 py-2 flex justify-between items-center"
-                              >
-                                {member.email}
-                                <FontAwesomeIcon
-                                  icon={faXmark}
-                                  className="cursor-pointer text-red-500 hover:text-red-700"
-                                  onClick={() => handleRemoveMember(member)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )} */}
                 </div>
               </AccordionContent>
             </AccordionItem>

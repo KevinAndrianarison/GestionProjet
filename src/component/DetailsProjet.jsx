@@ -63,6 +63,7 @@ export default function DetailsProject() {
     ListChefs,
     idProjet,
     getOneProjet,
+    idProject,
   } = useContext(ProjectContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
   const { url } = useContext(UrlContext);
@@ -81,6 +82,7 @@ export default function DetailsProject() {
 
   const [showListemembre, setShowListemembre] = useState(false);
   const [coms, setComs] = useState("");
+  const [listIDTache, setlistIDTache] = useState([]);
   const [oldValueTitre, setOldValueTitre] = useState("");
   const [oldDescription, setOldDescription] = useState("");
   const [nomFileUploaded, setNomFileUploaded] = useState("");
@@ -110,6 +112,60 @@ export default function DetailsProject() {
 
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
+
+  function addIdTask(id) {
+    setlistIDTache((prev) =>
+      prev.includes(id)
+        ? prev.filter((existingId) => existingId !== id)
+        : [...prev, id]
+    );
+  }
+
+  function deleteSomeTask() {
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    listIDTache.forEach((list) => {
+      axios
+        .delete(`${url}/api/projets/taches/${list}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          getAlletapeByProjets(idProject);
+          setShowSpinner(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setShowSpinner(false);
+        });
+    });
+  }
+
+  function setVisibility(valeur, id) {
+    let formData = {
+      visible: !valeur,
+    };
+    setShowSpinner(true);
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+    axios
+      .put(`${url}/api/projets/champs/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        getAllChampsByProject();
+        setShowSpinner(false);
+        getAlletapeByProjets();
+      })
+      .catch((err) => {
+        console.error(err);
+        setShowSpinner(false);
+      });
+  }
 
   function showGestLignBudg() {
     setIsGantt(false);
@@ -185,6 +241,7 @@ export default function DetailsProject() {
   }
 
   useEffect(() => {
+    getAllChampsByProject();
     let idIfChef;
     if (!description) {
       setIsdivDescription(false);
@@ -688,34 +745,46 @@ export default function DetailsProject() {
                   e.stopPropagation();
                 }}
               >
-                <button
-                  className="input w-40 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
-                  onClick={handleToggle}
-                >
-                  AJOUTER
-                  <FontAwesomeIcon
-                    icon={faCaretDown}
-                    className=" w-4 h-4 cursor-pointer focus:outline-none"
-                  />
-                </button>
-                {isOpen && (
-                  <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
-                    <li
-                      onClick={addInputField}
-                      className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                <div className="flex">
+                  <div className="mr-2">
+                    <button
+                      className="input w-40 flex justify-evenly shadow-lg font-bold rounded-md bg-blue-500 border-0 py-1"
+                      onClick={handleToggle}
                     >
-                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                      Ajouter un champ
-                    </li>
-                    <li
-                      onClick={addtask}
-                      className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                      AJOUTER
+                      <FontAwesomeIcon
+                        icon={faCaretDown}
+                        className=" w-4 h-4 cursor-pointer focus:outline-none"
+                      />
+                    </button>
+                    {isOpen && (
+                      <ul className="absolute left-20 w-60 z-10 bg-white border rounded-md mt-1">
+                        <li
+                          onClick={addInputField}
+                          className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                        >
+                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                          Ajouter un champ
+                        </li>
+                        <li
+                          onClick={addtask}
+                          className="cursor-pointer p-2 bg-gray-100  text-left pl-5"
+                        >
+                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                          Ajouter une tâche
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                  {listIDTache.length !== 0 && (
+                    <button
+                      onClick={deleteSomeTask}
+                      className="rounded px-5 text-white bg-red-500 py-1"
                     >
-                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                      Ajouter une tâche
-                    </li>
-                  </ul>
-                )}
+                      Supprimer
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -795,7 +864,6 @@ export default function DetailsProject() {
             <div className="overflow-x-auto shadow-lg text-xs">
               <div className=" flex  items-center min-w-max  border py-2 px-2">
                 <li className={styles.options}>
-                  <input type="checkbox" className="w-5 mr-2" />
                   <div
                     className="relative"
                     onClick={(e) => {
@@ -814,23 +882,45 @@ export default function DetailsProject() {
                         <li className="cursor-pointer flex p-2 bg-gray-400 border-2 border-gray-400 text-left pl-5">
                           Paramètres visibles
                         </li>
-                        <li className="cursor-pointer flex p-2 bg-gray-100  text-left pl-5">
-                          <input type="checkbox" className="mr-4" />
-                          <p>First</p>
-                        </li>
-                        <li className="cursor-pointer flex p-2 bg-gray-100  text-left pl-5">
-                          <input type="checkbox" className="mr-4" />
-                          <p>Second</p>
-                        </li>
+                        {ListChamps.map((champ, index) => (
+                          <li
+                            key={index}
+                            className="cursor-pointer flex p-2 bg-gray-100  text-left pl-5"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={champ.visible}
+                              onChange={() =>
+                                setVisibility(champ.visible, champ.id)
+                              }
+                              className="mr-4"
+                            />
+                            <p>{champ.label}</p>
+                          </li>
+                        ))}
+                        {ListChamps.length === 0 && (
+                          <li className="text-xs p-1 text-gray-500">
+                            Aucun résultat trouvé
+                          </li>
+                        )}
                       </ul>
                     )}
                   </div>
                 </li>
                 <li className={styles.designation}>Désignation</li>
-                <li className={styles.status}>Status</li>
+                <li className={styles.status}>Avancement</li>
+                <li className={styles.limite}>Date debut</li>
                 <li className={styles.limite}>Date limite</li>
-                <li className={styles.par}>Créé par</li>
                 <li className={styles.responsable}>Responsable</li>
+                <div className="flex">
+                  {ListChamps.map((champ) => (
+                    <div key={champ.id}>
+                      {champ.visible !== 0 && (
+                        <li className="w-[200px] mr-2">{champ.label}</li>
+                      )}
+                    </div>
+                  ))}
+                </div>
                 <li className="ml-4 w-5"></li>
                 <li className="ml-4 w-5 "></li>
               </div>
@@ -845,20 +935,36 @@ export default function DetailsProject() {
                       <div key={list.id}>
                         <div className=" py-2 flex  min-w-max border px-2">
                           <li className={styles.options}>
-                            <input type="checkbox" className="w-5 mr-2" />
+                            <input
+                              type="checkbox"
+                              checked={listIDTache.includes(list.id)}
+                              onChange={() => addIdTask(list.id)}
+                              className="w-5 mr-2"
+                            />
                             <p className="w-5"></p>
                           </li>
                           <h1 className={styles.designation}>{list.titre}</h1>
-                          <h1 className={styles.status}>
-                            {list.avancement || ""}
+                          <h1 className={`${styles.status} pl-5`}>
+                            {list.avancement || 0} %
                           </h1>
+                          <h1 className={styles.limite}>{list.date_debut}</h1>
                           <h1 className={styles.limite}>{list.date_limite}</h1>
-                          <h1 className={styles.par}> Steeve</h1>
                           <h1 className={styles.responsables}>
                             {list.responsables.map((res) => (
                               <span key={res.id}>{res.utilisateur.nom},</span>
                             ))}
                           </h1>
+                          <div className="flex">
+                            {list.champsVisibles.map((champ) => (
+                              <div key={champ.id}>
+                                {champ.visible !== 0 && (
+                                  <li className="w-[200px] mr-2">
+                                    {champ.valeur || "..."}
+                                  </li>
+                                )}
+                              </div>
+                            ))}
+                          </div>{" "}
                           {(categorie === "Mes projets" || verifyIfChef) && (
                             <Tippy content="Modifier">
                               <FontAwesomeIcon

@@ -4,6 +4,7 @@ import {
   faClock,
   faPlus,
   faThumbtack,
+  faCalendarCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { faSquareCheck } from "@fortawesome/free-regular-svg-icons";
 import { faCircleCheck } from "@fortawesome/free-regular-svg-icons";
@@ -23,6 +24,7 @@ export default function Task() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [titreTask, setTitreTask] = useState("");
   const [dateFin, setDateFin] = useState("");
+  const [chargeProvisionnel, setChargeProvisionnel] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [showChecklistModal, setShowChecklistModal] = useState(false);
   const [checklistName, setChecklistName] = useState("");
@@ -137,6 +139,7 @@ export default function Task() {
         description: editorRef.current.getContent(),
         date_debut: dateDebut,
         date_limite: dateFin,
+        charge_provisionnel: chargeProvisionnel,
         gest_proj_statuts_tache_id: statusTaskId || statusId,
         gest_proj_etape_id: etapeId || etpId,
       };
@@ -148,6 +151,7 @@ export default function Task() {
         description: "",
         date_debut: dateDebut,
         date_limite: dateFin,
+        charge_provisionnel: chargeProvisionnel.toString(),
         gest_proj_statuts_tache_id: statusTaskId || statusId,
         gest_proj_etape_id: etapeId || etpId,
       };
@@ -249,6 +253,7 @@ export default function Task() {
         titre: titreTask,
         description: editorRef.current.getContent(),
         date_debut: dateDebut,
+        charge_provisionnel: chargeProvisionnel.toString(),
         date_limite: dateFin,
         gest_proj_statuts_tache_id: statusTaskId || statusId,
         gest_proj_etape_id: etapeId || etpId,
@@ -260,6 +265,7 @@ export default function Task() {
         titre: titreTask,
         description: "",
         date_debut: dateDebut,
+        charge_provisionnel: chargeProvisionnel,
         date_limite: dateFin,
         gest_proj_statuts_tache_id: statusTaskId || statusId,
         gest_proj_etape_id: etapeId || etpId,
@@ -413,6 +419,18 @@ export default function Task() {
                   type="date"
                   value={dateFin}
                   onChange={(e) => setDateFin(e.target.value)}
+                  className="input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+                />
+              </div>
+              <div className="inputGroup w-52 mb-2 mr-2">
+                <label className="input flex items-center font-medium text-gray-700 mb-1">
+                  <FontAwesomeIcon icon={faCalendarCheck} className=" mr-2" />
+                  Charge prévisionnel
+                </label>
+                <input
+                  type="number"
+                  value={chargeProvisionnel}
+                  onChange={(e) => setChargeProvisionnel(e.target.value)}
                   className="input pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                 />
               </div>
@@ -604,7 +622,7 @@ export default function Task() {
                     }}
                     icon={faXmark}
                     className=" h-3 w-3 relative text-gray-400 cursor-pointer right-5"
-                    />
+                  />
                 </div>
 
                 {isDropdownOpen && (
