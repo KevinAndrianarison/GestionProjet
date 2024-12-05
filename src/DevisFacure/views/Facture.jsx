@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV, faImage } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit, faEllipsisV, faImage, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Select from 'react-select';
@@ -65,15 +65,6 @@ const Facture = () => {
 
     return monthMatch && yearMatch;
   });
-
-
-
-
-
-
-
-
-
 
   const resetFactureFields = () => {
     setFactureToEdit({});
@@ -406,7 +397,7 @@ const Facture = () => {
     doc.autoTable(columns, tableData, { startY: 30 });
 
     const fileName = `factures-${selectedMonthText.trim()}${selectedYear ? `-${selectedYear}` : ''}.pdf`;
-    doc.save(fileName);    
+    doc.save(fileName);
   };
 
   return (
@@ -494,23 +485,27 @@ const Facture = () => {
                 <td className="border-y p-2 ">{facture.montant_httc}</td>
                 <td className="border-y p-2">
                   {facture.piece_jointe ? (
-                    /\.(pdf|jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(facture.piece_jointe) ? (
+                    /\.(pdf)$/i.test(facture.piece_jointe) ? (
+                      <FontAwesomeIcon
+                        icon={faFilePdf}
+                        onClick={() => {
+                          const fileUrl = `https://bg.societe-manage.com/public/storage/${facture.piece_jointe}`;
+                          setPdfurl(fileUrl);
+                          setImgUrl('');
+                          setModalOpen(true);
+                        }}
+                        className="text-red-500 cursor-pointer"
+                      />
+                    ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(facture.piece_jointe) ? (
                       <FontAwesomeIcon
                         icon={faImage}
                         onClick={() => {
                           const fileUrl = `https://bg.societe-manage.com/public/storage/${facture.piece_jointe}`;
-
-                          if (fileUrl.endsWith('.pdf')) {
-                            setPdfurl(fileUrl);
-                            setImgUrl('');
-                          } else if (/\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(fileUrl)) {
-                            setImgUrl(fileUrl);
-                            setPdfurl('');
-                            setAlt('Pièce d\'identité');
-                          }
+                          setImgUrl(fileUrl);
+                          setPdfurl('');
+                          setAlt('Pièce d\'identité');
                           setModalOpen(true);
                         }}
-
                         className="text-blue-500 cursor-pointer"
                       />
                     ) : (
