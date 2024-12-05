@@ -108,7 +108,6 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
-          setPieceJointe(`https://bg.societe-manage.com/public/storage/${response.data.piece_jointe}`);
           console.log(response.data);
         }
       } catch (error) {
@@ -202,14 +201,22 @@ const Facture = () => {
   const updateFacture = async (id, formData) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
-
+  
     const updatedFormData = new FormData();
+  
     Object.keys(formData).forEach((key) => {
-      if (formData[key] !== undefined && formData[key] !== null) {
+      if (key !== "piece_jointe" && formData[key] !== undefined && formData[key] !== null) {
         updatedFormData.append(key, formData[key]);
       }
     });
-
+  
+    if (formData.piece_jointe && formData.piece_jointe instanceof File) {
+      updatedFormData.append("piece_jointe", formData.piece_jointe);
+    } else if (formData.piece_jointe) {
+      console.log("La pièce jointe n'est pas un fichier valide :", formData.piece_jointe);
+    }
+    console.log('FormData avant envoi:', updatedFormData);
+  
     try {
       const response = await axios.post(`${BASE_URL}factures/entrants/${id}`, updatedFormData, {
         headers: {
@@ -217,7 +224,7 @@ const Facture = () => {
           "X-HTTP-Method-Override": "PUT",
         },
       });
-
+  
       if (response.status === 200) {
         setFactures((prevFactures) =>
           prevFactures.map((facture) =>
@@ -235,7 +242,7 @@ const Facture = () => {
       Notiflix.Notify.failure("Erreur lors de la modification de la facture.");
     }
   };
-
+  
   const handleEditClick = async (id) => {
     const selectedFacture = factures.find((facture) => facture.id === id);
     if (selectedFacture) {
