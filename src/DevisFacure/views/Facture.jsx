@@ -530,7 +530,7 @@ const Facture = () => {
                           const fileUrl = `https://bg.societe-manage.com/public/storage/${facture.piece_jointe}`;
                           setPdfurl(fileUrl);
                           setImgUrl('');
-                          setModalOpen(true);
+                          handleOpenModal();
                         }}
                         className="text-red-500 cursor-pointer"
                       />
@@ -542,7 +542,7 @@ const Facture = () => {
                           setImgUrl(fileUrl);
                           setPdfurl('');
                           setAlt('Pièce d\'identité');
-                          setModalOpen(true);
+                          handleOpenModal();
                         }}
                         className="text-blue-500 cursor-pointer"
                       />
@@ -597,7 +597,7 @@ const Facture = () => {
         {(imgUrl || pdfUrl) ? (
           <div className="mb-4">
             {fileName && (
-              <div className="text-lg font-semibold mb-2 text-gray-700">
+              <div className="text-base font-semibold mb-2 text-gray-700">
                 {fileName}
               </div>
             )}
