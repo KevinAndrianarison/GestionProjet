@@ -7,6 +7,8 @@ import Select from 'react-select';
 import { monthOptions, yearOptions } from './MoisAnneeSelect'
 import Modal from './Modal';
 import Notiflix from 'notiflix';
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 const Facture = () => {
   const [factures, setFactures] = useState([]);
@@ -63,6 +65,14 @@ const Facture = () => {
 
     return monthMatch && yearMatch;
   });
+
+
+
+
+
+
+
+
 
 
   const resetFactureFields = () => {
@@ -364,6 +374,42 @@ const Facture = () => {
     return true;
   };
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+  
+    const selectedMonthLabels = selectedMonths
+      .map(month => {
+        const monthOption = monthOptions.find(option => option.value === month.value);
+        return monthOption ? monthOption.label : '';
+      })
+      .join(", ");
+  
+    const selectedMonthText = selectedMonthLabels ? `${selectedMonthLabels}` : 'Tous les mois';
+  
+    doc.setFontSize(18);
+    doc.text(`Factures ${selectedMonthText} ${selectedYear ? `${selectedYear}` : ''}`, 20, 20);
+  
+    filteredFactures;
+  
+    const tableData = filteredFactures.map(facture => [
+      facture.montant_ht,
+      facture.prix_tva,
+      facture.montant_httc,
+    ]);
+  
+    const columns = [
+      { title: "Montant HT", dataKey: "montant_ht" },
+      { title: "TVA", dataKey: "prix_tva" },
+      { title: "Montant TTC", dataKey: "montant_httc" },
+    ];
+  
+    doc.autoTable(columns, tableData, { startY: 30 });
+  
+    doc.save("factures.pdf");
+  };
+  
+  
+
   return (
     <div>
       <div className="w-full mb-3 ">
@@ -422,6 +468,7 @@ const Facture = () => {
 
         <div className="flex justify-end p-4">
           <button
+            onClick={generatePDF}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Télécharger
@@ -433,7 +480,6 @@ const Facture = () => {
         <table className="min-w-full">
           <thead className='bg-slate-100'>
             <tr>
-              <th className="text-left p-2 font-bold">Numéro</th>
               <th className="text-left p-2 font-bold">Prix total HT</th>
               <th className="text-left p-2 font-bold">TVA</th>
               <th className="text-left p-2 font-bold">Prix total TTC</th>
@@ -444,7 +490,6 @@ const Facture = () => {
           <tbody>
             {currentFactures.map((facture) => (
               <tr key={facture.id}>
-                <td className="border-y p-2 ">{facture.id}</td>
                 <td className="border-y p-2 ">{facture.montant_ht}</td>
                 <td className="border-y p-2 ">{facture.prix_tva}</td>
                 <td className="border-y p-2 ">{facture.montant_httc}</td>
@@ -662,7 +707,7 @@ const Facture = () => {
                 </div>
               </div>
             </form>
-            </>)}
+          </>)}
       </Modal>
     </div>
   );
