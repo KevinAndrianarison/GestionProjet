@@ -376,39 +376,38 @@ const Facture = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-  
+
     const selectedMonthLabels = selectedMonths
       .map(month => {
         const monthOption = monthOptions.find(option => option.value === month.value);
         return monthOption ? monthOption.label : '';
       })
       .join(", ");
-  
+
     const selectedMonthText = selectedMonthLabels ? `${selectedMonthLabels}` : 'Tous les mois';
-  
+
     doc.setFontSize(18);
-    doc.text(`Factures ${selectedMonthText} ${selectedYear ? `${selectedYear}` : ''}`, 20, 20);
-  
+    doc.text(`Factures ${selectedMonthText} ${selectedYear ? `${selectedYear}` : ''}`, 15, 20);
+
     filteredFactures;
-  
+
     const tableData = filteredFactures.map(facture => [
       facture.montant_ht,
       facture.prix_tva,
       facture.montant_httc,
     ]);
-  
+
     const columns = [
       { title: "Montant HT", dataKey: "montant_ht" },
       { title: "TVA", dataKey: "prix_tva" },
       { title: "Montant TTC", dataKey: "montant_httc" },
     ];
-  
+
     doc.autoTable(columns, tableData, { startY: 30 });
-  
-    doc.save("factures.pdf");
+
+    const fileName = `factures-${selectedMonthText.trim()}${selectedYear ? `-${selectedYear}` : ''}.pdf`;
+    doc.save(fileName);    
   };
-  
-  
 
   return (
     <div>
