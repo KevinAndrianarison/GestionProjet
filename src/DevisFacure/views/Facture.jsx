@@ -38,6 +38,8 @@ const Facture = () => {
   const [imgUrl, setImgUrl] = useState('');
   const [alt, setAlt] = useState('');
 
+  const [fournisseurs, setFournisseurs] = useState([]);
+  const [selectedFournisseur, setSelectedFournisseur] = useState("");
 
   const handleMonthChange = (selected) => {
     setSelectedMonths(selected);
@@ -114,6 +116,35 @@ const Facture = () => {
     };
     fetchFactures();
   }, [refresh]);
+
+
+  useEffect(() => {
+    const fetchDataFournisseur = async () => {
+      const tokenString = localStorage.getItem("token");
+      let token = JSON.parse(tokenString);
+      try {
+        const response = await axios.get(`${BASE_URL}fournisseurs`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setFournisseurs(response.data);
+          console.log(response.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+        Notiflix.Notify.failure("Erreur lors de la récupération des données:");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDataFournisseur();
+  }, [refresh]);
+
+  const handleSelectChange = (e) => {
+    setSelectedFournisseur(e.target.value);
+  };
 
   const validateForm = () => {
     if (!montant_ht || !montant_httc || !prix_tva) {
@@ -642,6 +673,48 @@ const Facture = () => {
                   <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
                     <div className="border rounded-t-xl">
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">
+                          Fournisseur
+                        </label>
+                        <select
+                          value={selectedFournisseur}
+                          onChange={handleSelectChange}
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        >
+                          <option value="" disabled>
+                            -- Sélectionnez un fournisseur --
+                          </option>
+                          {fournisseurs.map((fournisseur) => (
+                            <option key={fournisseur.id} value={fournisseur.id}>
+                              {fournisseur.nom}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Fournisseur</label>
+                        <select
+                          id="fournisseur"
+                          value={selectedFournisseur}
+                          onChange={handleSelectChange}
+                          className="w-full p-2 rounded text-sm">
+                          <option>Frais repas</option>
+                          <option>Bricolage</option>
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium text-gray-700 my-2">Catégorie</label>
+                        <select
+                          value={validation}
+                          onChange={(e) => setValidation(e.target.value)}
+                          className="w-full p-2 rounded text-sm">
+                          <option>Frais repas</option>
+                          <option>Bricolage</option>
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
                         <input
                           type="number"
@@ -662,7 +735,7 @@ const Facture = () => {
                         />
                       </div>
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">prix TVA</label>
+                        <label className="block text-sm font-medium text-gray-700 my-2">Total prix TVA</label>
                         <input
                           type="number"
                           value={prix_tva}
@@ -673,7 +746,7 @@ const Facture = () => {
                         />
                       </div>
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Montant TTC</label>
+                        <label className="block text-sm font-medium text-gray-700 my-2">Total prix TTC</label>
                         <input
                           type="number"
                           value={montant_httc}
@@ -684,22 +757,12 @@ const Facture = () => {
                         />
                       </div>
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Date de facturation</label>
+                        <label className="block text-sm font-medium text-gray-700 my-2">Date de facture</label>
                         <input
                           type="date"
                           value={date_facturation}
                           onChange={(e) => setDateFacturation(e.target.value)}
                           placeholder="Date de facturation"
-                          className="w-full p-2 rounded text-sm"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Date d'enregistrement</label>
-                        <input
-                          type="date"
-                          value={date_enregistrement}
-                          onChange={(e) => setDateEnregistrement(e.target.value)}
-                          placeholder="date_enregistrement"
                           className="w-full p-2 rounded text-sm"
                         />
                       </div>
@@ -740,7 +803,7 @@ const Facture = () => {
                         </select>
                       </div>
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Piece jointe</label>
+                        <label className="block text-sm font-medium text-gray-700 my-2">Justificatif</label>
                         <input
                           type="file"
                           onChange={(e) => handleUpload(e, "piece_jointe")} placeholder="Piece jointe"
