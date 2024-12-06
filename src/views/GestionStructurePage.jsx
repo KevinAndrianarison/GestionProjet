@@ -5,7 +5,6 @@ import { Tree, TreeNode } from 'react-organizational-chart';
 import { Skeleton } from "@/components/ui/skeleton";
 import { UrlContext } from "../contexte/useUrl";
 import Modal from '../DevisFacure/views/Modal';
-import { useDepartement } from "../contexte/useDepartement";
 import { ShowContext } from "../contexte/useShow";
 import Notiflix from 'notiflix';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,7 +21,6 @@ function GestionStructurePage() {
   const [parentId, setParentId] = useState('');
   const [refresh, setRefresh] = useState(false);
   const [departementOption, setdepartementOption] = useState([]);
-  const { go } = useDepartement();
   const { setShowSpinner, showAdmin } = useContext(ShowContext);
   const [AddOrEdit, setAddOrEdit] = useState(false);
   const [idToEdit, setIdToEdit] = useState('');
@@ -232,10 +230,6 @@ function GestionStructurePage() {
       </TreeNode>
     );
   };
-
-  if (!go) {
-    return <p>Paramètrage du premier département en cours...</p>;
-  }
   
     return (
       <>

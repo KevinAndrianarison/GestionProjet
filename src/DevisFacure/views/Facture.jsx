@@ -39,7 +39,7 @@ const Facture = () => {
   const [alt, setAlt] = useState('');
 
   const [fournisseurs, setFournisseurs] = useState([]);
-  const [selectedFournisseur, setSelectedFournisseur] = useState("");
+  const [gest_fac_founisseur_id, setSelectedFournisseur] = useState("");
 
   const handleMonthChange = (selected) => {
     setSelectedMonths(selected);
@@ -108,6 +108,7 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
+          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des factures :", error);
@@ -136,7 +137,6 @@ const Facture = () => {
         console.error("Erreur lors de la récupération des données:", error);
         Notiflix.Notify.failure("Erreur lors de la récupération des données:");
       } finally {
-        setIsLoading(false);
       }
     };
     fetchDataFournisseur();
@@ -169,6 +169,7 @@ const Facture = () => {
       devise,
       validation,
       piece_jointe,
+      gest_fac_founisseur_id
     };
 
     if (factureToEdit?.id) {
@@ -192,6 +193,8 @@ const Facture = () => {
     formData.append("date_enregistrement", newFacture.date_enregistrement);
     formData.append("type_assigner", newFacture.type_assigner);
     formData.append("devise", newFacture.devise);
+    formData.append("gest_fac_founisseur_id", newFacture.gest_fac_founisseur_id);
+
 
     if (newFacture.piece_jointe) {
       formData.append("piece_jointe", newFacture.piece_jointe);
@@ -280,6 +283,7 @@ const Facture = () => {
       setValidation(selectedFacture.validation);
       setDevise(selectedFacture.devise);
       setPieceJointe(selectedFacture.piece_jointe);
+      setSelectedFournisseur(selectedFacture.gest_fac_founisseur_id);
       setFactureToEdit(selectedFacture);
       handleOpenModal();
     }
@@ -533,7 +537,7 @@ const Facture = () => {
 
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
-          <thead className='bg-slate-100 shadow-md relative z-10'>
+          <thead className='bg-slate-100 shadow-sm relative z-10'>
             <tr>
               <th className="text-center p-2 font-bold">N°</th>
               <th className="text-center p-2 font-bold">Fournisseur</th>
@@ -547,7 +551,7 @@ const Facture = () => {
           </thead>
           <tbody>
             {currentFactures.map((facture, index) => (
-              <tr key={facture.id} className={index % 2 === 0 ? "bg-gray-50 shadow-md relative z-auto" : "bg-white"}>
+              <tr key={facture.id} className={index % 2 === 0 ? "bg-gray-50 shadow-sm relative z-auto" : "bg-white"}>
                 <td className="border-y p-2 text-center">{facture.id}</td>
                 <td className="border-y p-2 text-center">Tsara Restaurant</td>
                 <td className="border-y p-2 text-center">Frais repas</td>
@@ -673,14 +677,11 @@ const Facture = () => {
                   <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
                     <div className="border rounded-t-xl">
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">
-                          Fournisseur
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 my-2">Fournisseur</label>
                         <select
-                          value={selectedFournisseur}
+                          value={gest_fac_founisseur_id}
                           onChange={handleSelectChange}
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        >
+                          className="w-full p-2 rounded text-sm">
                           <option value="" disabled>
                             -- Sélectionnez un fournisseur --
                           </option>
@@ -693,37 +694,53 @@ const Facture = () => {
                       </div>
 
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Fournisseur</label>
+                        <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
                         <select
-                          id="fournisseur"
-                          value={selectedFournisseur}
-                          onChange={handleSelectChange}
-                          className="w-full p-2 rounded text-sm">
-                          <option>Frais repas</option>
-                          <option>Bricolage</option>
+                          value={type_assigner}
+                          onChange={(e) => setTypeAssigner(e.target.value)}
+                          className="w-full p-2 rounded text-sm"
+                        >
+                          <option value="particulier">Particulier</option>
+                          <option value="societe">Société</option>
                         </select>
                       </div>
 
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Catégorie</label>
-                        <select
-                          value={validation}
-                          onChange={(e) => setValidation(e.target.value)}
-                          className="w-full p-2 rounded text-sm">
-                          <option>Frais repas</option>
-                          <option>Bricolage</option>
-                        </select>
-                      </div>
-                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
                         <input
-                          type="number"
-                          value={montant_ht}
-                          onChange={(e) => { setMontantHT(e.target.value); calculTtcTva(); }}
-                          placeholder="Montant HT"
-                          className="w-full p-2 rounded text-sm"
-                        />
+                          type="text"
+                          className="w-full p-2 rounded text-sm">
+                        </input>
                       </div>
+
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                  
+                        <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
+                   
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={montant_ht}
+                            onChange={(e) => {
+                              setMontantHT(e.target.value);
+                              calculTtcTva();
+                            }}
+                            placeholder="Montant HT"
+                            className="flex-1 p-2 text-sm"
+                          />
+
+                          <select
+                            value={devise}
+                            onChange={(e) => setDevise(e.target.value)}
+                            className="p-2 text-sm"
+                          >
+                            <option value="USD">$ USD</option>
+                            <option value="EUR">€ EUR</option>
+                            <option value="MGA">Ar MGA</option>
+                          </select>
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
                         <input
@@ -766,19 +783,7 @@ const Facture = () => {
                           className="w-full p-2 rounded text-sm"
                         />
                       </div>
-                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
-                        <select
-                          value={type_assigner}
-                          onChange={(e) => setTypeAssigner(e.target.value)}
-                          className="w-full p-2 rounded text-sm"
-                        >
-                          <option value=""></option>
-                          <option value="societe">Société</option>
-                          <option value="particulier">Particulier</option>
-                          <option value="auto_entrepreneur">Auto-entrepreneur</option>
-                        </select>
-                      </div>
+
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Validation</label>
                         <select
@@ -790,18 +795,7 @@ const Facture = () => {
                           <option value="true">Oui</option>
                         </select>
                       </div>
-                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Devise</label>
-                        <select
-                          value={devise}
-                          onChange={(e) => setDevise(e.target.value)}
-                          className="w-full p-2 rounded text-sm"
-                        >
-                          <option value=""></option>
-                          <option value="eur">EUR</option>
-                          <option value="usd">USD</option>
-                        </select>
-                      </div>
+
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Justificatif</label>
                         <input
