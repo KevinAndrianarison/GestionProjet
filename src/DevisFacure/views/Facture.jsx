@@ -502,22 +502,38 @@ const Facture = () => {
 
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
-          <thead className='bg-slate-100'>
+          <thead className='bg-slate-100 shadow-md relative z-10'>
             <tr>
-              <th className="text-left p-2 font-bold">Prix total HT</th>
-              <th className="text-left p-2 font-bold">TVA</th>
-              <th className="text-left p-2 font-bold">Prix total TTC</th>
-              <th className="text-left p-2 font-bold">Pièce jointe</th>
+              <th className="text-center p-2 font-bold">N°</th>
+              <th className="text-center p-2 font-bold">Fournisseur</th>
+              <th className="text-center p-2 font-bold">Catégorie</th>
+              <th className="text-center p-2 font-bold">Date de facture</th>
+              <th className="text-right p-2 font-bold">Total TVA</th>
+              <th className="text-right p-2 font-bold">Total prix TTC</th>
+              <th className="text-center p-2 font-bold">Justificatif</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {currentFactures.map((facture) => (
-              <tr key={facture.id}>
-                <td className="border-y p-2 ">{facture.montant_ht}</td>
-                <td className="border-y p-2 ">{facture.prix_tva}</td>
-                <td className="border-y p-2 ">{facture.montant_httc}</td>
-                <td className="border-y p-2">
+            {currentFactures.map((facture, index) => (
+              <tr key={facture.id} className={index % 2 === 0 ? "bg-gray-50 shadow-md relative z-auto" : "bg-white"}>
+                <td className="border-y p-2 text-center">{facture.id}</td>
+                <td className="border-y p-2 text-center">Tsara Restaurant</td>
+                <td className="border-y p-2 text-center">Frais repas</td>
+                <td className="border-y p-2 text-center">06/12/2024</td>
+                <td className="border-y p-2 text-right">
+                  <span className="flex justify-end gap-2">
+                    <span>{facture.prix_tva}</span>
+                    <span>$</span>
+                  </span>
+                </td>
+                <td className="border-y p-2 text-right">
+                  <span className="flex justify-end gap-2">
+                    <span>{facture.montant_httc}</span>
+                    <span>$</span>
+                  </span>
+                </td>
+                <td className="border-y p-2 text-center">
                   {facture.piece_jointe ? (
                     /\.(pdf)$/i.test(facture.piece_jointe) ? (
                       <FontAwesomeIcon
@@ -549,7 +565,7 @@ const Facture = () => {
                     "Aucune pièce jointe"
                   )}
                 </td>
-                <td className="border-y p-2  w-[25px] relative">
+                <td className="border-y p-2  w-[25px] relative overflow-visible">
                   <button
                     onClick={() => {
                       toggleActions(facture.id)
@@ -559,7 +575,7 @@ const Facture = () => {
                     <FontAwesomeIcon icon={faEllipsisV} />
                   </button>
                   {showActionsIdProsp === facture.id && (
-                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-10">
+                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-50">
                       <button
                         onClick={() => { handleEditClick(facture.id) }}
                         className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
@@ -580,6 +596,7 @@ const Facture = () => {
                     </div>
                   )}
                 </td>
+
               </tr>
             ))}
           </tbody>
