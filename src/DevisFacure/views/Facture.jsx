@@ -9,6 +9,8 @@ import Modal from './Modal';
 import Notiflix from 'notiflix';
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import { format, addMonths, subMonths } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const Facture = () => {
   const [factures, setFactures] = useState([]);
@@ -40,6 +42,8 @@ const Facture = () => {
 
   const [fournisseurs, setFournisseurs] = useState([]);
   const [gest_fac_founisseur_id, setSelectedFournisseur] = useState("");
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
 
   const handleMonthChange = (selected) => {
     setSelectedMonths(selected);
@@ -49,23 +53,29 @@ const Facture = () => {
     setSelectedYear(selected ? selected.value : '');
   };
 
-  const filteredFactures = factures.filter((facture) => {
-    // if (!facture.date_facturation) {
-    //   console.warn('Date de facturation manquante pour la facture:', facture);
-    //   return false;
-    // }
+  const handlePrevMonth = () => {
+    const newDate = subMonths(currentDate, 1);
+    setSelectedMonth(newDate.getMonth() + 1);
+    setSelectedYear(newDate.getFullYear());
+    setCurrentDate(newDate);
 
+  };
+
+  const handleNextMonth = () => {
+    const newDate = addMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    setSelectedMonth(newDate.getMonth() + 1);
+    setSelectedYear(newDate.getFullYear());
+    setCurrentDate(newDate);
+
+  };
+
+
+  const filteredFactures = factures.filter((facture) => {
     const factureDate = new Date(facture.date_facturation);
     const factureMonth = factureDate.getMonth() + 1;
     const factureYear = factureDate.getFullYear();
-
-    const monthMatch =
-      selectedMonths.length === 0 ||
-      selectedMonths.some((month) => Number(month.value) === factureMonth);
-
-    const yearMatch = !selectedYear || Number(selectedYear) === factureYear;
-
-    return monthMatch && yearMatch;
+    return factureMonth === selectedMonth && factureYear === selectedYear;
   });
 
   const resetFactureFields = () => {
@@ -108,7 +118,6 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
-          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des factures :", error);
@@ -131,7 +140,6 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFournisseurs(response.data);
-          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
@@ -447,7 +455,6 @@ const Facture = () => {
         const pageSize = doc.internal.pageSize;
         const pageHeight = pageSize.height;
         const pageWidth = pageSize.width;
-
         const pageNumber = doc.internal.getNumberOfPages();
         const pageText = `Page ${pageNumber} / ${totalPagesExp}`;
         doc.setFontSize(10);
@@ -464,7 +471,6 @@ const Facture = () => {
     }
 
     const fileName = `factures_${selectedMonthText.trim()}${selectedYear ? `_${selectedYear}` : ''}.pdf`;
-
     doc.save(fileName);
   };
 
@@ -482,58 +488,39 @@ const Facture = () => {
         <div className="flex w-full md:w-auto justify-between">
           <h1 className="text-sm" style={{ fontFamily: "Righteous" }}>Tous les factures</h1>
         </div>
-
-        <div className="flex items-center space-x-4 w-full md:w-auto">
-          <div className='flex flex-col items-start'>
-            <h3>Choisir un mois :</h3>
-            <Select
-              options={monthOptions}
-              isMulti
-              name="months"
-              className="basic-multi-select text-xs"
-              classNamePrefix="select"
-              onChange={handleMonthChange}
-            />
-          </div>
-          <div className='flex flex-col items-start'>
-            <h3>Choisir une année :</h3>
-            <Select
-              options={yearOptions}
-              className="text-xs"
-              onChange={handleYearChange}
-              isClearable
-            />
-          </div>
-        </div>
       </div>
 
-      <div className="flex flex-wrap justify-between items-center p-2">
-        <div className="">
-          <button
-            onClick={handlePrev}
-            disabled={page === 1}
-            className={`px-4 py-1 border rounded ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-          >
-            Prev
-          </button>
-          <button
-            onClick={handleNext}
-            disabled={page >= Math.ceil(factures.length / itemsPerPage)}
-            className={`px-4 py-1 border rounded ${page >= Math.ceil(factures.length / itemsPerPage) ? "text-gray-400 cursor-not-allowed" : "text-blue-600"}`}
-          >
-            Next
-          </button>
+      <div className="flex items-center space-x-4 w-full pb-4">
+        <div className="text-sm font-semibold">
+          Nombre de facture entrant : {filteredFactures.length}
         </div>
 
-        <div className="flex justify-end p-4">
-          <button
-            onClick={generatePDF}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Télécharger
-          </button>
-        </div>
+        <button
+          onClick={handlePrevMonth}
+          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+        >
+          Précédent
+        </button>
+
+        <span className="text-sm font-semibold">
+          {format(currentDate, "MMMM yyyy", { locale: fr })}
+        </span>
+
+        <button
+          onClick={handleNextMonth}
+          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+        >
+          Suivant
+        </button>
+
+        <button
+          onClick={generatePDF}
+          className="px-4 text-right py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Télécharger
+        </button>
       </div>
+
 
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
@@ -550,17 +537,15 @@ const Facture = () => {
             </tr>
           </thead>
           <tbody>
-            {currentFactures.map((facture, index) => (
+            {filteredFactures.map((facture, index) => (
               <tr
                 key={facture.id}
-                className={`${index % 2 === 0 ? "bg-gray-50 shadow-sm" : "bg-white"} 
-        ${showActionsIdProsp !== facture.id ? "hover:shadow-lg hover:scale-x-100" : ""} 
-        transition-all px-4 py-2 rounded`}
+                className={`${index % 2 === 0 ? "bg-gray-50 shadow-sm" : "bg-white"}  ${showActionsIdProsp !== facture.id ? "hover:shadow-lg hover:scale-x-100" : ""} transition-all px-4 py-2 rounded`}
               >
                 <td className="border-y p-2 text-center">{facture.id}</td>
                 <td className="border-y p-2 text-center">Tsara Restaurant</td>
                 <td className="border-y p-2 text-center">Frais repas</td>
-                <td className="border-y p-2 text-center">06/12/2024</td>
+                <td className="border-y p-2 text-center">{format(new Date(facture.date_facturation), "dd/MM/yyyy")}</td>
                 <td className="border-y p-2 text-right">
                   <span className="flex justify-end gap-2">
                     <span>{facture.prix_tva}</span>
