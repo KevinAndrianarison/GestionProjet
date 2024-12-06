@@ -537,7 +537,7 @@ const Facture = () => {
 
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
-          <thead className='bg-slate-100 shadow-sm relative z-10'>
+          <thead className='bg-slate-100'>
             <tr>
               <th className="text-center p-2 font-bold">N°</th>
               <th className="text-center p-2 font-bold">Fournisseur</th>
@@ -551,7 +551,12 @@ const Facture = () => {
           </thead>
           <tbody>
             {currentFactures.map((facture, index) => (
-              <tr key={facture.id} className={index % 2 === 0 ? "bg-gray-50 shadow-sm relative z-auto" : "bg-white"}>
+              <tr
+                key={facture.id}
+                className={`${index % 2 === 0 ? "bg-gray-50 shadow-sm" : "bg-white"} 
+        ${showActionsIdProsp !== facture.id ? "hover:shadow-lg hover:scale-x-100" : ""} 
+        transition-all px-4 py-2 rounded`}
+              >
                 <td className="border-y p-2 text-center">{facture.id}</td>
                 <td className="border-y p-2 text-center">Tsara Restaurant</td>
                 <td className="border-y p-2 text-center">Frais repas</td>
@@ -600,28 +605,29 @@ const Facture = () => {
                     "Aucune pièce jointe"
                   )}
                 </td>
-                <td className="border-y p-2  w-[25px] relative overflow-visible">
+                <td className="border-y p-2 w-[25px] relative overflow-visible">
                   <button
                     onClick={() => {
-                      toggleActions(facture.id)
+                      toggleActions(facture.id);
                     }}
                     className="rounded hover:text-red-500"
                   >
                     <FontAwesomeIcon icon={faEllipsisV} />
                   </button>
                   {showActionsIdProsp === facture.id && (
-                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 z-50">
+                    <div className="absolute right-0 mt-2 bg-white shadow-lg rounded p-2 pr-6 z-50">
                       <button
-                        onClick={() => { handleEditClick(facture.id) }}
+                        onClick={() => {
+                          handleEditClick(facture.id);
+                        }}
                         className="text-blue-500 hover:text-blue-700 flex items-center mb-2"
                       >
                         <FontAwesomeIcon icon={faEdit} className="mr-2" />
                         Modifier
                       </button>
-
                       <button
                         onClick={() => {
-                          handleDelete(facture.id)
+                          handleDelete(facture.id);
                         }}
                         className="text-red-500 hover:text-red-700 flex items-center"
                       >
@@ -631,10 +637,10 @@ const Facture = () => {
                     </div>
                   )}
                 </td>
-
               </tr>
             ))}
           </tbody>
+
         </table>
         {factures.length === 0 && (
           <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
@@ -682,9 +688,7 @@ const Facture = () => {
                           value={gest_fac_founisseur_id}
                           onChange={handleSelectChange}
                           className="w-full p-2 rounded text-sm">
-                          <option value="" disabled>
-                            -- Sélectionnez un fournisseur --
-                          </option>
+                          <option value="" disabled>Sélectionnez un fournisseur</option>
                           {fournisseurs.map((fournisseur) => (
                             <option key={fournisseur.id} value={fournisseur.id}>
                               {fournisseur.nom}
@@ -709,14 +713,15 @@ const Facture = () => {
                         <label className="block text-sm font-medium text-gray-700 my-2">Catégorie</label>
                         <input
                           type="text"
+                          placeholder='Catégorie'
                           className="w-full p-2 rounded text-sm">
                         </input>
                       </div>
 
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                  
+
                         <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
-                   
+
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
@@ -732,7 +737,7 @@ const Facture = () => {
                           <select
                             value={devise}
                             onChange={(e) => setDevise(e.target.value)}
-                            className="p-2 text-sm"
+                            className="py-1 text-sm"
                           >
                             <option value="USD">$ USD</option>
                             <option value="EUR">€ EUR</option>
@@ -783,19 +788,6 @@ const Facture = () => {
                           className="w-full p-2 rounded text-sm"
                         />
                       </div>
-
-                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Validation</label>
-                        <select
-                          value={validation}
-                          onChange={(e) => setValidation(e.target.value)}
-                          className="w-full p-2 rounded text-sm"
-                        >
-                          <option value="false">Non</option>
-                          <option value="true">Oui</option>
-                        </select>
-                      </div>
-
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Justificatif</label>
                         <input
