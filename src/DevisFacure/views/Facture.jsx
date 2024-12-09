@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Modal from './Modal';
@@ -39,6 +39,7 @@ const Facture = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
   const handlePrevMonth = () => {
     const newDate = subMonths(currentDate, 1);
@@ -88,6 +89,7 @@ const Facture = () => {
     resetFactureFields();
     setFactureToEdit({});
     setModalOpen(false);
+    setSelectedFournisseur('');
   };
 
   useEffect(() => {
@@ -110,7 +112,6 @@ const Facture = () => {
     };
     fetchFactures();
   }, [refresh]);
-
 
   useEffect(() => {
     const fetchDataFournisseur = async () => {
@@ -453,14 +454,14 @@ const Facture = () => {
 
       <div className="flex items-center justify-between w-full pb-4">
         <div className="text-sm font-semibold">
-        <FontAwesomeIcon icon={faFileInvoiceDollar} style={{color: "#1877F2",}}  size="lg"  /> Nombre de facture : {filteredFactures.length}
+          <FontAwesomeIcon icon={faFileInvoiceDollar} style={{ color: "#1877F2", }} size="lg" /> Nombre de facture : {filteredFactures.length}
         </div>
 
         <div className="flex items-center space-x-4">
           <button
             onClick={handlePrevMonth}
           >
-            <FontAwesomeIcon icon={faCircleChevronLeft} style={{color: "#1877F2",}}  size="lg" />
+            <FontAwesomeIcon icon={faCircleChevronLeft} style={{ color: "#1877F2", }} size="lg" />
           </button>
           <span className="text-sm font-semibold">
             {format(currentDate, "MMMM yyyy", { locale: fr })}
@@ -468,7 +469,7 @@ const Facture = () => {
           <button
             onClick={handleNextMonth}
           >
-            <FontAwesomeIcon icon={faCircleChevronRight} style={{color: "#1877F2", }}  size="lg" />
+            <FontAwesomeIcon icon={faCircleChevronRight} style={{ color: "#1877F2", }} size="lg" />
           </button>
         </div>
 
@@ -504,18 +505,8 @@ const Facture = () => {
                 <td className="border-y p-2 text-center">Tsara Restaurant</td>
                 <td className="border-y p-2 text-center">Frais repas</td>
                 <td className="border-y p-2 text-center">{format(new Date(facture.date_facturation), "dd/MM/yyyy")}</td>
-                <td className="border-y p-2 text-right">
-                  <span className="flex justify-end gap-2">
-                    <span>{facture.prix_tva}</span>
-                    <span>$</span>
-                  </span>
-                </td>
-                <td className="border-y p-2 text-right">
-                  <span className="flex justify-end gap-2">
-                    <span>{facture.montant_httc}</span>
-                    <span>$</span>
-                  </span>
-                </td>
+                <td className="border-y p-2 text-right">{formatter.format(facture.prix_tva)}</td>
+                <td className="border-y p-2 text-right">{formatter.format(facture.montant_httc)}</td>
                 <td className="border-y p-2 text-center">
                   {facture.piece_jointe ? (
                     /\.(pdf)$/i.test(facture.piece_jointe) ? (
@@ -626,18 +617,29 @@ const Facture = () => {
                   <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
                     <div className="border rounded-t-xl">
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Fournisseur</label>
-                        <select
-                          value={gest_fac_founisseur_id}
-                          onChange={handleSelectChange}
-                          className="w-full p-2 rounded text-sm">
-                          <option value="" disabled>Sélectionnez un fournisseur</option>
-                          {fournisseurs.map((fournisseur) => (
-                            <option key={fournisseur.id} value={fournisseur.id}>
-                              {fournisseur.nom}
-                            </option>
-                          ))}
-                        </select>
+                        <label className="block text-sm font-medium text-gray-700 my-2">
+                          Fournisseur
+                        </label>
+                        <div className="relative">
+                          {gest_fac_founisseur_id === "" && (
+                            <FontAwesomeIcon
+                              icon={faPlus}
+                              className="absolute right-8 top-3 text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              style={{ fontSize: '16px' }}
+                              title="Ajouter un nouveau fournisseur"
+                            />)}
+                          <select
+                            value={gest_fac_founisseur_id}
+                            onChange={handleSelectChange}
+                            className="w-full pl-1 pr-2 py-2 rounded text-sm">
+                            <option>Sélectionnez un fournisseur</option>
+                            {fournisseurs.map((fournisseur) => (
+                              <option key={fournisseur.id} value={fournisseur.id}>
+                                {fournisseur.nom}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
@@ -682,13 +684,13 @@ const Facture = () => {
                             onChange={(e) => setDevise(e.target.value)}
                             className="py-1 text-sm"
                           >
-                            <option value="USD">$ USD</option>
                             <option value="EUR">€ EUR</option>
+                            <option value="USD">$ USD</option>
                             <option value="MGA">Ar MGA</option>
                           </select>
                         </div>
                       </div>
-
+                      
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
                         <input
