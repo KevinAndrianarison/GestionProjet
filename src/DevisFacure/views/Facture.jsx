@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faPlus, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faLeftLong, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Modal from './Modal';
@@ -9,8 +9,36 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { format, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import Select from 'react-select';
+import useGeonames from '../contextes/useGeonames';
+import { UrlContext } from "../../contexte/useUrl";
 
 const Facture = () => {
+  const { url } = useContext(UrlContext);
+  const [currentModal, setCurrentModal] = useState('fournisseur'); // 'fournisseur' ou 'facture'
+  const [isFactureView, setIsFactureView] = useState(false);
+
+  const [type_fournisseur, setTypeFournisseur] = useState("societe");
+  const [tel_societe, setTel_societe] = useState("");
+  const [email_societe, setEmail_societe] = useState("");
+  const [nom_societe, setNomSociete] = useState("");
+  const [site_web, setSiteWeb] = useState("");
+  const [numero_siren, setNumeroSiren] = useState("");
+  const [numero_siret, setNumeroSiret] = useState("");
+  const [affiliation_tva, setaffiliation_tva] = useState(false);
+  const [numero_tva, setnumero_tva] = useState("");
+
+  const [nom, setNom] = useState("");
+  const [email, setEmail] = useState("");
+  const [sexe, setSexe] = useState("");
+  const [telephone, setTelephone] = useState("");
+
+  const [adresse, setAdresse] = useState("");
+  const [ville, setVille] = useState(null);
+  const [pays, setPays] = useState(null);
+  const { countriesAndCities, loading, error } = useGeonames();
+  const [filteredCities, setFilteredCities] = useState([]);
+
   const [factures, setFactures] = useState([]);
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -33,13 +61,29 @@ const Facture = () => {
   const [pdfUrl, setPdfurl] = useState('');
   const [imgUrl, setImgUrl] = useState('');
   const [alt, setAlt] = useState('');
-
+  const [ajoutfournisseur, setAjoutFournisseur] = useState(false);
   const [fournisseurs, setFournisseurs] = useState([]);
   const [gest_fac_founisseur_id, setSelectedFournisseur] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+  const handleClick = (e) => {
+    setAjoutFournisseur(false);
+    console.log("Handle click triggered");
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleCountryChange = (selectedCountry) => {
+    setPays(selectedCountry);
+    setVille(null);
+    const country = countriesAndCities.find((c) => c.pays === selectedCountry.value);
+    setFilteredCities(country ? country.villes : []);
+  };
 
   const handlePrevMonth = () => {
     const newDate = subMonths(currentDate, 1);
@@ -441,7 +485,95 @@ const Facture = () => {
     doc.save(fileName);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    let errors = [];
 
+    if (type_fournisseur === "societe") {
+      if (!nom_societe) errors.push("Le nom de la société est requis.");
+      if (!email_societe || !validateEmail(email_societe))
+        errors.push("L'adresse email de la société est invalide.");
+      if (!adresse) errors.push("L'adresse est requise.");
+      if (!pays) errors.push("Le pays est requis.");
+      if (!ville) errors.push("La ville est requise.");
+      if (!nom) errors.push("Le nom du contact est requis.");
+      if (!email || !validateEmail(email))
+        errors.push("L'adresse email du contact est invalide.");
+      if (!telephone) errors.push("Le numéro de téléphone du contact est requis.");
+    } else {
+      if (!nom) errors.push("Le nom complet est requis.");
+      if (!email || !validateEmail(email))
+        errors.push("L'adresse email est invalide.");
+      if (!telephone) errors.push("Le numéro de téléphone est requis.");
+      if (!pays) errors.push("Le pays est requis.");
+      if (!ville) errors.push("La ville est requise.");
+      if (!adresse) errors.push("L'adresse est requise.");
+    }
+
+    if (errors.length > 0) {
+      Notiflix.Notify.failure(errors.join("\n"));
+      return;
+    }
+
+    const formData = {
+      nom_societe: type_fournisseur === "societe" ? nom_societe : "",
+      email_societe: type_fournisseur === "societe" ? email_societe : "",
+      affilation_tva: String(affiliation_tva),
+      numero_tva,
+      tel_societe,
+      numero_siren,
+      numero_siret,
+      nom,
+      email,
+      sexe,
+      telephone,
+      site_web,
+      adresse,
+      ville: ville?.value,
+      pays: pays?.value,
+      type: type_fournisseur,
+    };
+
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+
+    try {
+      const response = await axios.post(`${url}/api/fournisseurs`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      Notiflix.Notify.success("Fournisseur ajouté avec succès !");
+
+      setNomSociete("");
+      setNom("");
+      setEmail("");
+      setSexe("");
+      setTelephone("");
+      setSiteWeb("");
+      setAdresse("");
+      setVille("");
+      setPays("");
+      setNumeroSiren("");
+      setTypeFournisseur("societe");
+      setEmail_societe("");
+      setaffiliation_tva(false);
+      setnumero_tva("");
+      setTel_societe("");
+      setNumeroSiret("");
+
+      setRefresh(!refresh);
+      setAjoutFournisseur(false);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+      if (error.response?.data?.message) {
+        Notiflix.Notify.failure(error.response.data.message);
+      } else {
+        Notiflix.Notify.failure("Une erreur inattendue s'est produite. Veuillez réessayer.");
+      }
+    }
+  };
 
   return (
     <div>
@@ -480,7 +612,6 @@ const Facture = () => {
           Télécharger <FontAwesomeIcon icon={faDownload} />
         </button>
       </div>
-
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
           <thead className='bg-slate-100'>
@@ -608,9 +739,292 @@ const Facture = () => {
               />
             )}
           </div>
+        ) : (ajoutfournisseur) ? (
+          <>
+            <button
+              onClick={handleClick}
+              className=" text-blue-400 text-xl px-2  rounded-md shadow-sm  transition-all relative z-10"
+            >
+              <FontAwesomeIcon icon={faLeftLong} />
+            </button>
+
+            <h2 className="text-sm font-semibold mb-2">Nouveau fournisseur :</h2>
+            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 bg-white">
+              <div className="sm:col-span-1 p-1">
+                <div
+                  onClick={() => setTypeFournisseur("societe")}
+                  className={`cursor-pointer px-4 py-2 border rounded-lg ${type_fournisseur === "societe"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                    }`}
+                >
+                  Société
+                </div>
+              </div>
+              <div className="sm:col-span-1 p-1">
+                <div
+                  onClick={() => setTypeFournisseur("Auto-Entrepreneur")}
+                  className={`cursor-pointer px-4 py-2 border rounded-lg ${type_fournisseur === "Auto-Entrepreneur"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                    }`}
+                >
+                  Auto-Entrepreneur
+                </div>
+              </div>
+              <div className="sm:col-span-1 p-1">
+                <div
+                  onClick={() => setTypeFournisseur("particulier")}
+                  className={`cursor-pointer px-4 py-2 border rounded-lg ${type_fournisseur === "particulier"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-900"
+                    }`}
+                >
+                  Particulier
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="max-h-[55vh] overflow-y-auto px-4">
+                {type_fournisseur === "societe" && (
+                  <>
+                    <hr className="my-2"></hr>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Dénomination de la société
+                        </label>
+                        <input
+                          type="text"
+                          value={nom_societe}
+                          onChange={(e) => setNomSociete(e.target.value)}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Site Web
+                        </label>
+                        <input
+                          type="text"
+                          value={site_web}
+                          onChange={(e) => setSiteWeb(e.target.value)}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Email de la société
+                        </label>
+                        <input
+                          type="text"
+                          value={email_societe}
+                          onChange={(e) => setEmail_societe(e.target.value)}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Téléphone de la société
+                        </label>
+                        <input
+                          type="text"
+                          value={tel_societe}
+                          onChange={(e) => setTel_societe(e.target.value)}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Numéro Siren
+                        </label>
+                        <input
+                          type="text"
+                          value={numero_siren}
+                          onChange={(e) => setNumeroSiren(e.target.value)}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Numéro SIRET
+                        </label>
+                        <input
+                          type="text"
+                          value={numero_siret}
+                          onChange={(e) => setNumeroSiret(e.target.value)}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-sm font-medium leading-6 text-gray-900">
+                          Affiliation TVA
+                        </label>
+                        <select
+                          value={affiliation_tva}
+                          onChange={(e) => setaffiliation_tva(e.target.value === "true")}
+                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                        >
+                          <option value="true">Oui</option>
+                          <option value="false">Non</option>
+                        </select>
+                      </div>
+
+                      {affiliation_tva && (
+                        <div className="sm:col-span-1">
+                          <label className="block text-sm font-medium leading-6 text-gray-900">
+                            Numéro TVA
+                          </label>
+                          <input
+                            type="text"
+                            value={numero_tva}
+                            onChange={(e) => setnumero_tva(e.target.value)}
+                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          />
+                        </div>
+                      )}
+
+                    </div>
+                    <hr className="my-4"></hr>
+                  </>
+                )}
+
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      {type_fournisseur === "societe" ? "Nom complet du contact" : "Nom complet"}
+                    </label>
+                    <input
+                      type="text"
+                      value={nom}
+                      onChange={(e) => setNom(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      {type_fournisseur === "societe" ? "Email du contact" : "Adresse e-mail"}
+                    </label>
+                    <input
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      {type_fournisseur === "societe" ? "Téléphone du contact" : "Numéro de téléphone"}
+                    </label>
+                    <input
+                      type="text"
+                      value={telephone}
+                      onChange={(e) => setTelephone(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Genre
+                    </label>
+                    <select
+                      value={sexe}
+                      onChange={(e) => setSexe(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    >
+                      <option value=""></option>
+                      <option value="Masculin">Masculin</option>
+                      <option value="Féminin">Féminin</option>
+                      <option value="Non Precisé">Non Precisé</option>
+                    </select>
+                  </div>
+                </div>
+
+                <hr className="my-2"></hr>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
+
+                  <>
+                    {/* Select pour les pays */}
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium leading-6 text-gray-900">
+                        Pays
+                      </label>
+                      <Select value={pays}
+                        options={countriesAndCities.map((country) => ({
+                          value: country.pays,
+                          label: country.pays,
+                        }))}
+                        onChange={handleCountryChange}
+                        placeholder="Sélectionnez un pays"
+                        className="basic-select"
+                        menuPortalTarget={document.body}
+                        styles={{
+                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                        }}
+                      />
+                    </div>
+
+                    {/* Select pour les villes */}
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium leading-6 text-gray-900">
+                        Ville
+                      </label>
+                      <Select
+                        options={filteredCities.map((city) => ({
+                          value: city,
+                          label: city,
+                        }))}
+                        value={ville}
+                        onChange={(selectedOption) => setVille(selectedOption)}
+                        placeholder="Sélectionnez une ville"
+                        className="basic-select z-30"
+                        isDisabled={!filteredCities.length}
+                        menuPortalTarget={document.body}
+                        styles={{
+                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                        }}
+                      />
+                    </div>
+                  </>
+
+                  <div className="sm:col-span-1">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                      Adresse
+                    </label>
+                    <input
+                      type="text"
+                      value={adresse}
+                      onChange={(e) => setAdresse(e.target.value)}
+                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-[300px] max-w-[100%] py-2 mt-5">
+                <button
+                  type="submit"
+                  className="bg-blue-500 px-3 block w-full rounded-md border-0 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </>
         ) : (
           <>
-            <h2 className="text-xl mx-2 my-2 ">{factureToEdit?.id ? "Modifier la facture" : "Nouvelle facture"}</h2>
+            <h2 className="text-xl mx-2 my-2 ">Nouvelle facture</h2>
             <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
               <div className="">
                 <div className="">
@@ -624,24 +1038,32 @@ const Facture = () => {
                           {gest_fac_founisseur_id === "" && (
                             <FontAwesomeIcon
                               icon={faPlus}
-                              className="absolute right-8 top-3 text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="absolute right-8 top-2 text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                               style={{ fontSize: '16px' }}
                               title="Ajouter un nouveau fournisseur"
-                            />)}
+                              onClick={() => {
+                                handleOpenModal();
+                                setAjoutFournisseur(true);
+                              }}
+                            />
+                          )}
                           <select
                             value={gest_fac_founisseur_id}
                             onChange={handleSelectChange}
-                            className="w-full pl-1 pr-2 py-2 rounded text-sm">
+                            className="w-full pl-1 pr-2 py-2 rounded text-sm"
+                          >
                             <option>Sélectionnez un fournisseur</option>
-                            {fournisseurs.map((fournisseur) => (
-                              <option key={fournisseur.id} value={fournisseur.id}>
-                                {fournisseur.nom}
-                              </option>
-                            ))}
+                            {fournisseurs
+                              .slice()
+                              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                              .map((fournisseur) => (
+                                <option key={fournisseur.id} value={fournisseur.id}>
+                                  {fournisseur.nom}
+                                </option>
+                              ))}
                           </select>
                         </div>
                       </div>
-
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
                         <select
@@ -690,7 +1112,7 @@ const Facture = () => {
                           </select>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Pourcentage TVA</label>
                         <input
