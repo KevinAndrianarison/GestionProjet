@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faEllipsisV, faImage, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Modal from './Modal';
@@ -387,27 +387,27 @@ const Facture = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-  
+
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-  
+
     doc.setFontSize(18);
     doc.text(`Factures ${selectedMonthText} ${selectedYearText}`, 15, 20);
-  
+
     const tableData = filteredFactures.map(facture => ({
       montant_ht: facture.montant_ht,
       prix_tva: facture.prix_tva,
       montant_httc: facture.montant_httc,
     }));
-  
+
     const columns = [
       { title: "Montant HT", dataKey: "montant_ht" },
       { title: "TVA", dataKey: "prix_tva" },
       { title: "Montant TTC", dataKey: "montant_httc" },
     ];
-  
+
     const totalPagesExp = "{total_pages_count_string}";
-  
+
     doc.autoTable({
       head: [columns.map(col => col.title)],
       body: tableData.map(row => Object.values(row)),
@@ -431,15 +431,15 @@ const Facture = () => {
         doc.text(pageText, textX, textY);
       },
     });
-  
+
     if (typeof doc.putTotalPages === "function") {
       doc.putTotalPages(totalPagesExp);
     }
-  
+
     const fileName = `factures_${selectedMonthText}_${selectedYearText}.pdf`;
     doc.save(fileName);
   };
-  
+
 
 
   return (
@@ -451,43 +451,34 @@ const Facture = () => {
         </button>
       </div>
 
-      <div className="flex flex-wrap justify-between items-center p-1">
-        <div className="flex w-full md:w-auto justify-between">
-          <h1 className="text-sm" style={{ fontFamily: "Righteous" }}>Tous les factures</h1>
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-4 w-full pb-4">
+      <div className="flex items-center justify-between w-full pb-4">
         <div className="text-sm font-semibold">
-          Nombre de facture : {filteredFactures.length}
+        <FontAwesomeIcon icon={faFileInvoiceDollar} style={{color: "#1877F2",}}  size="lg"  /> Nombre de facture : {filteredFactures.length}
         </div>
 
-        <button
-          onClick={handlePrevMonth}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
-        >
-          Précédent
-        </button>
-
-        <span className="text-sm font-semibold">
-          {format(currentDate, "MMMM yyyy", { locale: fr })}
-        </span>
-
-        <button
-          onClick={handleNextMonth}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
-        >
-          Suivant
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={handlePrevMonth}
+          >
+            <FontAwesomeIcon icon={faCircleChevronLeft} style={{color: "#1877F2",}}  size="lg" />
+          </button>
+          <span className="text-sm font-semibold">
+            {format(currentDate, "MMMM yyyy", { locale: fr })}
+          </span>
+          <button
+            onClick={handleNextMonth}
+          >
+            <FontAwesomeIcon icon={faCircleChevronRight} style={{color: "#1877F2", }}  size="lg" />
+          </button>
+        </div>
 
         <button
           onClick={generatePDF}
-          className="px-4 text-right py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          Télécharger
+          Télécharger <FontAwesomeIcon icon={faDownload} />
         </button>
       </div>
-
 
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
         <table className="min-w-full">
