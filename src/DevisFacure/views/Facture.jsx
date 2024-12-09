@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faEdit, faEllipsisV, faImage, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
-import Select from 'react-select';
-import { monthOptions, yearOptions } from './MoisAnneeSelect'
 import Modal from './Modal';
 import Notiflix from 'notiflix';
 import { jsPDF } from "jspdf";
@@ -14,8 +12,6 @@ import { fr } from 'date-fns/locale';
 
 const Facture = () => {
   const [factures, setFactures] = useState([]);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 20;
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -34,8 +30,6 @@ const Facture = () => {
   const [devise, setDevise] = useState('');
   const [factureToEdit, setFactureToEdit] = useState({});
 
-  const [selectedMonths, setSelectedMonths] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('');
   const [pdfUrl, setPdfurl] = useState('');
   const [imgUrl, setImgUrl] = useState('');
   const [alt, setAlt] = useState('');
@@ -44,21 +38,13 @@ const Facture = () => {
   const [gest_fac_founisseur_id, setSelectedFournisseur] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-
-  const handleMonthChange = (selected) => {
-    setSelectedMonths(selected);
-  };
-
-  const handleYearChange = (selected) => {
-    setSelectedYear(selected ? selected.value : '');
-  };
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
   const handlePrevMonth = () => {
     const newDate = subMonths(currentDate, 1);
     setSelectedMonth(newDate.getMonth() + 1);
     setSelectedYear(newDate.getFullYear());
     setCurrentDate(newDate);
-
   };
 
   const handleNextMonth = () => {
@@ -67,9 +53,7 @@ const Facture = () => {
     setSelectedMonth(newDate.getMonth() + 1);
     setSelectedYear(newDate.getFullYear());
     setCurrentDate(newDate);
-
   };
-
 
   const filteredFactures = factures.filter((facture) => {
     const factureDate = new Date(facture.date_facturation);
@@ -345,19 +329,6 @@ const Facture = () => {
     }
   };
 
-  const currentFactures = filteredFactures.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
-  const handleNext = () => {
-    if (page < Math.ceil(factures.length / itemsPerPage)) setPage(page + 1);
-  };
-
-  const handlePrev = () => {
-    if (page > 1) setPage(page - 1);
-  };
-
   const toggleActions = (id) => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
   };
@@ -413,35 +384,30 @@ const Facture = () => {
     return true;
   };
 
+
   const generatePDF = () => {
     const doc = new jsPDF();
-
-    const selectedMonthLabels = selectedMonths
-      .map(month => {
-        const monthOption = monthOptions.find(option => option.value === month.value);
-        return monthOption ? monthOption.label : '';
-      })
-      .join("_");
-
-    const selectedMonthText = selectedMonthLabels || 'tous_les_mois';
-
+  
+    const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
+    const selectedYearText = format(currentDate, "yyyy");
+  
     doc.setFontSize(18);
-    doc.text(`Factures ${selectedMonthText} ${selectedYear || ''}`, 15, 20);
-
+    doc.text(`Factures ${selectedMonthText} ${selectedYearText}`, 15, 20);
+  
     const tableData = filteredFactures.map(facture => ({
       montant_ht: facture.montant_ht,
       prix_tva: facture.prix_tva,
       montant_httc: facture.montant_httc,
     }));
-
+  
     const columns = [
       { title: "Montant HT", dataKey: "montant_ht" },
       { title: "TVA", dataKey: "prix_tva" },
       { title: "Montant TTC", dataKey: "montant_httc" },
     ];
-
+  
     const totalPagesExp = "{total_pages_count_string}";
-
+  
     doc.autoTable({
       head: [columns.map(col => col.title)],
       body: tableData.map(row => Object.values(row)),
@@ -451,28 +417,29 @@ const Facture = () => {
         textColor: [255, 255, 255],
         fontStyle: 'bold',
       },
-      didDrawPage: function () {
+      didDrawPage: function (data) {
         const pageSize = doc.internal.pageSize;
         const pageHeight = pageSize.height;
         const pageWidth = pageSize.width;
         const pageNumber = doc.internal.getNumberOfPages();
         const pageText = `Page ${pageNumber} / ${totalPagesExp}`;
         doc.setFontSize(10);
-        doc.setTextColor(169, 169, 169); // RGB pour le gris
+        doc.setTextColor(169, 169, 169); // Gris
         const textWidth = doc.getStringUnitWidth(pageText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
         const textX = (pageWidth - textWidth) / 1.6;
         const textY = pageHeight - 10;
         doc.text(pageText, textX, textY);
       },
     });
-
+  
     if (typeof doc.putTotalPages === "function") {
       doc.putTotalPages(totalPagesExp);
     }
-
-    const fileName = `factures_${selectedMonthText.trim()}${selectedYear ? `_${selectedYear}` : ''}.pdf`;
+  
+    const fileName = `factures_${selectedMonthText}_${selectedYearText}.pdf`;
     doc.save(fileName);
   };
+  
 
 
   return (
@@ -492,7 +459,7 @@ const Facture = () => {
 
       <div className="flex items-center space-x-4 w-full pb-4">
         <div className="text-sm font-semibold">
-          Nombre de facture entrant : {filteredFactures.length}
+          Nombre de facture : {filteredFactures.length}
         </div>
 
         <button
