@@ -28,6 +28,7 @@ export default function Hebdomadaire() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dateCompteRendu, setDateCompteRendu] = useState("");
   const [respID, setRespID] = useState("");
+  const [verifyIfChef, setVerifyIfChef] = useState(false);
   const [valeur, setValeur] = useState("");
   const [modalInfo, setModalInfo] = useState(null);
   const [isPUT, setIsPUT] = useState(false);
@@ -36,9 +37,15 @@ export default function Hebdomadaire() {
 
   const { setShowSpinner } = useContext(ShowContext);
   const { url } = useContext(UrlContext);
-  const { gettaskById, ListTaskById, InfosProj, gettaskByIdUser } =
-    useContext(TaskContext);
-  const { ListChefs } = useContext(ProjectContext);
+  const {
+    gettaskById,
+    ListTaskById,
+    InfosProj,
+    gettaskByIdUser,
+    idUserFeuille,
+    setidUserFeuille,
+  } = useContext(TaskContext);
+  const { ListChefs, categorie } = useContext(ProjectContext);
 
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
@@ -72,6 +79,16 @@ export default function Hebdomadaire() {
   useEffect(() => {
     const userString = localStorage.getItem("user");
     let user = JSON.parse(userString);
+    let idIfChef;
+    ListChefs.forEach((list) => {
+      if (list.role === "chef" || list.utilisateur.role === "admin") {
+        idIfChef = list.utilisateur.id;
+        if (user.id === idIfChef) {
+          setVerifyIfChef(true);
+        }
+      }
+    });
+    setidUserFeuille(user.id);
     setidUsers(user.id);
     gettaskById();
   }, []);
@@ -289,6 +306,7 @@ export default function Hebdomadaire() {
                 setidUsers(e.target.value);
 
                 if (e.target.value === "Ma feuille de temps") {
+                  setidUserFeuille(user.id);
                   setidUsers(user.id);
                   gettaskById();
                 } else {
@@ -300,16 +318,20 @@ export default function Hebdomadaire() {
               <option value="Ma feuille de temps" className="text-xs">
                 Ma feuille de temps
               </option>
-              {ListChefs.map((list) => (
-                <option
-                  key={list.id}
-                  value={list.utilisateur.id}
-                  className="mr-1"
-                >
-                  {list.utilisateur.nom}{" "}
-                  <b className="font-bold text-xs">({list.role})</b>
-                </option>
-              ))}
+              {(categorie === "Mes projets" || verifyIfChef) && (
+                <>
+                  {ListChefs.map((list) => (
+                    <option
+                      key={list.id}
+                      value={list.utilisateur.id}
+                      className="mr-1"
+                    >
+                      {list.utilisateur.nom}{" "}
+                      <b className="font-bold text-xs">({list.role})</b>
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
           </div>
           <h1 className="flex flex-wrap text-yellow-600">
@@ -337,7 +359,7 @@ export default function Hebdomadaire() {
           </h1>
           <h1 className="text-xs mt-1 flex">
             <b>Chefs de projet :</b>
-            <div className="flex">
+            <div className="flex ml-1">
               {ListChefs.map((list) => (
                 <div key={list.id} className="mr-1">
                   {list.role === "chef" && <p>{list.utilisateur.nom}, </p>}
@@ -405,7 +427,9 @@ export default function Hebdomadaire() {
                   const isDisabled =
                     dateObj.day === "sam." ||
                     dateObj.day === "dim." ||
-                    task.hoursByDate[dateObj.date]?.valider === 1;
+                    task.hoursByDate[dateObj.date]?.valider === 1
+                    //  ||
+                    // idUserFeuille !== user.id;
 
                   return (
                     <div
@@ -464,14 +488,15 @@ export default function Hebdomadaire() {
         </div>
       )}
 
-      {!toutesCellulesSontVides() && (
-        <button
-          onClick={validerFeuilleDeTemps}
-          className="px-5 text-xs bg-blue-500 text-white py-2 cursor-pointer"
-        >
-          Valider la feuille de temps
-        </button>
-      )}
+      {!toutesCellulesSontVides() &&
+        (categorie === "Mes projets" || verifyIfChef) && (
+          <button
+            onClick={validerFeuilleDeTemps}
+            className="px-5 text-xs bg-blue-500 text-white py-2 cursor-pointer"
+          >
+            Valider la feuille de temps
+          </button>
+        )}
 
       {modalInfo && (
         <div

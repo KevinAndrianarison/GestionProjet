@@ -49,6 +49,7 @@ export function TaskContextProvider({ children }) {
   const [dateFin, setDateFin] = useState("");
   const [dateFinModale, setDateFinModale] = useState("");
   const [idInput, setidInput] = useState("");
+  const [idUserFeuille, setidUserFeuille] = useState("");
   const [description, setDescription] = useState("");
   const [descriptionModale, setDescriptionModale] = useState("");
 
@@ -195,6 +196,7 @@ export function TaskContextProvider({ children }) {
   }
 
   function gettaskByIdUser(id) {
+    setidUserFeuille(id);
     setShowSpinner(true);
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
@@ -362,6 +364,8 @@ export function TaskContextProvider({ children }) {
         ListControleModale,
         ListTaskComs,
         InfosProj,
+        idUserFeuille,
+        setidUserFeuille,
         setInfosProj,
         gettaskByIdUser,
         setListControleModale,

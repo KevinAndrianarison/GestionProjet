@@ -95,10 +95,12 @@ export default function CreateProject() {
 
   function handleCheckboxChange(event) {
     setIsChecked(event.target.checked);
+    setIsCheckedMembres(false);
   }
 
   function handleCheckboxChangeMembres(event) {
     setIsCheckedMembres(event.target.checked);
+    setIsChecked(false);
   }
 
   useEffect(() => {
@@ -342,7 +344,6 @@ export default function CreateProject() {
           },
         })
         .then((response) => {
-
           setShowSpinner(false);
         })
         .catch((err) => {
@@ -715,7 +716,7 @@ export default function CreateProject() {
                       >
                         {ListClient.map((list) => (
                           <option key={list.id} value={list.id}>
-                            {list.nom_societe}
+                            {list.nom_societe || list.nom}
                           </option>
                         ))}
                       </select>
@@ -744,7 +745,7 @@ export default function CreateProject() {
                     {!stepOneDone && (
                       <button
                         onClick={createProjetFirstStep}
-                        disabled={!titreProjet}
+                        disabled={!titreProjet || !dateDebut || !dateFin}
                         className=" bg-blue-500 rounded text-white px-5 py-2"
                       >
                         Enregistrer
@@ -753,7 +754,7 @@ export default function CreateProject() {
                     {stepOneDone && (
                       <button
                         onClick={createProjetFirstStep}
-                        disabled={!titreProjet}
+                        disabled={!titreProjet || !dateDebut || !dateFin}
                         className=" bg-yellow-500 font-bold rounded text-black px-5 py-2"
                       >
                         Modifier
@@ -1151,13 +1152,13 @@ export default function CreateProject() {
             <div className="mt-2 flex justify-between flex-wrap">
               <button
                 onClick={createProjet}
-                disabled={!titreProjet}
+                disabled={!titreProjet || !dateDebut || !dateFin}
                 className="mt-2 font-bold rounded bg-yellow-500  py-2 px-5 py-1"
               >
                 Enregistrer le projet
               </button>
               <button
-                disabled={!titreProjet}
+                disabled={!titreProjet || !dateDebut || !dateFin}
                 onClick={createProjetAndCreateNew}
                 className="mt-2 font-bold rounded bg-yellow-500  py-2 px-5 py-1"
               >

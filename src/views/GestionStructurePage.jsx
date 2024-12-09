@@ -40,6 +40,7 @@ function GestionStructurePage() {
 
       const departementsArborescent = buildDepartementTree(response.data);
       setdepartementOption(response.data);
+      console.log(response.data);
       setDepartements(departementsArborescent);
       const rootDepartement = response.data.find((departement) => departement.gest_r_h_departement_id === null);
       if (rootDepartement) {
@@ -67,7 +68,6 @@ function GestionStructurePage() {
   
     departements.forEach((departement) => {
       if (departement.gest_r_h_departement_id === null) {
-
         tree.push(departement);
       } else {
         const parent = departementMap[departement.gest_r_h_departement_id];
@@ -131,7 +131,11 @@ function GestionStructurePage() {
     fetchDepartements();
   }, [refresh]);
 
-  const SupprimerDep = async(id) => {
+  const SupprimerDep = async(id, parent) => {
+    if(parent === '' || parent === null){
+      Notiflix.Notify.failure('Vous ne pouvez pas effacer le département principal');
+      return;
+    }
     const confirmDelete = () => {
       return new Promise((resolve) => {
         Notiflix.Confirm.show(
@@ -208,7 +212,7 @@ function GestionStructurePage() {
           lineBorderRadius={lineBorderRadius}
           label={
             <div
-              className="border-2 border-blue-500 w-[250px] max-w-full m-auto rounded-md h-[150px] p-2"
+              className="border-2 border-blue-500 w-[250px] max-w-full m-auto rounded-md p-2"
             >
               <h1 className="font-bold">
                 {departement.nom} 
@@ -218,10 +222,16 @@ function GestionStructurePage() {
                 <Tippy content="Modifier"><FontAwesomeIcon className="mx-1 text-blue-500 cursor-pointer w-3" onClick={() => handleEdit(departement.id, departement.nom, departement.gest_r_h_departement_id)} icon={faPen}/>
                   </Tippy>
                 <Tippy content="Effacer">
-                  <FontAwesomeIcon onClick={() => SupprimerDep(departement.id)} className="mx-1 text-red-500 cursor-pointer w-3" icon={faTrash}/>
+                  <FontAwesomeIcon onClick={() => SupprimerDep(departement.id, departement.gest_r_h_departement_id)} className="mx-1 text-red-500 cursor-pointer w-3" icon={faTrash}/>
                 </Tippy>
               </h1>
-              <button><FontAwesomeIcon icon={faPlus}/> </button>
+              <div className="h-[120px] overflow-auto">
+                {departement.utilisateurs.map((utilisateur)=>(
+                  <>
+                    <div key={utilisateur.id} className="text-left p-2 bg-slate-50">{utilisateur.nom}</div>
+                  </>
+                ))}
+              </div>
             </div>
           }
         >
@@ -230,7 +240,7 @@ function GestionStructurePage() {
       </TreeNode>
     );
   };
-  
+
     return (
       <>
         <Modal 

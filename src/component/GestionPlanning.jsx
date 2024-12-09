@@ -20,10 +20,12 @@ export default function GestionPlanning() {
     ListeMateriel,
     getOneProjet,
     ListJalon,
+    categorie,
   } = useContext(ProjectContext);
   const { url } = useContext(UrlContext);
   const { setShowcreateJalon } = useContext(ShowContext);
   const [displayedJalons, setDisplayedJalons] = useState([]);
+  const [verifyIfChef, setVerifyIfChef] = useState(false);
 
   function putAvencement(e, id) {
     const tokenString = localStorage.getItem("token");
@@ -91,18 +93,35 @@ export default function GestionPlanning() {
   }
 
   useEffect(() => {
+    const userString = localStorage.getItem("user");
+    let user = JSON.parse(userString);
+    let idIfChef;
+    ListChefs.forEach((list) => {
+      if (
+        list.role === "chef" ||
+        list.utilisateur.role === "admin"
+      ) {
+        idIfChef = list.utilisateur.id;
+        if (user.id === idIfChef) {
+          setVerifyIfChef(true);
+        }
+      }
+    });
     getOneProjet(idProject);
   }, []);
 
   return (
     <>
       <div className="btngestPlanning  mt-2 text-xs flex flex-wrap justify-end ">
-        <button
-          onClick={showCreateJalon}
-          className="bg-blue-500 text-white px-3 py-2 rounded mr-5 mt-2"
-        >
-          Ajouter un jalon
-        </button>
+        {(categorie === "Mes projets" || verifyIfChef) && (
+          <button
+            onClick={showCreateJalon}
+            className="bg-blue-500 text-white px-3 py-2 rounded mr-5 mt-2"
+          >
+            Ajouter un jalon
+          </button>
+        )}
+
         <button className="bg-blue-500 hidden text-white px-3 py-2 rounded mt-2  mr-5">
           Basculer vue ligne budgetaire
         </button>
@@ -472,6 +491,9 @@ export default function GestionPlanning() {
                           value={Number(item.avancement) || ""}
                           onChange={(e) => putAvencement(e, item.id)}
                           className="w-[200px] text-center border-r py-1 focus:outline-none"
+                          disabled={
+                            categorie !== "Mes projets" && !verifyIfChef
+                          }
                         />
                       </div>
                       {convertirDate(item.date_fin) >

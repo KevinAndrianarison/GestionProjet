@@ -51,8 +51,8 @@ export default function LogoutComponent() {
 
   return (
     <>
-      <div className="showModal">
-        <div className="formModal">
+      <div className="showModal" onClick={() => setShowLogout(false)}>
+        <div className="formModal" onClick={(e) => e.stopPropagation()}>
           <h6 className="modal">Voulez-vous vraiment quitter ?</h6>
           <div className="valider">
             <button onClick={logout} className="OUI mt-5">

@@ -33,13 +33,19 @@ export default function LoginComponent() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const departements = response.data;
-
       if (
         departements.length === 0 &&
         !departements.some((d) => d.nom === "Direction")
       ) {
         await addDepartement(token, "Direction", null);
         await fetchDepartements(token);
+      }else{
+        const rootDepartement = response.data.find((departement) => departement.gest_r_h_departement_id === null);
+        if (rootDepartement) {
+          localStorage.setItem("idDepRacine", JSON.stringify(rootDepartement.id));
+        } else {
+          console.warn("Aucun département racine trouvé.");
+        }
       }
     } catch (err) {
       console.error("Erreur lors de la récupération des départements :", err);

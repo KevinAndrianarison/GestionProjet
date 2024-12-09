@@ -354,24 +354,27 @@ export default function SetTask() {
                 </label>
                 {item.type === "file" ? (
                   <a
-                    href={`${url}/storage/${item.applic_champs[0].valeur}`}
+                    href={`${url}/storage/${item.applic_champs[0]?.valeur}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline mt-1"
                   >
                     {
-                      item.applic_champs[0].valeur.split("/")[
-                        item.applic_champs[0].valeur.split("/").length - 1
+                      item.applic_champs[0]?.valeur.split("/")[
+                        item.applic_champs[0]?.valeur.split("/").length - 1
                       ]
                     }
                   </a>
                 ) : (
                   <input
                     type={item.type}
-                    value={item.applic_champs[0].valeur || ""}
+                    value={
+                      (item.applic_champs && item.applic_champs[0]?.valeur) ||
+                      ""
+                    }
                     onChange={(e) => {
                       e.stopPropagation();
-                      handleChangePUT(e, item.applic_champs[0].id);
+                      handleChangePUT(e, item.applic_champs[0]?.id);
                     }}
                     className="input w-full pl-2 pr-2 block mt-1 mr-2  rounded-sm border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
                   />

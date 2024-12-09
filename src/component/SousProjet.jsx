@@ -13,11 +13,12 @@ export default function SousProjet() {
   const { setShowSpinner, setShowDeleteEtape } = useContext(ShowContext);
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { idProjet } = useContext(ProjectContext);
+  const { idProjet, ListChefs, categorie } = useContext(ProjectContext);
   const { listEtape, getAlletapeByProjets, setIdEtape, idEtape } =
     useContext(EtapeContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [verifyIfChef, setVerifyIfChef] = useState(false);
   const [nom, setNom] = useState("");
   const [description, setDescription] = useState("");
   const [dateFin, setDateFin] = useState("");
@@ -98,7 +99,18 @@ export default function SousProjet() {
   };
 
   useEffect(() => {
+    const userString = localStorage.getItem("user");
+    let user = JSON.parse(userString);
+    let idIfChef;
     getAlletapeByProjets();
+    ListChefs.forEach((list) => {
+      if (list.role === "chef" || list.utilisateur.role === "admin") {
+        idIfChef = list.utilisateur.id;
+        if (user.id === idIfChef) {
+          setVerifyIfChef(true);
+        }
+      }
+    });
   }, []);
 
   function showDeleteEtape(id) {
@@ -144,62 +156,69 @@ export default function SousProjet() {
   return (
     <>
       <div className="text-xs p-2">
-        <h1 className="font-bold">Créer une grande étape :</h1>
-        <div className="flex mt-2 items-end flex-wrap">
-          <div>
-            <label>Nom de la grande étape</label>
-            <input
-              type="text"
-              value={nom}
-              onChange={(e) => setNom(e.target.value)}
-              placeholder="Nom de la grande étape"
-              className="mt-1 mr-2 pl-3 pr-3 block w-60 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-            />
+        {(categorie === "Mes projets" || verifyIfChef) && (
+          <h1 className="font-bold">Créer une grande étape :</h1>
+        )}
+        {(categorie === "Mes projets" || verifyIfChef) && (
+          <div className="flex mt-2 items-end flex-wrap">
+            <div>
+              <label>Nom de la grande étape</label>
+              <input
+                type="text"
+                value={nom}
+                onChange={(e) => setNom(e.target.value)}
+                placeholder="Nom de la grande étape"
+                className="mt-1 mr-2 pl-3 pr-3 block w-60 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              />
+            </div>
+            <div className="mt-2">
+              <label>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="mt-1 mr-2 pl-3 pr-3 block w-60 min-h-8 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              ></textarea>
+            </div>
+            <div className="mt-2 ">
+              <label>Date de debut</label>
+              <input
+                type="date"
+                value={dateDebut}
+                onChange={(e) => setDateDebut(e.target.value)}
+                className="mt-1 mr-2 pl-3 pr-3 block w-60 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              />
+            </div>
+            <div className="mt-2 ">
+              <label>Date limite</label>
+              <input
+                type="date"
+                value={dateFin}
+                onChange={(e) => setDateFin(e.target.value)}
+                className="mt-1 mr-2 pl-3 pr-3 block w-60 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
+              />
+            </div>
+            <button
+              disabled={!nom || !dateDebut || !dateFin}
+              onClick={createGradeEtapes}
+              className="border mt-2 px-5 bg-blue-500 text-white h-8 rounded"
+            >
+              Enregistrer
+            </button>
           </div>
-          <div className="mt-2">
-            <label>Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 mr-2 pl-3 pr-3 block w-60 min-h-8 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-            ></textarea>
-          </div>
-          <div className="mt-2 ">
-            <label>Date de debut</label>
-            <input
-              type="date"
-              value={dateDebut}
-              onChange={(e) => setDateDebut(e.target.value)}
-              className="mt-1 mr-2 pl-3 pr-3 block w-60 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-            />
-          </div>
-          <div className="mt-2 ">
-            <label>Date limite</label>
-            <input
-              type="date"
-              value={dateFin}
-              onChange={(e) => setDateFin(e.target.value)}
-              className="mt-1 mr-2 pl-3 pr-3 block w-60 h-8 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-[rgba(45, 52, 54,1.0)] focus:ring-2 focus:ring-inset focus:ring-[rgba(0, 184, 148,1.0)] focus:outline-none"
-            />
-          </div>
-          <button
-            disabled={!nom || !dateDebut}
-            onClick={createGradeEtapes}
-            className="border mt-2 px-5 bg-blue-500 text-white h-8 rounded"
-          >
-            Enregistrer
-          </button>
-        </div>
+        )}
+
         <div className="mt-5">
           <div className="border flex justify-between px-3 py-2 font-bold">
             <h1 className="w-[20%] px-1">Nom</h1>
             <h1 className="w-[45%] px-1">Description</h1>
             <h1 className="w-[10%] hidden sm:block">Date debut</h1>
             <h1 className="w-[10%] hidden sm:block">Date limite</h1>
-            <div className="flex justify-evenly w-[10%]">
-              <h1 className="w-5 mr-1"></h1>
-              <h1 className="w-5"></h1>
-            </div>
+            {(categorie === "Mes projets" || verifyIfChef) && (
+              <div className="flex justify-evenly w-[10%]">
+                <h1 className="w-5 mr-1"></h1>
+                <h1 className="w-5"></h1>
+              </div>
+            )}
           </div>
           {listEtape.map((list, index) => (
             <div key={list.id} className="max-h-[60vh] overflow-y-auto">
@@ -208,24 +227,26 @@ export default function SousProjet() {
                 <h1 className="w-[45%] truncate px-1">{list.description}</h1>
                 <h1 className="w-[10%] hidden sm:block">{list.date_debut}</h1>
                 <h1 className="w-[10%] hidden sm:block">{list.date_fin}</h1>
-                <div className="flex justify-evenly w-[10%] cursor-pointer">
-                  <Tippy content="Modifier">
-                    <FontAwesomeIcon
-                      icon={faSliders}
-                      className="w-5 text-gray-500 mr-1 focus:outline-none"
-                      onClick={() => toggleModal(list.id)}
-                    />
-                  </Tippy>
-                  <Tippy content="Supprimer">
-                    <FontAwesomeIcon
-                      onClick={() => {
-                        showDeleteEtape(list.id);
-                      }}
-                      icon={faTrash}
-                      className="w-5 text-red-500 focus:outline-none"
-                    />
-                  </Tippy>
-                </div>
+                {(categorie === "Mes projets" || verifyIfChef) && (
+                  <div className="flex justify-evenly w-[10%] cursor-pointer">
+                    <Tippy content="Modifier">
+                      <FontAwesomeIcon
+                        icon={faSliders}
+                        className="w-5 text-gray-500 mr-1 focus:outline-none"
+                        onClick={() => toggleModal(list.id)}
+                      />
+                    </Tippy>
+                    <Tippy content="Supprimer">
+                      <FontAwesomeIcon
+                        onClick={() => {
+                          showDeleteEtape(list.id);
+                        }}
+                        icon={faTrash}
+                        className="w-5 text-red-500 focus:outline-none"
+                      />
+                    </Tippy>
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -11,30 +11,17 @@
   z-index: 10;
 }
 
-.modalContent {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  width: 95%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  padding-bottom: 20px;
-  max-height: 95vh;
-  min-height: 90vh;
-  overflow-y: scroll;
-}
 .comsContent {
   width: 55%;
   margin: 0 auto;
   border: 1px solid rgba(128, 128, 128, 0.307);
   padding: 10px;
   border-radius: 5px;
-  display: none;
 }
 .form {
   margin-top: 20px;
   width: 55%;
   margin: 0 auto;
-  display: none;
 }
 
 .profil {
@@ -159,6 +146,17 @@
   cursor: pointer;
   display: flex;
   gap: 10px;
+}
+.modalContent {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 95%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding-bottom: 20px;
+  max-height: 95vh;
+  min-height: 90vh;
+  overflow-y: scroll;
 }
 
 @media screen and (max-width: 1024px) {

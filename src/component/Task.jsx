@@ -668,14 +668,14 @@ export default function Task() {
             </div>
             <div className="mt-5 w-full flex flex-wrap justify-between">
               <button
-                disabled={!titreTask || !userIds[0]}
+                disabled={!titreTask || !userIds[0] || !dateDebut || !dateFin}
                 onClick={createTask}
                 className="input px-3 py-2 border bg-gray-400 rounded text-blue-800 font-bold cursor-pointer"
               >
                 Enregistrer la tâche
               </button>
               <button
-                disabled={!titreTask || !userIds[0]}
+                disabled={!titreTask || !userIds[0] || !dateDebut || !dateFin}
                 onClick={createTaskAndNew}
                 className="input px-3 py-2 border  bg-gray-400 rounded text-blue-800 font-bold cursor-pointer"
               >

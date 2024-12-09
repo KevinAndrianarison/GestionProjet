@@ -31,7 +31,7 @@ export default function TableauKanban() {
   const { url } = useContext(UrlContext);
   const { setShowSpinner, setShowDeleteStatus, setShowDeleteStatusTask } =
     useContext(ShowContext);
-  const { idProjet } = useContext(ProjectContext);
+  const { idProjet, categorie, ListChefs } = useContext(ProjectContext);
 
   const [columnInput, setColumnInput] = useState("");
   const [showColumnForm, setShowColumnForm] = useState(false);
@@ -40,8 +40,20 @@ export default function TableauKanban() {
   const [activeColumnDropdown, setActiveColumnDropdown] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalUsers, setModalUsers] = useState([]);
+  const [verifyIfChef, setVerifyIfChef] = useState(false);
 
   useEffect(() => {
+    const userString = localStorage.getItem("user");
+    let user = JSON.parse(userString);
+    let idIfChef;
+    ListChefs.forEach((list) => {
+      if (list.role === "chef" || list.utilisateur.role === "admin") {
+        idIfChef = list.utilisateur.id;
+        if (user.id === idIfChef) {
+          setVerifyIfChef(true);
+        }
+      }
+    });
     getAllStatusTaskKanban();
     getAllTask();
   }, []);
@@ -160,30 +172,32 @@ export default function TableauKanban() {
           >
             <h2 className="px-3 py-1 min-w-[200px] flex items-center justify-between">
               {status.valeur}
-              <div className="relative">
-                <FontAwesomeIcon
-                  icon={faEllipsisVertical}
-                  className="cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleColumnDropdown(status.id);
-                  }}
-                />
-                {activeColumnDropdown === status.id && (
-                  <ul className="flex justify-end text-black font-light dropdown-menu absolute z-50 right-0 w-60 ">
-                    <li
-                      className="text-xs border dropdown-item flex items-center px-3 bg-white py-2 cursor-pointer"
-                      onClick={() => handleDeleteColumn(status.id)}
-                    >
-                      <FontAwesomeIcon
-                        icon={faTrash}
-                        className="red-icon mr-2"
-                      />
-                      Supprimer la colonne
-                    </li>
-                  </ul>
-                )}
-              </div>
+              {(categorie === "Mes projets" || verifyIfChef) && (
+                <div className="relative">
+                  <FontAwesomeIcon
+                    icon={faEllipsisVertical}
+                    className="cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleColumnDropdown(status.id);
+                    }}
+                  />
+                  {activeColumnDropdown === status.id && (
+                    <ul className="flex justify-end text-black font-light dropdown-menu absolute z-50 right-0 w-60 ">
+                      <li
+                        className="text-xs border dropdown-item flex items-center px-3 bg-white py-2 cursor-pointer"
+                        onClick={() => handleDeleteColumn(status.id)}
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          className="red-icon mr-2"
+                        />
+                        Supprimer la colonne
+                      </li>
+                    </ul>
+                  )}
+                </div>
+              )}
             </h2>
             <div className=" overflow-y-auto">
               {ListTask.map(
@@ -315,9 +329,17 @@ export default function TableauKanban() {
             </div>
           </div>
         ) : (
-          <button onClick={handleShowColumnForm} className="mt-2 text-gray-500">
-            <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter un statut
-          </button>
+          <>
+            {(categorie === "Mes projets" || verifyIfChef) && (
+              <button
+                onClick={handleShowColumnForm}
+                className="mt-2 text-gray-500"
+              >
+                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Ajouter un
+                statut
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -15,7 +15,7 @@ const Modal = ({ isOpen, onClose, children }) => {
     <>
       <div onClick={onClose} className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 blur-xl z-10"></div> 
       <div className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-white rounded-md w-[600px] max-w-[90%] z-30">
-        <div className='text-right w-full absolute top-[15px] right-[0]'><FontAwesomeIcon icon={faXmark} className=" cursor-pointer w-16 h-5 text-red-600" onClick={onClose}/></div>
+        <div className='text-right w-full absolute top-[7px] right-[-2px]'><FontAwesomeIcon icon={faXmark} className=" cursor-pointer w-16 h-5 text-red-600" onClick={onClose}/></div>
         <div className='p-4 overflow-auto'>{children}</div>
       </div>
     </>

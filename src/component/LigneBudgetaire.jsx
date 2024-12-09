@@ -17,10 +17,24 @@ export default function LigneBudgetaire() {
     LisGrandEtap,
     setLisGrandEtap,
     ListeMateriel,
+    categorie,
   } = useContext(ProjectContext);
   const { url } = useContext(UrlContext);
 
+  const [verifyIfChef, setVerifyIfChef] = useState(false);
+
   useEffect(() => {
+    const userString = localStorage.getItem("user");
+    let user = JSON.parse(userString);
+    let idIfChef;
+    ListChefs.forEach((list) => {
+      if (list.role === "chef" || list.utilisateur.role === "admin") {
+        idIfChef = list.utilisateur.id;
+        if (user.id === idIfChef) {
+          setVerifyIfChef(true);
+        }
+      }
+    });
     getOneProjet(idProject);
   }, []);
 
@@ -352,6 +366,7 @@ export default function LigneBudgetaire() {
                       type="number"
                       value={Number(tache.avancement) || ""}
                       onChange={(e) => putAvencement(e, tache.id)}
+                      disabled={categorie !== "Mes projets" && !verifyIfChef}
                       className="w-[200px] text-center border-r py-1 focus:outline-none"
                     />
 

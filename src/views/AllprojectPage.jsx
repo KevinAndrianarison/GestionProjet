@@ -70,6 +70,10 @@ export default function AllprojectPage() {
     ListeCtg,
     getAllRess,
     ListeRess,
+    setListeProjectWhenChef,
+    setListeProjectWhenMembres,
+    setListeProjectWhenResp,
+    setListeProject,
   } = useContext(ProjectContext);
   const { getAllTaskFirst } = useContext(TaskContext);
   const { getAllComs } = useContext(ComsContext);
@@ -84,9 +88,13 @@ export default function AllprojectPage() {
   const userString = localStorage.getItem("user");
   let user = JSON.parse(userString);
 
-  const toggleModal = () => setIsModalOpen((prev) => !prev);
+  const toggleModal = () => {
+    setShowcreateTask(false);
+    setIsModalOpen((prev) => !prev);
+  };
 
   function createProject() {
+    setIsModalOpen(false);
     setShowcreateTask(true);
   }
 
@@ -160,6 +168,7 @@ export default function AllprojectPage() {
       })
       .then((response) => {
         getAllCtg();
+        getAllRess();
         setMessageSucces(response.data.message);
         setShowSpinner(false);
         setTimeout(() => {
@@ -430,7 +439,11 @@ export default function AllprojectPage() {
                         />{" "}
                       </div>
                     ))}
-                    {ListeRess.length === 0 && <p className="text-gray-500 text-center mt-2">Aucune ressource trouvé</p>}
+                    {ListeRess.length === 0 && (
+                      <p className="text-gray-500 text-center mt-2">
+                        Aucune ressource trouvé
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

@@ -34,7 +34,7 @@ export function UserContextProvider({ children }) {
         },
       })
       .then((response) => {
-        if (response.data.utilisateurs.length !== 0) {
+        if (response.data.utilisateurs.length !== 0) {          
           setListeUser(response.data.utilisateurs);
           setShowSkeletreonUser(false);
         }

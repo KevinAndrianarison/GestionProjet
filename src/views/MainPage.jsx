@@ -18,7 +18,7 @@ import {
   faXmark,
   faPerson,
   faFolderTree,
-  faTimesRectangle
+  faTimesRectangle,
 } from "@fortawesome/free-solid-svg-icons";
 import AllprojectPage from "./AllprojectPage";
 import Devis from "../DevisFacure/views/Devis";
@@ -26,7 +26,7 @@ import Facture from "../DevisFacure/views/Facture";
 import ModifierClient from "../DevisFacure/views/ModifierClient";
 import NavbarClient from "../DevisFacure/views/NavbarClient";
 import NouveauDevis from "../DevisFacure/views/NouveauDevis";
-import Fournisseurs  from "../DevisFacure/views/Fournisseurs.jsx";
+import Fournisseurs from "../DevisFacure/views/Fournisseurs.jsx";
 import ProspectDetail from "../DevisFacure/views/ProspectDetail";
 import FournisseurDetail from "../DevisFacure/views/FournisseurDetail";
 import EditUser from "../DevisFacure/views/ModifierClient";
@@ -62,7 +62,7 @@ export default function MainPage() {
   const { url } = useContext(UrlContext);
   const [showMenuMobile, setshowMenuMobile] = useState(false);
 
-  const { setShowLogout, showUser, showAdmin } =
+  const { setShowLogout, showUser, showAdmin, isPUTprofil } =
     useContext(ShowContext);
 
   function logout() {
@@ -88,6 +88,11 @@ export default function MainPage() {
       switchToSetting();
     }
   }, []);
+
+  useEffect(() => {
+    const userString = localStorage.getItem("user");
+    let user = JSON.parse(userString);
+  }, [isPUTprofil]);
 
   function switchToGestProj() {
     localStorage.setItem("navBar", JSON.stringify("Gestion de projet"));
@@ -136,9 +141,7 @@ export default function MainPage() {
   function switchToSetting() {
     localStorage.setItem("navBar", JSON.stringify("Setting"));
     navigate(`${entity}/Settings/entity`);
-    setDescrNavBar(
-      ""
-    );
+    setDescrNavBar("");
     setTitreNavBar("Paramètres");
     setStatusNavBar(5);
     setshowMenuMobile(false);
@@ -152,18 +155,20 @@ export default function MainPage() {
       </div>*/}
       <header className="fixed w-full top-0 left-0 z-10">
         <div className="flex justify-between w-full pt-2 md:py-0 flex-wrap bg-white m-0">
-          <div className="flex items-center cursor-pointer" onClick={switchToGestProj}>
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={switchToGestProj}
+          >
             <div className="w-28 lg:w-32 xl:w-36 2xl:w-40 pl-4">
               <img src={logosofticeo} alt="Sofiticeo" />
             </div>
           </div>
           {(showAdmin || showUser) && (
-            <div
-            className="input text-xs cursor-pointer text-gray-500 flex-wrap items-center hidden md:flex p-0"
-          >
-            {/* Gestion de projet */}
-            <div title="Gestion de projet"
-              onClick={switchToGestProj}
+            <div className="input text-xs cursor-pointer text-gray-500 flex-wrap items-center hidden md:flex p-0">
+              {/* Gestion de projet */}
+              <div
+                title="Gestion de projet"
+                onClick={switchToGestProj}
                 className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 1
                     ? "bg-blue-500 text-white"
@@ -179,20 +184,29 @@ export default function MainPage() {
                 >
                   <FontAwesomeIcon
                     icon={faDiagramProject}
-                    className={`text-xl w-3 ${statusNavBar === 1 ? "text-blue-500" : "text-white"}`}
+                    className={`text-xl w-3 ${
+                      statusNavBar === 1 ? "text-blue-500" : "text-white"
+                    }`}
                   />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                    statusNavBar === 1 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                    statusNavBar === 1
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 1 && (<><h2 className="font-bold">Gestion de projet</h2></>)}
+                  {statusNavBar === 1 && (
+                    <>
+                      <h2 className="font-bold">Gestion de projet</h2>
+                    </>
+                  )}
                 </span>
               </div>
-            
+
               {/* Gestion de devis-facture */}
-              <div title="Gestion de devis-facture"
+              <div
+                title="Gestion de devis-facture"
                 onClick={switchToGestDevis}
                 className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 2
@@ -207,19 +221,31 @@ export default function MainPage() {
                     statusNavBar === 2 ? "scale-110" : "scale-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faReceipt} className={`text-xl w-3 ${statusNavBar === 2 ? "text-blue-500" : "text-white"}`} />
+                  <FontAwesomeIcon
+                    icon={faReceipt}
+                    className={`text-xl w-3 ${
+                      statusNavBar === 2 ? "text-blue-500" : "text-white"
+                    }`}
+                  />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                    statusNavBar === 2 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                    statusNavBar === 2
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 2 && (<><h2 className="font-bold">Gestion de devis-facture</h2></>)}
+                  {statusNavBar === 2 && (
+                    <>
+                      <h2 className="font-bold">Gestion de devis-facture</h2>
+                    </>
+                  )}
                 </span>
               </div>
-            
+
               {/* Gestion RH */}
-              <div title="Gestion RH"
+              <div
+                title="Gestion RH"
                 onClick={switchToGestRH}
                 className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 3
@@ -234,19 +260,31 @@ export default function MainPage() {
                     statusNavBar === 3 ? "scale-110" : "scale-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faUsersGear} className={`text-xl w-3 ${statusNavBar === 3 ? "text-blue-500" : "text-white"}`} />
+                  <FontAwesomeIcon
+                    icon={faUsersGear}
+                    className={`text-xl w-3 ${
+                      statusNavBar === 3 ? "text-blue-500" : "text-white"
+                    }`}
+                  />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                    statusNavBar === 3 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                    statusNavBar === 3
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 3 && (<><h2 className="font-bold">Gestion RH</h2></>)}
+                  {statusNavBar === 3 && (
+                    <>
+                      <h2 className="font-bold">Gestion RH</h2>
+                    </>
+                  )}
                 </span>
               </div>
-            
+
               {/* Gestion client */}
-              <div title="Gestion client"
+              <div
+                title="Gestion client"
                 onClick={switchToGestClient}
                 className={`relative flex items-center px-3 py-1 h-[100%] transition-all duration-300 ${
                   statusNavBar === 4
@@ -261,43 +299,69 @@ export default function MainPage() {
                     statusNavBar === 4 ? "scale-110" : "scale-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faStar} className={`text-xl w-3 ${statusNavBar === 4 ? "text-blue-500" : "text-white"}`} />
+                  <FontAwesomeIcon
+                    icon={faStar}
+                    className={`text-xl w-3 ${
+                      statusNavBar === 4 ? "text-blue-500" : "text-white"
+                    }`}
+                  />
                 </div>
                 <span
                   className={`ml-4 text-sm font-medium transition-all duration-300 ${
-                    statusNavBar === 4 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                    statusNavBar === 4
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0"
                   } group-hover:opacity-100 group-hover:max-w-xs`}
                 >
-                  {statusNavBar === 4 && (<><h2 className="font-bold">Gestion clients/Fournisseurs</h2></>)}
+                  {statusNavBar === 4 && (
+                    <>
+                      <h2 className="font-bold">
+                        Gestion clients/Fournisseurs
+                      </h2>
+                    </>
+                  )}
                 </span>
               </div>
             </div>
-          
           )}
 
           <div className="text-xs flex items-center text-gray-700">
             {(showAdmin || showUser) && (
               <>
                 <div className="mr-5 items-center hidden md:flex">
-                  <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-sm"
-                  >
-                    <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="zazaz" />
+                  <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-sm">
+                    <img
+                      className="w-full"
+                      src={`${url}/storage/${user.photo_profile}`}
+                      alt="Photo de profil"
+                    />
                   </div>
                   <p className="input text-black font-bold ml-3">{user.nom}</p>
                 </div>
                 <div className="flex md:hidden">
-                    {!showMenuMobile && (<FontAwesomeIcon icon={faBars} className="mr-5 mt-1 cursor-pointer w-16 h-5" onClick={() => setshowMenuMobile(true)}
-                    />)}
-                    {showMenuMobile && (<FontAwesomeIcon icon={faXmark} className="mr-5 mt-1 cursor-pointer w-16 h-5 text-red-600 z-30" onClick={() => setshowMenuMobile(false)}/>)}
+                  {!showMenuMobile && (
+                    <FontAwesomeIcon
+                      icon={faBars}
+                      className="mr-5 mt-1 cursor-pointer w-16 h-5"
+                      onClick={() => setshowMenuMobile(true)}
+                    />
+                  )}
+                  {showMenuMobile && (
+                    <FontAwesomeIcon
+                      icon={faXmark}
+                      className="mr-5 mt-1 cursor-pointer w-16 h-5 text-red-600 z-30"
+                      onClick={() => setshowMenuMobile(false)}
+                    />
+                  )}
                 </div>
                 <div className="flex cursor-pointer">
-                    <Tippy content="Paramètres">
-                      <FontAwesomeIcon
-                        onClick={switchToSetting}
-                        icon={faGear}
-                        className="mr-5 mt-1 focus:outline-none"
-                      />
-                    </Tippy>
+                  <Tippy content="Paramètres">
+                    <FontAwesomeIcon
+                      onClick={switchToSetting}
+                      icon={faGear}
+                      className="mr-5 mt-1 focus:outline-none"
+                    />
+                  </Tippy>
                 </div>
               </>
             )}
@@ -306,7 +370,7 @@ export default function MainPage() {
                 <FontAwesomeIcon
                   onClick={logout}
                   icon={faSignOutAlt}
-                  className="mr-5 mt-1 cursor-pointer"
+                  className="mr-5 mt-1 cursor-pointer focus:outline-none"
                 />
               </Tippy>
             </div>
@@ -319,27 +383,36 @@ export default function MainPage() {
           </div>
           */}
           <span
-              className="pl-4 mt-0 text-white text-[0.8em] text-sm font-thin!important"
-              dangerouslySetInnerHTML={{ __html: DescrNavBar }}
-            ></span>
+            className="pl-4 mt-0 text-white text-[0.8em] text-sm font-thin!important"
+            dangerouslySetInnerHTML={{ __html: DescrNavBar }}
+          ></span>
         </div>
 
         <div className="w-full flex justify-end z-20">
-          <div className={`bg-white max-w-[90%] shadow-2xl ${showMenuMobile === false ?  "hidden": "w-[400px] p-4 top-0 right-0"}`}>
-              {(showAdmin || showUser) && (
-                <>
-                  <div className="mr-5 items-center flex">
-                    <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-md"
-                    >
-                      <img className="w-full" src={`${url}/storage/${user.photo_profile}`} alt="Photo de profil" />
-                    </div>
-                    <p className="input text-black font-bold ml-3">{user.nom}</p>
+          <div
+            className={`bg-white max-w-[90%] shadow-2xl ${
+              showMenuMobile === false
+                ? "hidden"
+                : "w-[400px] p-4 top-0 right-0"
+            }`}
+          >
+            {(showAdmin || showUser) && (
+              <>
+                <div className="mr-5 items-center flex">
+                  <div className="mr-1 bg-cover bg-center rounded-3xl w-11 sm:w-13 lg:w-15 xl:w-17 2xl:w-19 h-11 sm:h-13 lg:h-15 xl:h-17 2xl:h-19 relative overflow-hidden shadow-md">
+                    <img
+                      className="w-full"
+                      src={`${url}/storage/${user.photo_profile}`}
+                      alt="Photo de profil"
+                    />
                   </div>
-                  <hr className="mb-2 mt-5"></hr>
-                </>
-              )}
-              {(showAdmin || showUser) && (
-                <div className="input text-xs cursor-pointer text-gray-500 items-center p-0">
+                  <p className="input text-black font-bold ml-3">{user.nom}</p>
+                </div>
+                <hr className="mb-2 mt-5"></hr>
+              </>
+            )}
+            {(showAdmin || showUser) && (
+              <div className="input text-xs cursor-pointer text-gray-500 items-center p-0">
                 {/* Gestion de projet */}
                 <div
                   title="Gestion de projet"
@@ -370,7 +443,7 @@ export default function MainPage() {
                     Gestion de projet
                   </span>
                 </div>
-            
+
                 {/* Gestion de devis-facture */}
                 <div
                   title="Gestion de devis-facture"
@@ -399,7 +472,7 @@ export default function MainPage() {
                     Gestion de devis-facture
                   </span>
                 </div>
-            
+
                 {/* Gestion RH */}
                 <div
                   title="Gestion RH"
@@ -428,7 +501,7 @@ export default function MainPage() {
                     Gestion RH
                   </span>
                 </div>
-            
+
                 {/* Gestion client */}
                 <div
                   title="Gestion client"
@@ -458,11 +531,10 @@ export default function MainPage() {
                   </span>
                 </div>
               </div>
-              )}
-              <hr></hr>
+            )}
+            <hr></hr>
           </div>
         </div>
-        
       </header>
 
       <div className="mains mt-16 sm:mt-20 md:mt-24">
@@ -481,7 +553,7 @@ export default function MainPage() {
                       }
                     >
                       <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
-                      Tous les projets 
+                      Tous les projets
                     </NavLink>
                   </li>
                 </ul>
@@ -557,7 +629,10 @@ export default function MainPage() {
                               : "mr-2 pb-2"
                           }
                         >
-                          <FontAwesomeIcon icon={faFolderTree} className="mr-2" />
+                          <FontAwesomeIcon
+                            icon={faFolderTree}
+                            className="mr-2"
+                          />
                           Structure de la société
                         </NavLink>
                       </li>
@@ -570,7 +645,10 @@ export default function MainPage() {
                               : "mr-2 pb-2"
                           }
                         >
-                          <FontAwesomeIcon icon={faTimesRectangle} className="mr-2" />
+                          <FontAwesomeIcon
+                            icon={faTimesRectangle}
+                            className="mr-2"
+                          />
                           Temps et rapports
                         </NavLink>
                       </li>
@@ -608,8 +686,8 @@ export default function MainPage() {
                   </li>
                 </ul>
               )}
-              
-                <ul className="ulNavBar border-b-2">
+
+              <ul className="ulNavBar border-b-2">
                 {statusNavBar === 5 && (
                   <>
                     <li className="mr-5  mt-2 pb-2">
@@ -627,31 +705,31 @@ export default function MainPage() {
                     </li>
 
                     <li className="mr-5  mt-2 pb-2">
-                    <NavLink
-                      to={`${entity}/Settings/Parametres/Devis`}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "mr-2 border-b-4 border-green-400 pb-2 "
-                          : "mr-2 pb-2"
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
-                      Paramètres des devis
-                    </NavLink>
+                      <NavLink
+                        to={`${entity}/Settings/Parametres/Devis`}
+                        className={({ isActive }) =>
+                          isActive
+                            ? "mr-2 border-b-4 border-green-400 pb-2 "
+                            : "mr-2 pb-2"
+                        }
+                      >
+                        <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
+                        Paramètres des devis
+                      </NavLink>
                     </li>
 
                     <li className="mr-5  mt-2 pb-2">
-                    <NavLink
-                      to={`${entity}/Settings/Parametres/Facturations`}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "mr-2 border-b-4 border-green-400 pb-2 "
-                          : "mr-2 pb-2"
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
-                      Paramètres des facturations
-                    </NavLink>
+                      <NavLink
+                        to={`${entity}/Settings/Parametres/Facturations`}
+                        className={({ isActive }) =>
+                          isActive
+                            ? "mr-2 border-b-4 border-green-400 pb-2 "
+                            : "mr-2 pb-2"
+                        }
+                      >
+                        <FontAwesomeIcon icon={faPersonRays} className="mr-2" />
+                        Paramètres des facturations
+                      </NavLink>
                     </li>
 
                     <li className="mr-5  mt-2 pb-2">
@@ -668,8 +746,8 @@ export default function MainPage() {
                       </NavLink>
                     </li>
                   </>
-                  )}
-                </ul>
+                )}
+              </ul>
             </div>
           )}
           <div className="Page mt-5">
@@ -700,20 +778,44 @@ export default function MainPage() {
                   )}
                   {showAdmin && (
                     <>
-                      <Route path=":entity/Settings/entity" element={<InfoSociete />} />
-                      <Route path=":entity/Settings/Parametres/Devis" element={<ParametreDevis />} />
-                      <Route path=":entity/Settings/Parametres/facturations" element={<ParametreFacturations />} />
+                      <Route
+                        path=":entity/Settings/entity"
+                        element={<InfoSociete />}
+                      />
+                      <Route
+                        path=":entity/Settings/Parametres/Devis"
+                        element={<ParametreDevis />}
+                      />
+                      <Route
+                        path=":entity/Settings/Parametres/facturations"
+                        element={<ParametreFacturations />}
+                      />
                     </>
                   )}
                 </>
               )}
-              
+
               <Route path="/gestionEntity" element={<GestionEntity />} />
-              <Route path=":entity/GestionDevisFactures/devis" element={<Devis />} />
-              <Route path=":entity/GestionDevisFactures/facture" element={<Facture />} />
-              <Route path=":entity/GestionClientsFournisseurs/fornisseurs" element={<Fournisseurs />} />
-              <Route path=":entity/GestionDevisFactures/services" element={<Services />} />
-              <Route path=":entity/GestionClientsFournisseurs/prospect" element={<Prospect />} />
+              <Route
+                path=":entity/GestionDevisFactures/devis"
+                element={<Devis />}
+              />
+              <Route
+                path=":entity/GestionDevisFactures/facture"
+                element={<Facture />}
+              />
+              <Route
+                path=":entity/GestionClientsFournisseurs/fornisseurs"
+                element={<Fournisseurs />}
+              />
+              <Route
+                path=":entity/GestionDevisFactures/services"
+                element={<Services />}
+              />
+              <Route
+                path=":entity/GestionClientsFournisseurs/prospect"
+                element={<Prospect />}
+              />
             </Routes>
 
             <Routes>
@@ -721,15 +823,21 @@ export default function MainPage() {
               <Route path="/NavbarClient" element={<NavbarClient />} />
               <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
               <Route path="/edit/:id" element={<EditUser />} />
-              <Route path=":entity/GestionClientsFournisseurs/prospect/:id" element={<ProspectDetail />} />
-              <Route path=":entity/GestionClientsFournisseurs/fornisseurs/:id" element={<FournisseurDetail />} />
+              <Route
+                path=":entity/GestionClientsFournisseurs/prospect/:id"
+                element={<ProspectDetail />}
+              />
+              <Route
+                path=":entity/GestionClientsFournisseurs/fornisseurs/:id"
+                element={<FournisseurDetail />}
+              />
             </Routes>
 
             <Routes>
               <Route path="/ModifierClient/:id" element={<ModifierClient />} />
               <Route path="/NavbarClient" element={<NavbarClient />} />
               <Route path="/NouveauDevis/:id" element={<NouveauDevis />} />
-              <Route path=":entity/Settings/MonProfil" element={<MyProfil/>} />
+              <Route path=":entity/Settings/MonProfil" element={<MyProfil />} />
             </Routes>
           </div>
         </div>

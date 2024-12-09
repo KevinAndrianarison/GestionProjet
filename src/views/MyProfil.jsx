@@ -25,7 +25,8 @@ export default function MyProfil() {
 
   const { url } = useContext(UrlContext);
   const { setMessageSucces, setMessageError } = useContext(MessageContext);
-  const { setShowSpinner, showAdmin } = useContext(ShowContext);
+  const { setShowSpinner, showAdmin, setisPUTprofil, isPUTprofil } =
+    useContext(ShowContext);
 
   function RegexEmail(email) {
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -181,6 +182,7 @@ export default function MyProfil() {
           );
           setMessageSucces("Modification réussi !");
           setFile("");
+          setisPUTprofil(!isPUTprofil);
           setShowSpinner(false);
           setTimeout(() => {
             setMessageSucces("");

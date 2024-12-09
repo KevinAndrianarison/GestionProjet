@@ -55,6 +55,7 @@ export function ShowContextProvider({ children }) {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showListProjet, setShowListProjet] = useState(false);
   const [showUser, setUser] = useState(false);
+  const [isPUTprofil, setisPUTprofil] = useState(false);
   const [showTask, setShowTask] = useState(false);
   const [showModaleTask, setShowModaleTask] = useState(false);
   const [showSkeletreonUser, setShowSkeletreonUser] = useState(false);
@@ -90,7 +91,9 @@ export function ShowContextProvider({ children }) {
         showModaleTask,
         showSkeletreonUser,
         showcreateJalon,
+        isPUTprofil,
         setShowDeleteStatusTask,
+        setisPUTprofil,
         setShowcreateJalon,
         setShowSkeletreonUser,
         setShowDeletechamps,
