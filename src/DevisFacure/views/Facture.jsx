@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPlus, faLeftLong, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
@@ -50,6 +50,51 @@ const Facture = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+  const searchRef = useRef(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredFournisseurs, setFilteredFournisseurs] = useState(fournisseurs);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setFilteredFournisseurs([]); // Cache la liste si on clique en dehors
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+
+  const handleSearchChange = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+  
+    const filtered = fournisseurs.filter((fournisseur) => {
+      const searchField = fournisseur.type_fournisseur === "societe" ? fournisseur.nom_societe : fournisseur.nom;
+      return searchField?.toLowerCase().includes(term);
+    });
+  
+    const sortedFilteredFournisseurs = filtered.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+  
+    setFilteredFournisseurs(sortedFilteredFournisseurs);
+  };
+  
+  const handleSelectFournisseur = (id, nom_societe, nom) => {
+    setSelectedFournisseur(id);
+    setSearchTerm(nom_societe || nom || '');
+    setFilteredFournisseurs([]);
+  };
+  
+  const resetSearch = () => {
+    setSearchTerm("");
+    setFilteredFournisseurs([]);
+  };
 
   const resetFormulaireFournisseur = () => {
     setNomSociete("");
@@ -101,6 +146,8 @@ const Facture = () => {
     setTypeAssigner('');
     setValidation('');
     setPieceJointe('');
+    setAjoutFournisseur('');
+    resetSearch();
   };
 
   const handleOpenModal = () => {
@@ -783,7 +830,7 @@ const Facture = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-1 mt-2">
+              <div className="lg:col-span-1">
                 <button
                   type="submit"
                   className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600">
@@ -800,40 +847,52 @@ const Facture = () => {
                 <div className="">
                   <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
                     <div className="border rounded-t-xl">
+
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">
                           Fournisseur
                         </label>
-                        <div className="relative">
-                          {gest_fac_founisseur_id === "" && (
-                            <FontAwesomeIcon
-                              icon={faPlus}
-                              className="text-blue-400 absolute right-8 top-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              style={{ fontSize: '16px' }}
-                              title="Ajouter un nouveau fournisseur"
-                              onClick={() => {
-                                handleOpenModal();
-                                setAjoutFournisseur(true);
-                              }}
-                            />
+                        <div className="relative" ref={searchRef}>
+                          <div className="flex items-center">
+                            <div className="flex-grow">
+                              <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                placeholder="Rechercher un fournisseur..."
+                                className="w-full pl-2 pr-2 py-2 rounded text-sm"
+                              />
+                            </div>
+                            <div className="flex-shrink-0 w-1/6 text-right mr-1">
+                              <FontAwesomeIcon
+                                icon={faPlus}
+                                className="text-blue-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ fontSize: '16px' }}
+                                title="Ajouter un nouveau fournisseur"
+                                onClick={() => {
+                                  handleOpenModal();
+                                  setAjoutFournisseur(true);
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {filteredFournisseurs.length > 0 && (
+                            <ul className="absolute left-0 right-0 bg-white border rounded mt-1 max-h-40 overflow-y-auto z-10">
+                              {filteredFournisseurs.map((fournisseur) => {
+                                return (
+                                  <li
+                                    key={fournisseur.id}
+                                    onClick={() => handleSelectFournisseur(fournisseur.id, fournisseur.nom_societe, fournisseur.nom)}
+                                    className="px-2 py-1 hover:bg-gray-100 cursor-pointer text-sm">
+                                    <span className="">{fournisseur.nom_societe || fournisseur.nom}</span>
+                                  </li>
+                                );
+                              })}
+                            </ul>
                           )}
-                          <select
-                            value={gest_fac_founisseur_id}
-                            onChange={handleSelectChange}
-                            className="w-full pl-1 pr-2 py-2 rounded text-sm"
-                          >
-                            <option>Sélectionnez un fournisseur</option>
-                            {fournisseurs
-                              .slice()
-                              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                              .map((fournisseur) => (
-                                <option key={fournisseur.id} value={fournisseur.id}>
-                                  {fournisseur.nom}
-                                </option>
-                              ))}
-                          </select>
                         </div>
                       </div>
+
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
                         <select
@@ -935,7 +994,7 @@ const Facture = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="lg:col-span-1 mt-2">
+                  <div className="lg:col-span-1 mt-3">
                     <button
                       type="button"
                       onClick={handleSaveFacture}
