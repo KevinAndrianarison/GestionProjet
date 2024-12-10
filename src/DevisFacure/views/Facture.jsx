@@ -9,32 +9,17 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { format, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import Select from 'react-select';
-import useGeonames from '../contextes/useGeonames';
 import { UrlContext } from "../../contexte/useUrl";
 
 const Facture = () => {
   const { url } = useContext(UrlContext);
   const [type_fournisseur, setTypeFournisseur] = useState("societe");
-  const [tel_societe, setTel_societe] = useState("");
   const [email_societe, setEmail_societe] = useState("");
   const [nom_societe, setNomSociete] = useState("");
-  const [site_web, setSiteWeb] = useState("");
-  const [numero_siren, setNumeroSiren] = useState("");
-  const [numero_siret, setNumeroSiret] = useState("");
-  const [affiliation_tva, setaffiliation_tva] = useState(false);
-  const [numero_tva, setnumero_tva] = useState("");
 
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
-  const [sexe, setSexe] = useState("");
   const [telephone, setTelephone] = useState("");
-
-  const [adresse, setAdresse] = useState("");
-  const [ville, setVille] = useState(null);
-  const [pays, setPays] = useState(null);
-  const { countriesAndCities } = useGeonames();
-  const [filteredCities, setFilteredCities] = useState([]);
 
   const [factures, setFactures] = useState([]);
   const [showActionsIdProsp, setShowActionsIdProsp] = useState(null);
@@ -66,21 +51,20 @@ const Facture = () => {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
-  const handleClick = (e) => {
+  const resetFormulaireFournisseur = () => {
+    setNomSociete("");
+    setNom("");
+    setEmail("");
+    setTelephone("");
+    setTypeFournisseur("societe");
+    setRefresh(!refresh);
     setAjoutFournisseur(false);
-    console.log("Handle click triggered");
   };
+
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
-
-  const handleCountryChange = (selectedCountry) => {
-    setPays(selectedCountry);
-    setVille(null);
-    const country = countriesAndCities.find((c) => c.pays === selectedCountry.value);
-    setFilteredCities(country ? country.villes : []);
   };
 
   const handlePrevMonth = () => {
@@ -489,23 +473,13 @@ const Facture = () => {
 
     if (type_fournisseur === "societe") {
       if (!nom_societe) errors.push("Le nom de la société est requis.");
-      if (!email_societe || !validateEmail(email_societe))
-        errors.push("L'adresse email de la société est invalide.");
-      if (!adresse) errors.push("L'adresse est requise.");
-      if (!pays) errors.push("Le pays est requis.");
-      if (!ville) errors.push("La ville est requise.");
       if (!nom) errors.push("Le nom du contact est requis.");
-      if (!email || !validateEmail(email))
-        errors.push("L'adresse email du contact est invalide.");
+      if (!email || !validateEmail(email)) errors.push("L'adresse email du contact est invalide.");
       if (!telephone) errors.push("Le numéro de téléphone du contact est requis.");
     } else {
       if (!nom) errors.push("Le nom complet est requis.");
-      if (!email || !validateEmail(email))
-        errors.push("L'adresse email est invalide.");
+      if (!email || !validateEmail(email)) errors.push("L'adresse email est invalide.");
       if (!telephone) errors.push("Le numéro de téléphone est requis.");
-      if (!pays) errors.push("Le pays est requis.");
-      if (!ville) errors.push("La ville est requise.");
-      if (!adresse) errors.push("L'adresse est requise.");
     }
 
     if (errors.length > 0) {
@@ -516,19 +490,9 @@ const Facture = () => {
     const formData = {
       nom_societe: type_fournisseur === "societe" ? nom_societe : "",
       email_societe: type_fournisseur === "societe" ? email_societe : "",
-      affilation_tva: String(affiliation_tva),
-      numero_tva,
-      tel_societe,
-      numero_siren,
-      numero_siret,
       nom,
       email,
-      sexe,
       telephone,
-      site_web,
-      adresse,
-      ville: ville?.value,
-      pays: pays?.value,
       type: type_fournisseur,
     };
 
@@ -543,26 +507,7 @@ const Facture = () => {
         },
       });
       Notiflix.Notify.success("Fournisseur ajouté avec succès !");
-
-      setNomSociete("");
-      setNom("");
-      setEmail("");
-      setSexe("");
-      setTelephone("");
-      setSiteWeb("");
-      setAdresse("");
-      setVille("");
-      setPays("");
-      setNumeroSiren("");
-      setTypeFournisseur("societe");
-      setEmail_societe("");
-      setaffiliation_tva(false);
-      setnumero_tva("");
-      setTel_societe("");
-      setNumeroSiret("");
-
-      setRefresh(!refresh);
-      setAjoutFournisseur(false);
+      resetFormulaireFournisseur();
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
       if (error.response?.data?.message) {
@@ -740,9 +685,8 @@ const Facture = () => {
         ) : (ajoutfournisseur) ? (
           <>
             <button
-              onClick={handleClick}
-              className=" text-blue-400 text-xl px-2  rounded-md shadow-sm  transition-all relative z-10"
-            >
+              onClick={resetFormulaireFournisseur}
+              className=" text-blue-400 text-sm px-2  rounded-md shadow-sm  transition-all relative z-10">
               <FontAwesomeIcon icon={faLeftLong} />
             </button>
 
@@ -783,238 +727,66 @@ const Facture = () => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="max-h-[55vh] overflow-y-auto px-4">
-                {type_fournisseur === "societe" && (
-                  <>
-                    <hr className="my-2"></hr>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
+            <form onSubmit={handleSubmit} className='grid grid-cols-1 lg:grid-cols-1 gap-6 pt-4'>
+              <div className="overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full">
+                <div className="border rounded-t-x">
+                  {type_fournisseur === "societe" && (
+                    <>
+                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                        <label className="block text-sm font-medium leading-6 text-gray-900 mt-1.5">
                           Dénomination de la société
                         </label>
                         <input
                           type="text"
                           value={nom_societe}
                           onChange={(e) => setNomSociete(e.target.value)}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                          className="w-full p-2 rounded text-sm"
                         />
                       </div>
-
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
-                          Site Web
-                        </label>
-                        <input
-                          type="text"
-                          value={site_web}
-                          onChange={(e) => setSiteWeb(e.target.value)}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
-                          Email de la société
-                        </label>
-                        <input
-                          type="text"
-                          value={email_societe}
-                          onChange={(e) => setEmail_societe(e.target.value)}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
-                          Téléphone de la société
-                        </label>
-                        <input
-                          type="text"
-                          value={tel_societe}
-                          onChange={(e) => setTel_societe(e.target.value)}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
-                          Numéro Siren
-                        </label>
-                        <input
-                          type="text"
-                          value={numero_siren}
-                          onChange={(e) => setNumeroSiren(e.target.value)}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
-                          Numéro SIRET
-                        </label>
-                        <input
-                          type="text"
-                          value={numero_siret}
-                          onChange={(e) => setNumeroSiret(e.target.value)}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <label className="block text-sm font-medium leading-6 text-gray-900">
-                          Affiliation TVA
-                        </label>
-                        <select
-                          value={affiliation_tva}
-                          onChange={(e) => setaffiliation_tva(e.target.value === "true")}
-                          className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                        >
-                          <option value="true">Oui</option>
-                          <option value="false">Non</option>
-                        </select>
-                      </div>
-
-                      {affiliation_tva && (
-                        <div className="sm:col-span-1">
-                          <label className="block text-sm font-medium leading-6 text-gray-900">
-                            Numéro TVA
-                          </label>
-                          <input
-                            type="text"
-                            value={numero_tva}
-                            onChange={(e) => setnumero_tva(e.target.value)}
-                            className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                          />
-                        </div>
-                      )}
-
-                    </div>
-                    <hr className="my-4"></hr>
-                  </>
-                )}
-
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
-                  <div className="sm:col-span-1">
-                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                    </>
+                  )}
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium leading-6 text-gray-900 mt-1.5">
                       {type_fournisseur === "societe" ? "Nom complet du contact" : "Nom complet"}
                     </label>
                     <input
                       type="text"
                       value={nom}
                       onChange={(e) => setNom(e.target.value)}
-                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                      className="w-full p-2 rounded text-sm"
                     />
                   </div>
 
-                  <div className="sm:col-span-1">
-                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium leading-6 text-gray-900 mt-1.5">
                       {type_fournisseur === "societe" ? "Email du contact" : "Adresse e-mail"}
                     </label>
                     <input
                       type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                      className="w-full p-2 rounded text-sm"
                     />
                   </div>
 
-                  <div className="sm:col-span-1">
-                    <label className="block text-sm font-medium leading-6 text-gray-900">
+                  <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
+                    <label className="block text-sm font-medium leading-6 text-gray-900 mt-1.5">
                       {type_fournisseur === "societe" ? "Téléphone du contact" : "Numéro de téléphone"}
                     </label>
                     <input
                       type="text"
                       value={telephone}
                       onChange={(e) => setTelephone(e.target.value)}
-                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-1">
-                    <label className="block text-sm font-medium leading-6 text-gray-900">
-                      Genre
-                    </label>
-                    <select
-                      value={sexe}
-                      onChange={(e) => setSexe(e.target.value)}
-                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
-                    >
-                      <option value=""></option>
-                      <option value="Masculin">Masculin</option>
-                      <option value="Féminin">Féminin</option>
-                      <option value="Non Precisé">Non Precisé</option>
-                    </select>
-                  </div>
-                </div>
-
-                <hr className="my-2"></hr>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-2 mb-2">
-
-                  <>
-                    {/* Select pour les pays */}
-                    <div className="sm:col-span-1">
-                      <label className="block text-sm font-medium leading-6 text-gray-900">
-                        Pays
-                      </label>
-                      <Select value={pays}
-                        options={countriesAndCities.map((country) => ({
-                          value: country.pays,
-                          label: country.pays,
-                        }))}
-                        onChange={handleCountryChange}
-                        placeholder="Sélectionnez un pays"
-                        className="basic-select"
-                        menuPortalTarget={document.body}
-                        styles={{
-                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                        }}
-                      />
-                    </div>
-
-                    {/* Select pour les villes */}
-                    <div className="sm:col-span-1">
-                      <label className="block text-sm font-medium leading-6 text-gray-900">
-                        Ville
-                      </label>
-                      <Select
-                        options={filteredCities.map((city) => ({
-                          value: city,
-                          label: city,
-                        }))}
-                        value={ville}
-                        onChange={(selectedOption) => setVille(selectedOption)}
-                        placeholder="Sélectionnez une ville"
-                        className="basic-select z-30"
-                        isDisabled={!filteredCities.length}
-                        menuPortalTarget={document.body}
-                        styles={{
-                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                        }}
-                      />
-                    </div>
-                  </>
-
-                  <div className="sm:col-span-1">
-                    <label className="block text-sm font-medium leading-6 text-gray-900">
-                      Adresse
-                    </label>
-                    <input
-                      type="text"
-                      value={adresse}
-                      onChange={(e) => setAdresse(e.target.value)}
-                      className="pl-3 pr-3 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none"
+                      className="w-full p-2 rounded text-sm"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="w-[300px] max-w-[100%] py-2 mt-5">
+              <div className="lg:col-span-1 mt-2">
                 <button
                   type="submit"
-                  className="bg-blue-500 px-3 block w-full rounded-md border-0 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-400 focus:outline-none">
+                  className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600">
                   Enregistrer
                 </button>
               </div>
@@ -1022,7 +794,7 @@ const Facture = () => {
           </>
         ) : (
           <>
-            <h2 className="text-xl mx-2 my-2 ">Nouvelle facture</h2>
+            <h2 className="text-sm font-semibold my-3">Nouvelle facture</h2>
             <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
               <div className="">
                 <div className="">
@@ -1036,7 +808,7 @@ const Facture = () => {
                           {gest_fac_founisseur_id === "" && (
                             <FontAwesomeIcon
                               icon={faPlus}
-                              className="absolute right-8 top-2 text-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="text-blue-400 absolute right-8 top-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                               style={{ fontSize: '16px' }}
                               title="Ajouter un nouveau fournisseur"
                               onClick={() => {
