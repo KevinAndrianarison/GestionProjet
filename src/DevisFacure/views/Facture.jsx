@@ -14,7 +14,6 @@ import { UrlContext } from "../../contexte/useUrl";
 const Facture = () => {
   const { url } = useContext(UrlContext);
   const [type_fournisseur, setTypeFournisseur] = useState("societe");
-  const [email_societe, setEmail_societe] = useState("");
   const [nom_societe, setNomSociete] = useState("");
 
   const [nom, setNom] = useState("");
@@ -45,20 +44,24 @@ const Facture = () => {
   const [alt, setAlt] = useState('');
   const [ajoutfournisseur, setAjoutFournisseur] = useState(false);
   const [fournisseurs, setFournisseurs] = useState([]);
-  const [gest_fac_founisseur_id, setSelectedFournisseur] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
   const searchRef = useRef(null);
+  const [gest_fac_founisseur_id, setGestFacFournisseurId] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredFournisseurs, setFilteredFournisseurs] = useState(fournisseurs);
 
+  const handleCheckboxChange = (e) => {
+    setTypeAssigner(e.target.checked);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setFilteredFournisseurs([]); // Cache la liste si on clique en dehors
+        setFilteredFournisseurs([]);
       }
     };
 
@@ -72,27 +75,28 @@ const Facture = () => {
   const handleSearchChange = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-  
+
     const filtered = fournisseurs.filter((fournisseur) => {
       const searchField = fournisseur.type_fournisseur === "societe" ? fournisseur.nom_societe : fournisseur.nom;
       return searchField?.toLowerCase().includes(term);
     });
-  
+
     const sortedFilteredFournisseurs = filtered.sort(
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );
-  
+
     setFilteredFournisseurs(sortedFilteredFournisseurs);
   };
-  
+
   const handleSelectFournisseur = (id, nom_societe, nom) => {
-    setSelectedFournisseur(id);
+    setGestFacFournisseurId(id);
     setSearchTerm(nom_societe || nom || '');
     setFilteredFournisseurs([]);
   };
-  
+
   const resetSearch = () => {
     setSearchTerm("");
+    setGestFacFournisseurId(""); // Réinitialise l'ID sélectionné
     setFilteredFournisseurs([]);
   };
 
@@ -162,7 +166,7 @@ const Facture = () => {
     resetFactureFields();
     setFactureToEdit({});
     setModalOpen(false);
-    setSelectedFournisseur('');
+    setGestFacFournisseurId('');
   };
 
   useEffect(() => {
@@ -177,6 +181,7 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
+          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des factures :", error);
@@ -185,6 +190,7 @@ const Facture = () => {
     };
     fetchFactures();
   }, [refresh]);
+  
 
   useEffect(() => {
     const fetchDataFournisseur = async () => {
@@ -207,10 +213,6 @@ const Facture = () => {
     };
     fetchDataFournisseur();
   }, [refresh]);
-
-  const handleSelectChange = (e) => {
-    setSelectedFournisseur(e.target.value);
-  };
 
   const validateForm = () => {
     if (!montant_ht || !montant_httc || !prix_tva) {
@@ -290,7 +292,6 @@ const Facture = () => {
     }
   };
 
-
   const updateFacture = async (id, formData) => {
     const tokenString = localStorage.getItem("token");
     const token = JSON.parse(tokenString);
@@ -349,7 +350,7 @@ const Facture = () => {
       setValidation(selectedFacture.validation);
       setDevise(selectedFacture.devise);
       setPieceJointe(selectedFacture.piece_jointe);
-      setSelectedFournisseur(selectedFacture.gest_fac_founisseur_id);
+      setGestFacFournisseurId(selectedFacture.gest_fac_founisseur_id);
       setFactureToEdit(selectedFacture);
       handleOpenModal();
     }
@@ -433,9 +434,9 @@ const Facture = () => {
   };
 
   const fileName = imgUrl
-    ? imgUrl.split('/').pop() // Extraire le nom de l'image depuis l'URL
+    ? imgUrl.split('/').pop() 
     : pdfUrl
-      ? pdfUrl.split('/').pop() // Extraire le nom du PDF depuis l'URL
+      ? pdfUrl.split('/').pop()
       : "Fichier inconnu";
 
 
@@ -841,13 +842,12 @@ const Facture = () => {
           </>
         ) : (
           <>
-            <h2 className="text-sm font-semibold my-3">Nouvelle facture</h2>
+            <h2 className="text-sm font-semibold my-3">{factureToEdit?.id ? "Modifier une facture" : "Nouvelle facture"}</h2>
             <form className="grid grid-cols-1 lg:grid-cols-1 gap-6 ">
               <div className="">
                 <div className="">
                   <div className='overflow-y-auto max-h-[75vh] rounded-lg shadow-sm w-full'>
                     <div className="border rounded-t-xl">
-
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">
                           Fournisseur
@@ -892,19 +892,6 @@ const Facture = () => {
                           )}
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
-                        <label className="block text-sm font-medium text-gray-700 my-2">Type assigner</label>
-                        <select
-                          value={type_assigner}
-                          onChange={(e) => setTypeAssigner(e.target.value)}
-                          className="w-full p-2 rounded text-sm"
-                        >
-                          <option value="particulier">Particulier</option>
-                          <option value="societe">Société</option>
-                        </select>
-                      </div>
-
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Catégorie</label>
                         <input
@@ -992,13 +979,26 @@ const Facture = () => {
                           className="w-full p-2 rounded text-sm"
                         />
                       </div>
+
                     </div>
                   </div>
                   <div className="lg:col-span-1 mt-3">
+                    <div className="mb-3 ml-2 flex items-center">
+                      <input
+                        type="checkbox"
+                        id="exampleCheckbox"
+                        checked={type_assigner}
+                        onChange={handleCheckboxChange}
+                        className=""
+                      />
+                      <label htmlFor="exampleCheckbox" className="text-sm text-gray-700 ml-2">
+                        Assigner à société
+                      </label>
+                    </div>
                     <button
                       type="button"
                       onClick={handleSaveFacture}
-                      className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600"
+                      className="w-1/2 bg-blue-500 text-white p-2 rounded text-sm hover:bg-blue-600 mb-2"
                     >
                       {factureToEdit?.id ? "Modifier" : "Enregistrer"}
                     </button>
