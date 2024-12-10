@@ -15,9 +15,6 @@ import { UrlContext } from "../../contexte/useUrl";
 
 const Facture = () => {
   const { url } = useContext(UrlContext);
-  const [currentModal, setCurrentModal] = useState('fournisseur'); // 'fournisseur' ou 'facture'
-  const [isFactureView, setIsFactureView] = useState(false);
-
   const [type_fournisseur, setTypeFournisseur] = useState("societe");
   const [tel_societe, setTel_societe] = useState("");
   const [email_societe, setEmail_societe] = useState("");
@@ -36,7 +33,7 @@ const Facture = () => {
   const [adresse, setAdresse] = useState("");
   const [ville, setVille] = useState(null);
   const [pays, setPays] = useState(null);
-  const { countriesAndCities, loading, error } = useGeonames();
+  const { countriesAndCities } = useGeonames();
   const [filteredCities, setFilteredCities] = useState([]);
 
   const [factures, setFactures] = useState([]);
@@ -68,6 +65,7 @@ const Facture = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+
   const handleClick = (e) => {
     setAjoutFournisseur(false);
     console.log("Handle click triggered");
