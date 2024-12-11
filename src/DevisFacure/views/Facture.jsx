@@ -214,6 +214,26 @@ const Facture = () => {
     fetchDataFournisseur();
   }, [refresh]);
 
+
+  const fetchFournisseurById = async (id) => {
+    const tokenString = localStorage.getItem("token");
+    const token = JSON.parse(tokenString);
+    try {
+      const response = await axios.get(`${BASE_URL}fournisseurs/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données du fournisseur :", error);
+      Notiflix.Notify.failure("Erreur lors de la récupération du fournisseur.");
+    }
+    return null;
+  };
+
   const validateForm = () => {
     if (!montant_ht || !montant_httc || !prix_tva) {
       Notiflix.Notify.failure('Tous les champs doivent être remplis.');
@@ -337,8 +357,12 @@ const Facture = () => {
   };
 
   const handleEditClick = async (id) => {
+    console.log("Facture ID :", id);
     const selectedFacture = factures.find((facture) => facture.id === id);
+    console.log("Facture sélectionnée :", selectedFacture);
+
     if (selectedFacture) {
+
       setNumero(selectedFacture.numero);
       setMontantHT(selectedFacture.montant_ht);
       setMontantTTC(selectedFacture.montant_httc);
@@ -352,9 +376,22 @@ const Facture = () => {
       setPieceJointe(selectedFacture.piece_jointe);
       setGestFacFournisseurId(selectedFacture.gest_fac_founisseur_id);
       setFactureToEdit(selectedFacture);
+  
+      if (selectedFacture?.gest_fac_founisseur_id) {
+        const fournisseurDetails = await fetchFournisseurById(selectedFacture.gest_fac_founisseur_id);
+        if (fournisseurDetails) {
+          console.log("Détails du fournisseur :", fournisseurDetails);
+          setSearchTerm(fournisseurDetails.nom_societe || fournisseurDetails.nom || "");
+        }
+      }
+  
       handleOpenModal();
     }
+
+    
   };
+  
+  
 
   const handleDelete = async (factureId) => {
     setShowActionsIdProsp((prevId) => (prevId === factureId ? null : factureId));
@@ -537,7 +574,6 @@ const Facture = () => {
 
     const formData = {
       nom_societe: type_fournisseur === "societe" ? nom_societe : "",
-      email_societe: type_fournisseur === "societe" ? email_societe : "",
       nom,
       email,
       telephone,
