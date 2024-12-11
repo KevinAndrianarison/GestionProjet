@@ -47,12 +47,36 @@ const Facture = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
-  const formatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+  const formatter = new Intl.NumberFormat('fr-FR', { style: 'decimal', useGrouping: true });
   const searchRef = useRef(null);
   const [gest_fac_founisseur_id, setGestFacFournisseurId] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredFournisseurs, setFilteredFournisseurs] = useState(fournisseurs);
+
+  const getDeviseSymbol = (devise) => {
+    switch (devise) {
+      case 'EUR':
+        return '€';
+      case 'USD':
+        return '$';
+      case 'MGA':
+        return 'Ar';
+      default:
+        return '';
+    }
+  };
+
+  const handleMontantHTChange = (e) => {
+    const rawValue = e.target.value.replace(/\s+/g, "");
+    const numericValue = parseFloat(rawValue);
+
+    if (!isNaN(numericValue)) {
+      setMontantHT(numericValue);
+    } else {
+      setMontantHT("");
+    }
+  };
 
   const handleCheckboxChange = (e) => {
     setTypeAssigner(e.target.checked);
@@ -150,6 +174,7 @@ const Facture = () => {
     setTypeAssigner('');
     setValidation('');
     setPieceJointe('');
+    setDevise('EUR');
     setAjoutFournisseur('');
     resetSearch();
   };
@@ -190,7 +215,7 @@ const Facture = () => {
     };
     fetchFactures();
   }, [refresh]);
-  
+
 
   useEffect(() => {
     const fetchDataFournisseur = async () => {
@@ -373,7 +398,7 @@ const Facture = () => {
       setPieceJointe(selectedFacture.piece_jointe);
       setGestFacFournisseurId(selectedFacture.gest_fac_founisseur_id);
       setFactureToEdit(selectedFacture);
-  
+
       if (selectedFacture?.gest_fac_founisseur_id) {
         const fournisseurDetails = await fetchFournisseurById(selectedFacture.gest_fac_founisseur_id);
         if (fournisseurDetails) {
@@ -381,12 +406,12 @@ const Facture = () => {
           setSearchTerm(fournisseurDetails.nom_societe || fournisseurDetails.nom || "");
         }
       }
-  
+
       handleOpenModal();
     }
   };
-  
-  
+
+
 
   const handleDelete = async (factureId) => {
     setShowActionsIdProsp((prevId) => (prevId === factureId ? null : factureId));
@@ -466,7 +491,7 @@ const Facture = () => {
   };
 
   const fileName = imgUrl
-    ? imgUrl.split('/').pop() 
+    ? imgUrl.split('/').pop()
     : pdfUrl
       ? pdfUrl.split('/').pop()
       : "Fichier inconnu";
@@ -658,8 +683,8 @@ const Facture = () => {
                 <td className="border-y p-2 text-center">Tsara Restaurant</td>
                 <td className="border-y p-2 text-center">Frais repas</td>
                 <td className="border-y p-2 text-center">{format(new Date(facture.date_facturation), "dd/MM/yyyy")}</td>
-                <td className="border-y p-2 text-right">{formatter.format(facture.prix_tva)}</td>
-                <td className="border-y p-2 text-right">{formatter.format(facture.montant_httc)}</td>
+                <td className="border-y p-2 text-right">{formatter.format(facture.prix_tva)} {getDeviseSymbol(facture.devise)}</td>
+                <td className="border-y p-2 text-right">{formatter.format(facture.montant_httc)} {getDeviseSymbol(facture.devise)}</td>
                 <td className="border-y p-2 text-center">
                   {facture.piece_jointe ? (
                     /\.(pdf)$/i.test(facture.piece_jointe) ? (
@@ -937,17 +962,14 @@ const Facture = () => {
                         <label className="block text-sm font-medium text-gray-700 my-2">Montant HT</label>
 
                         <div className="flex items-center gap-2">
+
                           <input
-                            type="number"
-                            value={montant_ht}
-                            onChange={(e) => {
-                              setMontantHT(e.target.value);
-                              calculTtcTva();
-                            }}
+                            type="text"
+                            value={montant_ht ? formatter.format(montant_ht) : ""}
+                            onChange={handleMontantHTChange}
                             placeholder="Montant HT"
                             className="flex-1 p-2 text-sm"
                           />
-
                           <select
                             value={devise}
                             onChange={(e) => setDevise(e.target.value)}
@@ -973,8 +995,8 @@ const Facture = () => {
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Total prix TVA</label>
                         <input
-                          type="number"
-                          value={prix_tva}
+                          type="text"
+                          value={prix_tva ? formatter.format(prix_tva) : ""}
                           readOnly
                           onChange={(e) => setPrixTVA(e.target.value)}
                           placeholder="prix_tva"
@@ -984,8 +1006,8 @@ const Facture = () => {
                       <div className="grid grid-cols-2 px-4 py-1 border-b rounded-t-xl">
                         <label className="block text-sm font-medium text-gray-700 my-2">Total prix TTC</label>
                         <input
-                          type="number"
-                          value={montant_httc}
+                          type="text"
+                          value={montant_httc ? formatter.format(montant_httc) : ""}
                           readOnly
                           onChange={(e) => setMontantTTC(e.target.value)}
                           placeholder="Montant TTC"
