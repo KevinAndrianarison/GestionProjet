@@ -96,7 +96,7 @@ const Facture = () => {
 
   const resetSearch = () => {
     setSearchTerm("");
-    setGestFacFournisseurId(""); // Réinitialise l'ID sélectionné
+    setGestFacFournisseurId("");
     setFilteredFournisseurs([]);
   };
 
@@ -327,7 +327,7 @@ const Facture = () => {
     if (formData.piece_jointe && formData.piece_jointe instanceof File) {
       updatedFormData.append("piece_jointe", formData.piece_jointe);
     } else if (formData.piece_jointe) {
-      console.log("La pièce jointe n'est pas un fichier valide :", formData.piece_jointe);
+      // console.log("La pièce jointe n'est pas un fichier valide :", formData.piece_jointe);
     }
 
     try {
@@ -357,12 +357,9 @@ const Facture = () => {
   };
 
   const handleEditClick = async (id) => {
-    console.log("Facture ID :", id);
     const selectedFacture = factures.find((facture) => facture.id === id);
-    console.log("Facture sélectionnée :", selectedFacture);
 
     if (selectedFacture) {
-
       setNumero(selectedFacture.numero);
       setMontantHT(selectedFacture.montant_ht);
       setMontantTTC(selectedFacture.montant_httc);
@@ -370,7 +367,7 @@ const Facture = () => {
       setPourcentageTVA(selectedFacture.pourcentage_tva);
       setDateFacturation(selectedFacture.date_facturation);
       setDateEnregistrement(selectedFacture.date_enregistrement);
-      setTypeAssigner(selectedFacture.type_assigner);
+      setTypeAssigner(selectedFacture.type_assigner === "true");
       setValidation(selectedFacture.validation);
       setDevise(selectedFacture.devise);
       setPieceJointe(selectedFacture.piece_jointe);
@@ -387,8 +384,6 @@ const Facture = () => {
   
       handleOpenModal();
     }
-
-    
   };
   
   
@@ -1015,7 +1010,6 @@ const Facture = () => {
                           className="w-full p-2 rounded text-sm"
                         />
                       </div>
-
                     </div>
                   </div>
                   <div className="lg:col-span-1 mt-3">
