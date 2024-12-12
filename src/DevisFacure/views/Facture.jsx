@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faPlus, faLeftLong, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faLeftLong, faEdit, faEllipsisV, faImage, faFilePdf, faDownload, faFileInvoiceDollar, faCircleChevronRight, faCircleChevronLeft, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
 import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Modal from './Modal';
@@ -11,7 +11,6 @@ import { UrlContext } from "../../contexte/useUrl";
 import JSZip from "jszip";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { jsPDF } from 'jspdf'; // Pour générer des fichiers PDF
 import 'jspdf-autotable';
 
 
@@ -57,6 +56,39 @@ const Facture = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredFournisseurs, setFilteredFournisseurs] = useState(fournisseurs);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [showCheckboxes, setShowCheckboxes] = useState(false);
+  const toggleCheckboxVisibility = () => {
+    setShowCheckboxes(!showCheckboxes);
+    setSelectedIds([]);
+  };
+
+  const toggleSelectAll = (checked) => {
+    if (checked) {
+      const allIds = sortedFactures.map((facture) => facture.id);
+      setSelectedIds(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const toggleSelection = (id) => {
+    setSelectedIds((prevSelectedIds) => {
+      console.log("Etat actuel de selectedIds : ", prevSelectedIds);
+      if (prevSelectedIds.includes(id)) {
+        console.log(`Facture avec ID ${id} déjà sélectionnée, suppression de la sélection.`);
+        return prevSelectedIds.filter((selectedId) => selectedId !== id);
+      } else {
+        console.log(`Facture avec ID ${id} non sélectionnée, ajout à la sélection.`);
+        return [...prevSelectedIds, id];
+      }
+    });
+  };
+
+  const handleEditSelected = () => {
+    console.log("Modification des factures :", selectedIds);
+    // Implémentez la logique de modification ici
+  };
 
   const getDeviseSymbol = (devise) => {
     switch (devise) {
@@ -440,26 +472,33 @@ const Facture = () => {
 
     const tokenString = localStorage.getItem("token");
     let token = JSON.parse(tokenString);
+
     try {
       const response = await axios.delete(`${BASE_URL}factures/entrants/${factureId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.status === 200) {
-        setFactures(factures.filter((facture) => facture.id !== factureId));
-        setRefresh(!refresh);
+        setFactures((prevFactures) => prevFactures.filter((facture) => facture.id !== factureId));
+        Notiflix.Report.success(
+          'Succès',
+          'Facture supprimée avec succès.',
+          'Fermer'
+        );
+      } else {
+        Notiflix.Report.failure(
+          'Echec',
+          'Erreur lors de la suppression de la facture.',
+          'Fermer'
+        );
       }
-      Notiflix.Report.success(
-        'Succès',
-        'Fournisseur supprimé avec succès.',
-        'Fermer'
-      );
     } catch (error) {
       console.error("Erreur lors de la suppression de la facture :", error);
       Notiflix.Report.failure(
         'Echec',
-        'Echec lors de la suppression du fournisseur.',
+        'Erreur serveur ou échec de la suppression.',
         'Fermer'
       );
     }
@@ -531,30 +570,30 @@ const Facture = () => {
 
     return true;
   };
-  
+
   const generateZIP = () => {
     const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-  
+
     let numeroFacture = 1;
-  
+
     const totalTVA = sortedFactures.reduce((total, facture) => total + parseFloat(facture.prix_tva || 0), 0);
     const totalTTC = sortedFactures.reduce((total, facture) => total + parseFloat(facture.montant_httc || 0), 0);
-  
+
     const tableData = sortedFactures.map((facture) => {
       const fournisseur = fournisseurs.find(
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
-  
+
       const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "Non défini";
       const categorie = fournisseur ? fournisseur.type_fournisseur : "Non défini";
-  
+
       const factureNumero = numeroFacture;
       numeroFacture++;
-  
+
       const dateFormatee = format(new Date(facture.date_facturation), "dd/MM/yyyy");
-  
+
       return {
         "N°": factureNumero,
         Fournisseur: fournisseurNom,
@@ -564,7 +603,7 @@ const Facture = () => {
         "Total prix TTC": facture.montant_httc,
       };
     });
-  
+
     tableData.push({
       "N°": "Totaux",
       Fournisseur: "",
@@ -573,26 +612,26 @@ const Facture = () => {
       "Total TVA": totalTVA.toFixed(2),
       "Total prix TTC": totalTTC.toFixed(2),
     });
-  
+
     console.log("Nombre d'éléments dans tableData : ", tableData.length);
-  
+
     const ws = XLSX.utils.json_to_sheet(tableData, {
       header: [
         "N°", "Fournisseur", "Catégorie", "Date de Facture",
         "Total TVA", "Total prix TTC",
       ],
     });
-  
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Factures');
-  
+
     zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
-  
+
     zip.generateAsync({ type: 'blob' }).then(function (content) {
       saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
     });
   };
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -685,6 +724,16 @@ const Facture = () => {
         <table className="min-w-full">
           <thead className='bg-slate-100'>
             <tr>
+              {showCheckboxes && (
+                <th className="p-2">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                    checked={selectedIds.length === sortedFactures.length}
+                  />
+                </th>
+              )}
+
               <th className="text-center p-2 font-bold">N°</th>
               <th className="text-center p-2 font-bold">Fournisseur</th>
               <th className="text-center p-2 font-bold">Catégorie</th>
@@ -692,7 +741,11 @@ const Facture = () => {
               <th className="text-right p-2 font-bold">Total TVA</th>
               <th className="text-right p-2 font-bold">Total prix TTC</th>
               <th className="text-center p-2 font-bold">Justificatif</th>
-              <th></th>
+              <th className="text-left font-bold">
+                <button onClick={toggleCheckboxVisibility}>
+                  {showCheckboxes ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} />}
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -701,6 +754,15 @@ const Facture = () => {
                 key={facture.id}
                 className={`${index % 2 === 0 ? "bg-gray-50 shadow-sm" : "bg-white"}  ${showActionsIdProsp !== facture.id ? "hover:shadow-lg hover:scale-x-100" : ""} transition-all px-4 py-2 rounded`}
               >
+                {showCheckboxes && (
+                  <td className="border-y p-2 text-center">
+                    <input
+                      type="checkbox"
+                      onChange={() => toggleSelection(facture.id)}
+                      checked={selectedIds.includes(facture.id)}
+                    />
+                  </td>
+                )}
                 <td className="border-y p-2 text-center">{index + 1}</td>
 
                 <td className="border-y p-2 text-center">
@@ -754,7 +816,7 @@ const Facture = () => {
                     "Aucune pièce jointe"
                   )}
                 </td>
-                <td className="border-y p-2 w-[25px] relative overflow-visible">
+                <td className="border-y p-2 w-[25px] relative overflow-visible text-left">
                   <button
                     onClick={() => {
                       toggleActions(facture.id);
@@ -799,6 +861,25 @@ const Facture = () => {
         <td className="p-2 text-right">Totaux TVA : {formatter.format(totalTVA)}</td>
         <td className="p-2 text-right">Totaux TTC : {formatter.format(totalTTC)}</td>
       </tr>
+
+      {showCheckboxes && (
+        <div className="mb-4">
+          <button
+            onClick={handleDelete}
+            className="bg-red-500 text-white px-4 py-2 rounded mr-2"
+            disabled={selectedIds.length === 0}
+          >
+            Supprimer
+          </button>
+          <button
+            onClick={handleEditSelected}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+            disabled={selectedIds.length === 0}
+          >
+            Modifier
+          </button>
+        </div>
+      )}
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         {(imgUrl || pdfUrl) ? (
