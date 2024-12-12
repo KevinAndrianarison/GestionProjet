@@ -571,29 +571,35 @@ const Facture = () => {
     return true;
   };
 
-  const generateZIP = () => {
+  const generateZIP = async () => {
     const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-
+  
     let numeroFacture = 1;
-
-    const totalTVA = sortedFactures.reduce((total, facture) => total + parseFloat(facture.prix_tva || 0), 0);
-    const totalTTC = sortedFactures.reduce((total, facture) => total + parseFloat(facture.montant_httc || 0), 0);
-
+  
+    const totalTVA = sortedFactures.reduce(
+      (total, facture) => total + parseFloat(facture.prix_tva || 0),
+      0
+    );
+    const totalTTC = sortedFactures.reduce(
+      (total, facture) => total + parseFloat(facture.montant_httc || 0),
+      0
+    );
+  
     const tableData = sortedFactures.map((facture) => {
       const fournisseur = fournisseurs.find(
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
-
+  
       const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "Non défini";
       const categorie = fournisseur ? fournisseur.type_fournisseur : "Non défini";
-
+  
       const factureNumero = numeroFacture;
       numeroFacture++;
-
+  
       const dateFormatee = format(new Date(facture.date_facturation), "dd/MM/yyyy");
-
+  
       return {
         "N°": factureNumero,
         Fournisseur: fournisseurNom,
@@ -603,7 +609,7 @@ const Facture = () => {
         "Total prix TTC": facture.montant_httc,
       };
     });
-
+  
     tableData.push({
       "N°": "Totaux",
       Fournisseur: "",
@@ -612,25 +618,54 @@ const Facture = () => {
       "Total TVA": totalTVA.toFixed(2),
       "Total prix TTC": totalTTC.toFixed(2),
     });
-
+  
     console.log("Nombre d'éléments dans tableData : ", tableData.length);
-
-    const ws = XLSX.utils.json_to_sheet(tableData, {
+  
+    const wsTotaux = XLSX.utils.json_to_sheet(tableData, {
       header: [
         "N°", "Fournisseur", "Catégorie", "Date de Facture",
         "Total TVA", "Total prix TTC",
       ],
     });
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Factures');
-
-    zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
-
+  
+    const wbTotaux = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wbTotaux, wsTotaux, 'Factures Totaux');
+  
+    zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wbTotaux, { bookType: 'xlsx', type: 'array' }));
+  
+    for (const facture of sortedFactures) {
+      console.log(`Traitement de la facture ${facture.id}`);
+      console.log("Données de la facture : ", facture);
+  
+      if (facture.piece_jointe) {
+        console.log(`Facture ${facture.id} contient une pièce jointe: ${facture.piece_jointe}`);
+  
+        try {
+          const response = await axios.get(facture.piece_jointe, { responseType: 'arraybuffer' });
+  
+          if (response.status === 200) {
+            const fileExtension = facture.piece_jointe.split('.').pop();
+            const fileName = `piece_jointe_${facture.id}.${fileExtension}`;
+  
+            zip.file(fileName, response.data);
+          } else {
+            console.log(`Erreur lors du téléchargement de la pièce jointe ${facture.piece_jointe}: ${response.status}`);
+          }
+        } catch (error) {
+          console.error(`Erreur lors du téléchargement de la pièce jointe ${facture.piece_jointe} : `, error);
+        }
+      } else {
+        console.log(`Aucune pièce jointe pour la facture ${facture.id}`);
+      }
+    }
+  
     zip.generateAsync({ type: 'blob' }).then(function (content) {
       saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
+    }).catch(error => {
+      console.error("Erreur lors de la génération du fichier ZIP : ", error);
     });
   };
+  
 
 
   const handleSubmit = async (e) => {
@@ -786,17 +821,20 @@ const Facture = () => {
                 <td className="border-y p-2 text-right">{formatter.format(facture.montant_httc)} {getDeviseSymbol(facture.devise)}</td>
                 <td className="border-y p-2 text-center">
                   {facture.piece_jointe ? (
+
                     /\.(pdf)$/i.test(facture.piece_jointe) ? (
-                      <FontAwesomeIcon
-                        icon={faFilePdf}
-                        onClick={() => {
-                          const fileUrl = `https://bg.societe-manage.com/public/storage/${facture.piece_jointe}`;
-                          setPdfurl(fileUrl);
-                          setImgUrl('');
-                          handleOpenModal();
-                        }}
-                        className="text-red-500 cursor-pointer"
-                      />
+                      <>
+                        <FontAwesomeIcon
+                          icon={faFilePdf}
+                          onClick={() => {
+                            const fileUrl = `https://bg.societe-manage.com/public/storage/${facture.piece_jointe}`;
+                            setPdfurl(fileUrl);
+                            setImgUrl('');
+                            handleOpenModal();
+                          }}
+                          className="text-red-500 cursor-pointer"
+                        />
+                      </>
                     ) : /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(facture.piece_jointe) ? (
                       <FontAwesomeIcon
                         icon={faImage}
@@ -809,6 +847,7 @@ const Facture = () => {
                         }}
                         className="text-blue-500 cursor-pointer"
                       />
+
                     ) : (
                       <span>Fichier attaché</span>
                     )
