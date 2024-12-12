@@ -575,9 +575,9 @@ const Facture = () => {
     const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-  
+
     let numeroFacture = 1;
-  
+
     const totalTVA = sortedFactures.reduce(
       (total, facture) => total + parseFloat(facture.prix_tva || 0),
       0
@@ -586,20 +586,20 @@ const Facture = () => {
       (total, facture) => total + parseFloat(facture.montant_httc || 0),
       0
     );
-  
+
     const tableData = sortedFactures.map((facture) => {
       const fournisseur = fournisseurs.find(
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
-  
+
       const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "Non défini";
       const categorie = fournisseur ? fournisseur.type_fournisseur : "Non défini";
-  
+
       const factureNumero = numeroFacture;
       numeroFacture++;
-  
+
       const dateFormatee = format(new Date(facture.date_facturation), "dd/MM/yyyy");
-  
+
       return {
         "N°": factureNumero,
         Fournisseur: fournisseurNom,
@@ -609,7 +609,7 @@ const Facture = () => {
         "Total prix TTC": facture.montant_httc,
       };
     });
-  
+
     tableData.push({
       "N°": "Totaux",
       Fournisseur: "",
@@ -618,36 +618,46 @@ const Facture = () => {
       "Total TVA": totalTVA.toFixed(2),
       "Total prix TTC": totalTTC.toFixed(2),
     });
-  
-    console.log("Nombre d'éléments dans tableData : ", tableData.length);
-  
+
+
     const wsTotaux = XLSX.utils.json_to_sheet(tableData, {
       header: [
         "N°", "Fournisseur", "Catégorie", "Date de Facture",
         "Total TVA", "Total prix TTC",
       ],
     });
-  
+
     const wbTotaux = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wbTotaux, wsTotaux, 'Factures Totaux');
-  
+
     zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wbTotaux, { bookType: 'xlsx', type: 'array' }));
-  
+
     for (const facture of sortedFactures) {
-      console.log(`Traitement de la facture ${facture.id}`);
-      console.log("Données de la facture : ", facture);
-  
+
       if (facture.piece_jointe) {
-        console.log(`Facture ${facture.id} contient une pièce jointe: ${facture.piece_jointe}`);
-  
+        const tokenString = localStorage.getItem("token");
+        let token = JSON.parse(tokenString);
+
         try {
-          const response = await axios.get(facture.piece_jointe, { responseType: 'arraybuffer' });
-  
+          const response = await axios.get(facture.piece_jointe, {
+            Authorization: `Bearer ${token}`,
+            responseType: 'arraybuffer'
+          });
+
           if (response.status === 200) {
-            const fileExtension = facture.piece_jointe.split('.').pop();
+
+            const fileExtension = facture.piece_jointe.split('.').pop().toLowerCase();
             const fileName = `piece_jointe_${facture.id}.${fileExtension}`;
-  
-            zip.file(fileName, response.data);
+
+            if (fileExtension === 'pdf') {
+              console.log('Fichier PDF récupéré avec succès');
+            } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+              console.log('Image récupérée avec succès');
+            } else {
+              console.log(`Fichier avec extension ${fileExtension} récupéré`);
+            }
+
+            zip.file(fileName, response.data, { binary: true });
           } else {
             console.log(`Erreur lors du téléchargement de la pièce jointe ${facture.piece_jointe}: ${response.status}`);
           }
@@ -658,15 +668,13 @@ const Facture = () => {
         console.log(`Aucune pièce jointe pour la facture ${facture.id}`);
       }
     }
-  
+
     zip.generateAsync({ type: 'blob' }).then(function (content) {
       saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
     }).catch(error => {
       console.error("Erreur lors de la génération du fichier ZIP : ", error);
     });
   };
-  
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -728,32 +736,40 @@ const Facture = () => {
       </div>
 
       <div className="flex items-center justify-between w-full pb-4">
-        <div className="text-sm font-semibold">
+        <div className="text-sm font-semibold w-[300px]">
           <FontAwesomeIcon icon={faFileInvoiceDollar} style={{ color: "#1877F2", }} size="lg" /> Nombre de facture : {filteredFactures.length}
         </div>
 
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={handlePrevMonth}
-          >
-            <FontAwesomeIcon icon={faCircleChevronLeft} style={{ color: "#1877F2", }} size="lg" />
+        <div className="flex items-center justify-between w-full">
+          <button onClick={handlePrevMonth} className='pl-80'>
+            <FontAwesomeIcon
+              icon={faCircleChevronLeft}
+              style={{ color: "#1877F2" }}
+              size="lg"
+            />
           </button>
-          <span className="text-sm font-semibold">
+
+          <span className="text-sm font-semibold flex-1 text-center">
             {format(currentDate, "MMMM yyyy", { locale: fr })}
           </span>
+
+          <button onClick={handleNextMonth} className='pr-80'>
+            <FontAwesomeIcon
+              icon={faCircleChevronRight}
+              style={{ color: "#1877F2" }}
+              size="lg"
+            />
+          </button>
+        </div>
+        <div className='w-[170px]'>
           <button
-            onClick={handleNextMonth}
+            onClick={generateZIP}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 "
           >
-            <FontAwesomeIcon icon={faCircleChevronRight} style={{ color: "#1877F2", }} size="lg" />
+            Télécharger <FontAwesomeIcon icon={faDownload} />
           </button>
         </div>
 
-        <button
-          onClick={generateZIP}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Télécharger <FontAwesomeIcon icon={faDownload} />
-        </button>
       </div>
       <div className="w-full border rounded-lg shadow-md overflow-auto h-[750px]">
         <table className="min-w-full">
