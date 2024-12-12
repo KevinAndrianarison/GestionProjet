@@ -487,6 +487,18 @@ const Facture = () => {
     }
   }, [montant_ht, pourcentage_tva]);
 
+  const calculerTotaux = () => {
+    const totalTVA = sortedFactures.reduce((total, facture) => total + parseFloat(facture.prix_tva || 0), 0);
+    const totalTTC = sortedFactures.reduce((total, facture) => total + parseFloat(facture.montant_httc || 0), 0);
+
+    return {
+      totalTVA: totalTVA.toFixed(2),
+      totalTTC: totalTTC.toFixed(2),
+    };
+  };
+
+  const { totalTVA, totalTTC } = calculerTotaux();
+
   const handleUpload = (e) => {
     const file = e.target.files[0];
     if (file && AllowedFile(file)) {
@@ -519,7 +531,7 @@ const Facture = () => {
 
     return true;
   };
-
+  
   const generateZIP = () => {
     const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
@@ -527,7 +539,10 @@ const Facture = () => {
   
     let numeroFacture = 1;
   
-    const tableData = filteredFactures.map((facture) => {
+    const totalTVA = sortedFactures.reduce((total, facture) => total + parseFloat(facture.prix_tva || 0), 0);
+    const totalTTC = sortedFactures.reduce((total, facture) => total + parseFloat(facture.montant_httc || 0), 0);
+  
+    const tableData = sortedFactures.map((facture) => {
       const fournisseur = fournisseurs.find(
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
@@ -538,21 +553,32 @@ const Facture = () => {
       const factureNumero = numeroFacture;
       numeroFacture++;
   
+      const dateFormatee = format(new Date(facture.date_facturation), "dd/MM/yyyy");
+  
       return {
         "N°": factureNumero,
         Fournisseur: fournisseurNom,
         Catégorie: categorie,
-        "Date de Facture": facture.date_facturation,
+        "Date de Facture": dateFormatee,
         "Total TVA": facture.prix_tva,
         "Total prix TTC": facture.montant_httc,
       };
+    });
+  
+    tableData.push({
+      "N°": "Totaux",
+      Fournisseur: "",
+      Catégorie: "",
+      "Date de Facture": "",
+      "Total TVA": totalTVA.toFixed(2),
+      "Total prix TTC": totalTTC.toFixed(2),
     });
   
     console.log("Nombre d'éléments dans tableData : ", tableData.length);
   
     const ws = XLSX.utils.json_to_sheet(tableData, {
       header: [
-        "N°", "Fournisseur", "Catégorie", "Date de Facture", 
+        "N°", "Fournisseur", "Catégorie", "Date de Facture",
         "Total TVA", "Total prix TTC",
       ],
     });
@@ -560,10 +586,8 @@ const Facture = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Factures');
   
-    // Ajouter le fichier Excel dans le zip
     zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
   
-    // Générer et télécharger le fichier ZIP
     zip.generateAsync({ type: 'blob' }).then(function (content) {
       saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
     });
@@ -770,6 +794,11 @@ const Facture = () => {
           <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
         )}
       </div>
+
+      <tr className="bg-gray-100 font-bold">
+        <td className="p-2 text-right">Totaux TVA : {formatter.format(totalTVA)}</td>
+        <td className="p-2 text-right">Totaux TTC : {formatter.format(totalTTC)}</td>
+      </tr>
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         {(imgUrl || pdfUrl) ? (
