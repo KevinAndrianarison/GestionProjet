@@ -5,11 +5,15 @@ import { BASE_URL } from "../contextes/ApiUrls";
 import axios from "axios";
 import Modal from './Modal';
 import Notiflix from 'notiflix';
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
 import { format, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { UrlContext } from "../../contexte/useUrl";
+import JSZip from "jszip";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf'; // Pour générer des fichiers PDF
+import 'jspdf-autotable';
+
 
 const Facture = () => {
   const { url } = useContext(UrlContext);
@@ -162,6 +166,8 @@ const Facture = () => {
     return factureMonth === selectedMonth && factureYear === selectedYear;
   });
 
+  const sortedFactures = [...filteredFactures].sort((a, b) => new Date(b.date_facturation) - new Date(a.date_facturation));
+
   const resetFactureFields = () => {
     setFactureToEdit({});
     setNumero('');
@@ -206,7 +212,6 @@ const Facture = () => {
         });
         if (response.status === 200) {
           setFactures(response.data);
-          console.log(response.data);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des factures :", error);
@@ -412,7 +417,6 @@ const Facture = () => {
   };
 
 
-
   const handleDelete = async (factureId) => {
     setShowActionsIdProsp((prevId) => (prevId === factureId ? null : factureId));
 
@@ -516,61 +520,55 @@ const Facture = () => {
     return true;
   };
 
-
-  const generatePDF = () => {
-    const doc = new jsPDF();
-
+  const generateZIP = () => {
+    const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-
-    doc.setFontSize(18);
-    doc.text(`Factures ${selectedMonthText} ${selectedYearText}`, 15, 20);
-
-    const tableData = filteredFactures.map(facture => ({
-      montant_ht: facture.montant_ht,
-      prix_tva: facture.prix_tva,
-      montant_httc: facture.montant_httc,
-    }));
-
-    const columns = [
-      { title: "Montant HT", dataKey: "montant_ht" },
-      { title: "TVA", dataKey: "prix_tva" },
-      { title: "Montant TTC", dataKey: "montant_httc" },
-    ];
-
-    const totalPagesExp = "{total_pages_count_string}";
-
-    doc.autoTable({
-      head: [columns.map(col => col.title)],
-      body: tableData.map(row => Object.values(row)),
-      startY: 30,
-      headStyles: {
-        fillColor: [37, 99, 235],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-      },
-      didDrawPage: function (data) {
-        const pageSize = doc.internal.pageSize;
-        const pageHeight = pageSize.height;
-        const pageWidth = pageSize.width;
-        const pageNumber = doc.internal.getNumberOfPages();
-        const pageText = `Page ${pageNumber} / ${totalPagesExp}`;
-        doc.setFontSize(10);
-        doc.setTextColor(169, 169, 169); // Gris
-        const textWidth = doc.getStringUnitWidth(pageText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-        const textX = (pageWidth - textWidth) / 1.6;
-        const textY = pageHeight - 10;
-        doc.text(pageText, textX, textY);
-      },
+  
+    let numeroFacture = 1;
+  
+    const tableData = filteredFactures.map((facture) => {
+      const fournisseur = fournisseurs.find(
+        (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
+      );
+  
+      const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "Non défini";
+      const categorie = fournisseur ? fournisseur.type_fournisseur : "Non défini";
+  
+      const factureNumero = numeroFacture;
+      numeroFacture++;
+  
+      return {
+        "N°": factureNumero,
+        Fournisseur: fournisseurNom,
+        Catégorie: categorie,
+        "Date de Facture": facture.date_facturation,
+        "Total TVA": facture.prix_tva,
+        "Total prix TTC": facture.montant_httc,
+      };
     });
-
-    if (typeof doc.putTotalPages === "function") {
-      doc.putTotalPages(totalPagesExp);
-    }
-
-    const fileName = `factures_${selectedMonthText}_${selectedYearText}.pdf`;
-    doc.save(fileName);
+  
+    console.log("Nombre d'éléments dans tableData : ", tableData.length);
+  
+    const ws = XLSX.utils.json_to_sheet(tableData, {
+      header: [
+        "N°", "Fournisseur", "Catégorie", "Date de Facture", 
+        "Total TVA", "Total prix TTC",
+      ],
+    });
+  
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Factures');
+  
+    // Ajouter le fichier Excel dans le zip
+    zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'array' }));
+  
+    // Générer et télécharger le fichier ZIP
+    zip.generateAsync({ type: 'blob' }).then(function (content) {
+      saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
+    });
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -653,13 +651,13 @@ const Facture = () => {
         </div>
 
         <button
-          onClick={generatePDF}
+          onClick={generateZIP}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Télécharger <FontAwesomeIcon icon={faDownload} />
         </button>
       </div>
-      <div className="w-full border rounded-lg shadow-md overflow-auto h-[600px]">
+      <div className="w-full border rounded-lg shadow-md overflow-auto h-[750px]">
         <table className="min-w-full">
           <thead className='bg-slate-100'>
             <tr>
@@ -674,13 +672,28 @@ const Facture = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredFactures.map((facture, index) => (
+            {sortedFactures.map((facture, index) => (
               <tr
                 key={facture.id}
                 className={`${index % 2 === 0 ? "bg-gray-50 shadow-sm" : "bg-white"}  ${showActionsIdProsp !== facture.id ? "hover:shadow-lg hover:scale-x-100" : ""} transition-all px-4 py-2 rounded`}
               >
-                <td className="border-y p-2 text-center">{facture.id}</td>
-                <td className="border-y p-2 text-center">Tsara Restaurant</td>
+                <td className="border-y p-2 text-center">{index + 1}</td>
+
+                <td className="border-y p-2 text-center">
+                  {fournisseurs.length > 0 ? (
+                    (() => {
+                      const fournisseur = fournisseurs.find(
+                        (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
+                      );
+                      if (fournisseur) {
+                        return fournisseur.nom_societe || fournisseur.nom;
+                      }
+                      return "Non défini";
+                    })()
+                  ) : (
+                    "Chargement..."
+                  )}
+                </td>
                 <td className="border-y p-2 text-center">Frais repas</td>
                 <td className="border-y p-2 text-center">{format(new Date(facture.date_facturation), "dd/MM/yyyy")}</td>
                 <td className="border-y p-2 text-right">{formatter.format(facture.prix_tva)} {getDeviseSymbol(facture.devise)}</td>
@@ -752,7 +765,6 @@ const Facture = () => {
               </tr>
             ))}
           </tbody>
-
         </table>
         {factures.length === 0 && (
           <p className="text-gray-500"><i>Aucune facture disponible.</i></p>
