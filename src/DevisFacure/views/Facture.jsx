@@ -740,8 +740,8 @@ const Facture = () => {
           <FontAwesomeIcon icon={faFileInvoiceDollar} style={{ color: "#1877F2", }} size="lg" /> Nombre de facture : {filteredFactures.length}
         </div>
 
-        <div className="flex items-center justify-between w-full">
-          <button onClick={handlePrevMonth} className='pl-80'>
+        <div className="flex items-center justify-between ">
+          <button onClick={handlePrevMonth}>
             <FontAwesomeIcon
               icon={faCircleChevronLeft}
               style={{ color: "#1877F2" }}
@@ -749,11 +749,11 @@ const Facture = () => {
             />
           </button>
 
-          <span className="text-sm font-semibold flex-1 text-center">
+          <span className="text-sm font-semibold flex-1 text-center w-[150px]">
             {format(currentDate, "MMMM yyyy", { locale: fr })}
           </span>
 
-          <button onClick={handleNextMonth} className='pr-80'>
+          <button onClick={handleNextMonth} >
             <FontAwesomeIcon
               icon={faCircleChevronRight}
               style={{ color: "#1877F2" }}
