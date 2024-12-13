@@ -71,18 +71,25 @@ const Facture = () => {
     }
   };
 
+  useEffect(() => {
+    const initialSelectedIds = factures.filter(facture => facture.selected).map(facture => facture.id);
+    setSelectedIds(initialSelectedIds);
+  }, [factures]);
+  
+
   const toggleSelection = (id) => {
     setSelectedIds((prevSelectedIds) => {
-      console.log("Etat actuel de selectedIds : ", prevSelectedIds);
-      if (prevSelectedIds.includes(id)) {
-        console.log(`Facture avec ID ${id} déjà sélectionnée, suppression de la sélection.`);
-        return prevSelectedIds.filter((selectedId) => selectedId !== id);
-      } else {
-        console.log(`Facture avec ID ${id} non sélectionnée, ajout à la sélection.`);
-        return [...prevSelectedIds, id];
-      }
+      const isSelected = prevSelectedIds.includes(id);
+      const updatedSelectedIds = isSelected
+        ? prevSelectedIds.filter((selectedId) => selectedId !== id)
+        : [...prevSelectedIds, id];
+      console.log(`ID ${id} ${isSelected ? "déselectionné" : "sélectionné"}`);
+      console.log("Nouvel état de selectedIds : ", updatedSelectedIds);
+  
+      return updatedSelectedIds;
     });
   };
+  
 
   const getDeviseSymbol = (devise) => {
     switch (devise) {
@@ -443,17 +450,26 @@ const Facture = () => {
   };
 
 
-  const handleDeleteSelected = async (factureEntrantIds) => {
-    if (factureEntrantIds.length === 0) {
+  const handleDelete = async (factureIds) => {
+    if (!Array.isArray(factureIds)) {
+      factureIds = [factureIds]; // Si un seul ID est passé, convertir en tableau
+    }
+
+    if (factureIds.length === 0) {
       Notiflix.Report.failure('Echec', 'Aucune facture sélectionnée pour suppression.', 'Fermer');
       return;
     }
 
     const confirmDelete = () => {
       return new Promise((resolve) => {
+        const message =
+          factureIds.length === 1
+            ? 'Êtes-vous sûr de vouloir supprimer cette facture ?'
+            : 'Êtes-vous sûr de vouloir supprimer ces factures ?';
+
         Notiflix.Confirm.show(
           'Confirmer',
-          'Êtes-vous sûr de vouloir supprimer ces factures ?',
+          message,
           'Oui',
           'Non',
           () => resolve(true),
@@ -471,18 +487,37 @@ const Facture = () => {
     let token = JSON.parse(tokenString);
 
     try {
-      const response = await axios.delete(`${BASE_URL}factures/entrants/supprimer-multiples`, {
-        data: { factureEntrantIds: factureEntrantIds },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const url =
+        factureIds.length === 1
+          ? `${BASE_URL}factures/entrants/${factureIds[0]}`
+          : `${BASE_URL}factures/entrants/supprimer-multiples`;
+
+      const requestOptions =
+        factureIds.length === 1
+          ? {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+          : {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: { factureEntrantIds: factureIds },
+          };
+
+      const response = await axios.delete(url, requestOptions);
 
       if (response.status === 200) {
-        setFactures((prevFactures) => prevFactures.filter((facture) => !factureEntrantIds.includes(facture.id)));
+        setFactures((prevFactures) =>
+          prevFactures.filter((facture) => !factureIds.includes(facture.id))
+        );
+          setSelectedIds([]);
         Notiflix.Report.success(
           'Succès',
-          'Factures supprimées avec succès.',
+          factureIds.length === 1
+            ? 'Facture supprimée avec succès.'
+            : 'Factures supprimées avec succès.',
           'Fermer'
         );
       } else {
@@ -502,61 +537,6 @@ const Facture = () => {
     }
   };
 
-
-  const handleDelete = async (factureId) => {
-    setShowActionsIdProsp((prevId) => (prevId === factureId ? null : factureId));
-
-    const confirmDelete = () => {
-      return new Promise((resolve) => {
-        Notiflix.Confirm.show(
-          'Confirmer',
-          'Êtes-vous sûr de vouloir supprimer ?',
-          'Oui',
-          'Non',
-          () => resolve(true),
-          () => resolve(false)
-        );
-      });
-    };
-
-    const confirmed = await confirmDelete();
-    if (!confirmed) {
-      return;
-    }
-
-    const tokenString = localStorage.getItem("token");
-    let token = JSON.parse(tokenString);
-
-    try {
-      const response = await axios.delete(`${BASE_URL}factures/entrants/${factureId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        setFactures((prevFactures) => prevFactures.filter((facture) => facture.id !== factureId));
-        Notiflix.Report.success(
-          'Succès',
-          'Facture supprimée avec succès.',
-          'Fermer'
-        );
-      } else {
-        Notiflix.Report.failure(
-          'Echec',
-          'Erreur lors de la suppression de la facture.',
-          'Fermer'
-        );
-      }
-    } catch (error) {
-      console.error("Erreur lors de la suppression de la facture :", error);
-      Notiflix.Report.failure(
-        'Echec',
-        'Erreur serveur ou échec de la suppression.',
-        'Fermer'
-      );
-    }
-  };
 
   const toggleActions = (id) => {
     setShowActionsIdProsp((prevId) => (prevId === id ? null : id));
@@ -625,14 +605,14 @@ const Facture = () => {
     return true;
   };
 
-  
+
   const generateZIP = async () => {
     const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-  
+
     let numeroFacture = 1;
-  
+
     const totalTVA = sortedFactures.reduce(
       (total, facture) => total + parseFloat(facture.prix_tva || 0),
       0
@@ -641,20 +621,20 @@ const Facture = () => {
       (total, facture) => total + parseFloat(facture.montant_httc || 0),
       0
     );
-  
+
     const tableData = sortedFactures.map((facture) => {
       const fournisseur = fournisseurs.find(
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
-  
+
       const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "";
       const categorie = fournisseur ? fournisseur.type_fournisseur : "";
-  
+
       const factureNumero = numeroFacture;
       numeroFacture++;
-  
+
       const dateFormatee = format(new Date(facture.date_facturation), "dd/MM/yyyy");
-  
+
       return [
         factureNumero,
         fournisseurNom,
@@ -664,7 +644,7 @@ const Facture = () => {
         facture.montant_httc,
       ];
     });
-  
+
     // Ajouter une ligne pour les totaux
     tableData.push([
       "Totaux",
@@ -674,11 +654,11 @@ const Facture = () => {
       totalTVA.toFixed(2),
       totalTTC.toFixed(2),
     ]);
-  
+
     // Création du fichier Excel avec ExcelJS
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Factures Totaux");
-  
+
     // Ajouter un titre
     worksheet.mergeCells("A1:F1");
     const titleCell = worksheet.getCell("A1");
@@ -690,7 +670,7 @@ const Facture = () => {
       pattern: "solid",
       fgColor: { argb: "FFBBDEFB" },
     };
-  
+
     // Ajouter les en-têtes
     const headers = ["N°", "Fournisseur", "Catégorie", "Date de Facture", "Total TVA", "Total prix TTC"];
     worksheet.addRow(headers).eachCell((cell) => {
@@ -708,7 +688,7 @@ const Facture = () => {
         right: { style: "thin", color: { argb: "FF000000" } },
       };
     });
-  
+
     // Ajouter les données
     tableData.forEach((row) => {
       const dataRow = worksheet.addRow(row);
@@ -722,11 +702,11 @@ const Facture = () => {
         };
       });
     });
-  
+
     // Ajouter le fichier Excel au ZIP
     const buffer = await workbook.xlsx.writeBuffer();
     zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, buffer);
-  
+
     // Ajouter les pièces jointes au ZIP
     for (const facture of sortedFactures) {
       if (facture.piece_jointe) {
@@ -740,11 +720,11 @@ const Facture = () => {
             },
             responseType: "arraybuffer",
           });
-  
+
           if (response.status === 200) {
             const fileExtension = facture.piece_jointe.split(".").pop().toLowerCase();
             const fileName = `piece_jointe_${facture.id}.${fileExtension}`;
-  
+
             zip.file(fileName, response.data, { binary: true });
           } else {
             console.log(`Erreur lors du téléchargement de la pièce jointe ${facture.piece_jointe}: ${response.status}`);
@@ -756,7 +736,7 @@ const Facture = () => {
         console.log(`Aucune pièce jointe pour la facture ${facture.id}`);
       }
     }
-  
+
     // Générer le fichier ZIP
     zip.generateAsync({ type: "blob" }).then((content) => {
       saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
@@ -1007,7 +987,7 @@ const Facture = () => {
       {showCheckboxes && (
         <div className="mb-4">
           <button
-            onClick={() => handleDeleteSelected(selectedIds)}
+            onClick={() => handleDelete(selectedIds)}
             className="bg-red-500 text-white px-4 py-2 rounded mr-2"
             disabled={selectedIds.length === 0}
           >
