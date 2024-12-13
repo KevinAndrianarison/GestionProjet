@@ -633,29 +633,21 @@ const Facture = () => {
     zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wbTotaux, { bookType: 'xlsx', type: 'array' }));
 
     for (const facture of sortedFactures) {
-
       if (facture.piece_jointe) {
         const tokenString = localStorage.getItem("token");
         let token = JSON.parse(tokenString);
-
         try {
-          const response = await axios.get(facture.piece_jointe, {
-            Authorization: `Bearer ${token}`,
+          const encodage = btoa(facture.piece_jointe)
+          const response = await axios.get(`${BASE_URL}download-file/${encodage}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
             responseType: 'arraybuffer'
           });
 
           if (response.status === 200) {
-
             const fileExtension = facture.piece_jointe.split('.').pop().toLowerCase();
             const fileName = `piece_jointe_${facture.id}.${fileExtension}`;
-
-            if (fileExtension === 'pdf') {
-              console.log('Fichier PDF récupéré avec succès');
-            } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-              console.log('Image récupérée avec succès');
-            } else {
-              console.log(`Fichier avec extension ${fileExtension} récupéré`);
-            }
 
             zip.file(fileName, response.data, { binary: true });
           } else {
