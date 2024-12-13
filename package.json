@@ -32,6 +32,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dhtmlx-gantt": "^9.0.2",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
@@ -54,7 +55,8 @@
     "tippy.js": "^6.3.7",
     "uuid": "^10.0.0",
     "web-animations-js": "^2.3.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-style": "^0.8.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

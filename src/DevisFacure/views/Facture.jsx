@@ -9,10 +9,9 @@ import { format, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { UrlContext } from "../../contexte/useUrl";
 import JSZip from "jszip";
-import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import 'jspdf-autotable';
-
+import ExcelJS from 'exceljs';
 
 const Facture = () => {
   const { url } = useContext(UrlContext);
@@ -83,11 +82,6 @@ const Facture = () => {
         return [...prevSelectedIds, id];
       }
     });
-  };
-
-  const handleEditSelected = () => {
-    console.log("Modification des factures :", selectedIds);
-    // Implémentez la logique de modification ici
   };
 
   const getDeviseSymbol = (devise) => {
@@ -449,6 +443,66 @@ const Facture = () => {
   };
 
 
+  const handleDeleteSelected = async (factureEntrantIds) => {
+    if (factureEntrantIds.length === 0) {
+      Notiflix.Report.failure('Echec', 'Aucune facture sélectionnée pour suppression.', 'Fermer');
+      return;
+    }
+
+    const confirmDelete = () => {
+      return new Promise((resolve) => {
+        Notiflix.Confirm.show(
+          'Confirmer',
+          'Êtes-vous sûr de vouloir supprimer ces factures ?',
+          'Oui',
+          'Non',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+    };
+
+    const confirmed = await confirmDelete();
+    if (!confirmed) {
+      return;
+    }
+
+    const tokenString = localStorage.getItem("token");
+    let token = JSON.parse(tokenString);
+
+    try {
+      const response = await axios.delete(`${BASE_URL}factures/entrants/supprimer-multiples`, {
+        data: { factureEntrantIds: factureEntrantIds },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setFactures((prevFactures) => prevFactures.filter((facture) => !factureEntrantIds.includes(facture.id)));
+        Notiflix.Report.success(
+          'Succès',
+          'Factures supprimées avec succès.',
+          'Fermer'
+        );
+      } else {
+        Notiflix.Report.failure(
+          'Echec',
+          'Erreur lors de la suppression des factures.',
+          'Fermer'
+        );
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des factures :", error);
+      Notiflix.Report.failure(
+        'Echec',
+        'Erreur serveur ou échec de la suppression.',
+        'Fermer'
+      );
+    }
+  };
+
+
   const handleDelete = async (factureId) => {
     setShowActionsIdProsp((prevId) => (prevId === factureId ? null : factureId));
 
@@ -571,13 +625,14 @@ const Facture = () => {
     return true;
   };
 
+  
   const generateZIP = async () => {
     const zip = new JSZip();
     const selectedMonthText = format(currentDate, "MMMM", { locale: fr });
     const selectedYearText = format(currentDate, "yyyy");
-
+  
     let numeroFacture = 1;
-
+  
     const totalTVA = sortedFactures.reduce(
       (total, facture) => total + parseFloat(facture.prix_tva || 0),
       0
@@ -586,69 +641,110 @@ const Facture = () => {
       (total, facture) => total + parseFloat(facture.montant_httc || 0),
       0
     );
-
+  
     const tableData = sortedFactures.map((facture) => {
       const fournisseur = fournisseurs.find(
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
-
+  
       const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "";
       const categorie = fournisseur ? fournisseur.type_fournisseur : "";
-
+  
       const factureNumero = numeroFacture;
       numeroFacture++;
-
+  
       const dateFormatee = format(new Date(facture.date_facturation), "dd/MM/yyyy");
-
-      return {
-        "N°": factureNumero,
-        Fournisseur: fournisseurNom,
-        Catégorie: categorie,
-        "Date de Facture": dateFormatee,
-        "Total TVA": facture.prix_tva,
-        "Total prix TTC": facture.montant_httc,
+  
+      return [
+        factureNumero,
+        fournisseurNom,
+        categorie,
+        dateFormatee,
+        facture.prix_tva,
+        facture.montant_httc,
+      ];
+    });
+  
+    // Ajouter une ligne pour les totaux
+    tableData.push([
+      "Totaux",
+      "",
+      "",
+      "",
+      totalTVA.toFixed(2),
+      totalTTC.toFixed(2),
+    ]);
+  
+    // Création du fichier Excel avec ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Factures Totaux");
+  
+    // Ajouter un titre
+    worksheet.mergeCells("A1:F1");
+    const titleCell = worksheet.getCell("A1");
+    titleCell.value = `Factures - ${selectedMonthText} ${selectedYearText}`;
+    titleCell.font = { bold: true, size: 16, color: { argb: "FF000000" } };
+    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+    titleCell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFBBDEFB" },
+    };
+  
+    // Ajouter les en-têtes
+    const headers = ["N°", "Fournisseur", "Catégorie", "Date de Facture", "Total TVA", "Total prix TTC"];
+    worksheet.addRow(headers).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FF000000" } };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFA5D6A7" },
+      };
+      cell.border = {
+        top: { style: "thin", color: { argb: "FF000000" } },
+        bottom: { style: "thin", color: { argb: "FF000000" } },
+        left: { style: "thin", color: { argb: "FF000000" } },
+        right: { style: "thin", color: { argb: "FF000000" } },
       };
     });
-
-    tableData.push({
-      "N°": "Totaux",
-      Fournisseur: "",
-      Catégorie: "",
-      "Date de Facture": "",
-      "Total TVA": totalTVA.toFixed(2),
-      "Total prix TTC": totalTTC.toFixed(2),
+  
+    // Ajouter les données
+    tableData.forEach((row) => {
+      const dataRow = worksheet.addRow(row);
+      dataRow.eachCell((cell) => {
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = {
+          top: { style: "thin", color: { argb: "FF555555" } },
+          bottom: { style: "thin", color: { argb: "FF555555" } },
+          left: { style: "thin", color: { argb: "FF555555" } },
+          right: { style: "thin", color: { argb: "FF555555" } },
+        };
+      });
     });
-
-
-    const wsTotaux = XLSX.utils.json_to_sheet(tableData, {
-      header: [
-        "N°", "Fournisseur", "Catégorie", "Date de Facture",
-        "Total TVA", "Total prix TTC",
-      ],
-    });
-
-    const wbTotaux = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wbTotaux, wsTotaux, 'Factures Totaux');
-
-    zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, XLSX.write(wbTotaux, { bookType: 'xlsx', type: 'array' }));
-
+  
+    // Ajouter le fichier Excel au ZIP
+    const buffer = await workbook.xlsx.writeBuffer();
+    zip.file(`factures_${selectedMonthText}_${selectedYearText}.xlsx`, buffer);
+  
+    // Ajouter les pièces jointes au ZIP
     for (const facture of sortedFactures) {
       if (facture.piece_jointe) {
         const tokenString = localStorage.getItem("token");
         let token = JSON.parse(tokenString);
         try {
-          const encodage = btoa(facture.piece_jointe)
+          const encodage = btoa(facture.piece_jointe);
           const response = await axios.get(`${BASE_URL}download-file/${encodage}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            responseType: 'arraybuffer'
+            responseType: "arraybuffer",
           });
-
+  
           if (response.status === 200) {
-            const fileExtension = facture.piece_jointe.split('.').pop().toLowerCase();
+            const fileExtension = facture.piece_jointe.split(".").pop().toLowerCase();
             const fileName = `piece_jointe_${facture.id}.${fileExtension}`;
-
+  
             zip.file(fileName, response.data, { binary: true });
           } else {
             console.log(`Erreur lors du téléchargement de la pièce jointe ${facture.piece_jointe}: ${response.status}`);
@@ -660,11 +756,10 @@ const Facture = () => {
         console.log(`Aucune pièce jointe pour la facture ${facture.id}`);
       }
     }
-
-    zip.generateAsync({ type: 'blob' }).then(function (content) {
+  
+    // Générer le fichier ZIP
+    zip.generateAsync({ type: "blob" }).then((content) => {
       saveAs(content, `factures_${selectedMonthText}_${selectedYearText}.zip`);
-    }).catch(error => {
-      console.error("Erreur lors de la génération du fichier ZIP : ", error);
     });
   };
 
@@ -912,18 +1007,11 @@ const Facture = () => {
       {showCheckboxes && (
         <div className="mb-4">
           <button
-            onClick={handleDelete}
+            onClick={() => handleDeleteSelected(selectedIds)}
             className="bg-red-500 text-white px-4 py-2 rounded mr-2"
             disabled={selectedIds.length === 0}
           >
             Supprimer
-          </button>
-          <button
-            onClick={handleEditSelected}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            disabled={selectedIds.length === 0}
-          >
-            Modifier
           </button>
         </div>
       )}
