@@ -592,8 +592,8 @@ const Facture = () => {
         (f) => String(f.id) === String(facture.gest_fac_founisseur_id)
       );
 
-      const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "Non défini";
-      const categorie = fournisseur ? fournisseur.type_fournisseur : "Non défini";
+      const fournisseurNom = fournisseur ? (fournisseur.nom_societe || fournisseur.nom) : "";
+      const categorie = fournisseur ? fournisseur.type_fournisseur : "";
 
       const factureNumero = numeroFacture;
       numeroFacture++;
@@ -736,7 +736,7 @@ const Facture = () => {
       </div>
 
       <div className="flex items-center justify-between w-full pb-4">
-        <div className="text-sm font-semibold w-[300px]">
+        <div className="text-sm font-semibold w-[180px]">
           <FontAwesomeIcon icon={faFileInvoiceDollar} style={{ color: "#1877F2", }} size="lg" /> Nombre de facture : {filteredFactures.length}
         </div>
 
@@ -761,7 +761,7 @@ const Facture = () => {
             />
           </button>
         </div>
-        <div className='w-[170px]'>
+        <div className=''>
           <button
             onClick={generateZIP}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 "
@@ -825,7 +825,7 @@ const Facture = () => {
                       if (fournisseur) {
                         return fournisseur.nom_societe || fournisseur.nom;
                       }
-                      return "Non défini";
+                      return "";
                     })()
                   ) : (
                     "Chargement..."
